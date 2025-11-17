@@ -1,3 +1,10 @@
+# cardlect
+Cardlect is a single smart card for ID, pickup, and payments in schools — a secure solution that manages student identities, authorizes parent pickups, and provides a built-in wallet for cashless transactions, giving schools safer and smarter control.
+
+
+
+<!-- to run -->
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
