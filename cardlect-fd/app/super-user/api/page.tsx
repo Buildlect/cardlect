@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/SuperAdmin/sidebar'
 import { Header } from '@/components/SuperAdmin/header'
-import { Copy, Eye, EyeOff, Plus, Trash2, AlertCircle, CheckCircle } from 'lucide-react'
+import { Copy, Eye, EyeOff, Plus, Trash2, AlertCircle, CheckCircle, Sun, Moon } from 'lucide-react'
 
 interface ApiKey {
   id: string
@@ -26,24 +26,63 @@ interface WebhookLog {
   endpoint: string
 }
 
+// Move mock data out of component so it's not recreated every render
+const initialApiKeys: ApiKey[] = [
+  { id: 'key-001', name: 'Mobile App Integration', key: 'sk_live_abc123def456ghi789jkl', rateLimit: 10000, requestsToday: 4523, lastUsed: '2 minutes ago', status: 'active', createdDate: '2024-01-10' },
+  { id: 'key-002', name: 'External Dashboard', key: 'sk_live_xyz789uvw456rst123opq', rateLimit: 5000, requestsToday: 1240, lastUsed: '15 minutes ago', status: 'active', createdDate: '2024-01-05' },
+  { id: 'key-003', name: 'Legacy System (Deprecated)', key: 'sk_live_old_key_12345678900', rateLimit: 1000, requestsToday: 0, lastUsed: '1 week ago', status: 'inactive', createdDate: '2023-06-15' },
+]
+
+const mockWebhooks: WebhookLog[] = [
+  { id: 'wh-001', event: 'card.scanned', status: 'success', statusCode: 200, timestamp: '2024-01-15 14:32:10', endpoint: 'https://app.example.com/webhooks/card' },
+  { id: 'wh-002', event: 'wallet.transaction', status: 'success', statusCode: 200, timestamp: '2024-01-15 14:28:45', endpoint: 'https://app.example.com/webhooks/wallet' },
+  { id: 'wh-003', event: 'gate.access', status: 'success', statusCode: 200, timestamp: '2024-01-15 14:15:20', endpoint: 'https://app.example.com/webhooks/gate' },
+  { id: 'wh-004', event: 'card.scanned', status: 'failed', statusCode: 500, timestamp: '2024-01-15 14:10:33', endpoint: 'https://webhook.example.com/cardlect' },
+  { id: 'wh-005', event: 'attendance.marked', status: 'success', statusCode: 200, timestamp: '2024-01-15 13:55:12', endpoint: 'https://app.example.com/webhooks/attendance' },
+]
+
 export default function ApiPage() {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [showKeys, setShowKeys] = useState<{ [key: string]: boolean }>({})
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([
-    { id: 'key-001', name: 'Mobile App Integration', key: 'sk_live_abc123def456ghi789jkl', rateLimit: 10000, requestsToday: 4523, lastUsed: '2 minutes ago', status: 'active', createdDate: '2024-01-10' },
-    { id: 'key-002', name: 'External Dashboard', key: 'sk_live_xyz789uvw456rst123opq', rateLimit: 5000, requestsToday: 1240, lastUsed: '15 minutes ago', status: 'active', createdDate: '2024-01-05' },
-    { id: 'key-003', name: 'Legacy System (Deprecated)', key: 'sk_live_old_key_12345678900', rateLimit: 1000, requestsToday: 0, lastUsed: '1 week ago', status: 'inactive', createdDate: '2023-06-15' },
-  ])
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>(() => initialApiKeys)
 
-  const mockWebhooks: WebhookLog[] = [
-    { id: 'wh-001', event: 'card.scanned', status: 'success', statusCode: 200, timestamp: '2024-01-15 14:32:10', endpoint: 'https://app.example.com/webhooks/card' },
-    { id: 'wh-002', event: 'wallet.transaction', status: 'success', statusCode: 200, timestamp: '2024-01-15 14:28:45', endpoint: 'https://app.example.com/webhooks/wallet' },
-    { id: 'wh-003', event: 'gate.access', status: 'success', statusCode: 200, timestamp: '2024-01-15 14:15:20', endpoint: 'https://app.example.com/webhooks/gate' },
-    { id: 'wh-004', event: 'card.scanned', status: 'failed', statusCode: 500, timestamp: '2024-01-15 14:10:33', endpoint: 'https://webhook.example.com/cardlect' },
-    { id: 'wh-005', event: 'attendance.marked', status: 'success', statusCode: 200, timestamp: '2024-01-15 13:55:12', endpoint: 'https://app.example.com/webhooks/attendance' },
-  ]
+  // Theme: persistent and respects system preference
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    try {
+      const stored = localStorage.getItem('theme')
+      if (stored === 'light' || stored === 'dark') return stored
+    } catch {
+      /* ignore */
+    }
+    // default to light; will be corrected in effect if prefers dark
+    return 'light'
+  })
+
+  useEffect(() => {
+    try {
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+      if (!localStorage.getItem('theme') && prefersDark) {
+        setTheme('dark')
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  useEffect(() => {
+    try {
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark')
+      } else {
+        document.documentElement.classList.remove('dark')
+      }
+      localStorage.setItem('theme', theme)
+    } catch {
+      // ignore (e.g., during SSR or restricted storage)
+    }
+  }, [theme])
 
   const toggleKeyVisibility = (keyId: string) => {
     setShowKeys(prev => ({
@@ -52,18 +91,39 @@ export default function ApiPage() {
     }))
   }
 
-  const copyToClipboard = (key: string, keyId: string) => {
-    navigator.clipboard.writeText(key)
-    setCopiedKey(keyId)
-    setTimeout(() => setCopiedKey(null), 2000)
+  // safer clipboard handling and async
+  const copyToClipboard = async (key: string, keyId: string) => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(key)
+      } else {
+        // fallback
+        const ta = document.createElement('textarea')
+        ta.value = key
+        ta.style.position = 'fixed'
+        ta.style.opacity = '0'
+        document.body.appendChild(ta)
+        ta.select()
+        document.execCommand('copy')
+        document.body.removeChild(ta)
+      }
+      setCopiedKey(keyId)
+      setTimeout(() => setCopiedKey(null), 2000)
+    } catch {
+      // optionally show a non-blocking error state in future
+      setCopiedKey(null)
+    }
   }
 
+  // functional update to avoid stale closure
   const deleteApiKey = (id: string) => {
-    setApiKeys(apiKeys.filter(k => k.id !== id))
+    setApiKeys(prev => prev.filter(k => k.id !== id))
   }
+
+  const webhooks = useMemo(() => mockWebhooks, [])
 
   return (
-    <div className="flex h-screen bg-background dark">
+    <div className="flex h-screen bg-background">
       <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} onNavigate={(href) => router.push(href)} currentPage="api" />
       <div className="flex-1 flex flex-col">
         <Header sidebarOpen={sidebarOpen} />
@@ -76,7 +136,6 @@ export default function ApiPage() {
 
             <div className="mb-8 p-4 bg-primary/10 border border-primary/20 rounded-lg">
               <p className="text-sm text-foreground">
-                {' '}
                 <a href="#" className="text-primary hover:underline">
                   Read API Documentation
                 </a>{' '}
@@ -87,10 +146,21 @@ export default function ApiPage() {
             <div className="mb-8">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-foreground">API Keys</h2>
-                <button className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-all">
-                  <Plus size={18} />
-                  Generate New Key
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setTheme(t => (t === 'dark' ? 'light' : 'dark'))}
+                    aria-label="Toggle theme"
+                    className="p-2 rounded-lg hover:bg-secondary transition-all"
+                    title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                  >
+                    {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                  </button>
+
+                  <button className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-all">
+                    <Plus size={18} />
+                    Generate New Key
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -113,6 +183,7 @@ export default function ApiPage() {
                       <button
                         className="p-2 hover:bg-secondary rounded transition-all"
                         onClick={() => deleteApiKey(apiKey.id)}
+                        aria-label={`Delete ${apiKey.name}`}
                       >
                         <Trash2 size={18} className="text-destructive" />
                       </button>
@@ -128,12 +199,14 @@ export default function ApiPage() {
                       <button
                         onClick={() => toggleKeyVisibility(apiKey.id)}
                         className="p-2 hover:bg-secondary rounded transition-all ml-2"
+                        aria-label={showKeys[apiKey.id] ? 'Hide key' : 'Show key'}
                       >
                         {showKeys[apiKey.id] ? <EyeOff size={18} /> : <Eye size={18} />}
                       </button>
                       <button
                         onClick={() => copyToClipboard(apiKey.key, apiKey.id)}
                         className="p-2 hover:bg-secondary rounded transition-all"
+                        aria-label="Copy API key"
                       >
                         <Copy size={18} className={copiedKey === apiKey.id ? 'text-primary' : ''} />
                       </button>
@@ -174,7 +247,7 @@ export default function ApiPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {mockWebhooks.map((log, idx) => (
+                      {webhooks.map((log, idx) => (
                         <tr key={log.id} className={`${idx % 2 === 0 ? 'bg-secondary/20' : ''} border-b border-border hover:bg-secondary/40 transition-all`}>
                           <td className="px-6 py-4 text-sm text-muted-foreground font-mono">{log.timestamp}</td>
                           <td className="px-6 py-4 text-sm text-foreground">{log.event}</td>

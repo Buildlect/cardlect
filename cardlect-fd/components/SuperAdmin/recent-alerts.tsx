@@ -41,8 +41,8 @@ export function RecentAlerts() {
             >
               {/* Alert Icon */}
               <div
-                className="p-3 rounded-xl flex items-center justify-center shadow-md relative"
-                style={{ backgroundColor: a.bg }}
+                className="p-3  bg-card dark:bg-card rounded-xl flex items-center justify-center shadow-md relative"
+    
               >
                 <Icon size={20} color={a.color} />
 
