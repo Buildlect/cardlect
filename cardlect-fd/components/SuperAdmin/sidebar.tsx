@@ -3,7 +3,7 @@
 import * as Icons from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { ComponentType, SVGProps } from 'react'
-import { LogOut } from 'lucide-react'
+import { LogOut, Upload } from 'lucide-react'
 
 interface SidebarProps {
   open: boolean
@@ -20,7 +20,8 @@ const menuItems: { icon: IconComp; label: string; href: string; id: string }[] =
   { icon: Icons.CreditCardIcon, label: 'Cards', href: '/super-user/cards', id: 'cards' },
   { icon: Icons.ChartBarIcon, label: 'Analytics', href: '/super-user/analytics', id: 'analytics' },
   { icon: Icons.DocumentTextIcon, label: 'Logs', href: '/super-user/logs', id: 'logs' },
-  { icon: Icons.KeyIcon, label: 'API Keys', href: '/super-user/api', id: 'api' },
+  { icon: Upload, label: 'Bulk Import', href: '/super-user/bulk-import', id: 'bulk-import' },
+  { icon: Icons.KeyIcon, label: 'Manage API Keys', href: '/super-user/api', id: 'api' },
   { icon: Icons.Cog6ToothIcon, label: 'Settings', href: '/super-user/settings', id: 'settings' },
 ]
 

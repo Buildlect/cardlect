@@ -33,9 +33,6 @@ export function Header({ sidebarOpen }: HeaderProps) {
             <Bell size={20} />
             <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
           </button>
-          <div className="w-10 h-10 bg-forground rounded-full flex items-center justify-center text-primary-foreground font-bold cursor-pointer hover:bg-primary/90 transition-all">
-            SA
-          </div>
         </div>
       </div>
     </header>
