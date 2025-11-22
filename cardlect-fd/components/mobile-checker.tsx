@@ -20,7 +20,7 @@ export default function MobilePopup() {
       <div className="flex justify-between items-start gap-2">
         <div>
           <p className="font-bold">Desktop Mode Recommended</p>
-          <p className="text-sm">For the best experience, please switch to a desktop or larger screen.</p>
+          <p className="text-sm">For the best experience, please switch to a desktop, larger screen or enable desktop site on your mobile device.</p>
         </div>
         <button onClick={() => setShowPopup(false)} className="text-yellow-700 hover:text-yellow-900">
           <X size={18} />
