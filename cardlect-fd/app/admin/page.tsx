@@ -1,5 +1,5 @@
 'use client'
 
 export default function AdminPage() {
-  return <div>Admin Page - Under Construction</div>
+  return <div className="flex">Admin Page - Under Construction</div>
 }
