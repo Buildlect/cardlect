@@ -4,6 +4,7 @@ import type React from "react"
 
 import { ThemeProvider } from "@/components/theme-provider"
 import { ThemeToggle } from "@/components/theme-toggle"
+import Image from "next/image"
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -11,13 +12,18 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex flex-col">
         {/* Auth Header with Theme Toggle */}
         <div className="flex justify-between items-center px-4 sm:px-6 md:px-8 py-3 sm:py-4 border-b border-border/50 backdrop-blur-sm bg-background/80">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 sm:w-10 h-8 sm:h-10 bg-primary rounded-lg flex items-center justify-center shadow-lg">
-              <span className="text-primary-foreground font-bold text-sm sm:text-lg">C</span>
+          <div className="flex items-center gap-0 sm:gap-3">
+            <div>
+              <Image
+                src="/cardlet-logo.png"
+                alt="Cardlet Logo"
+                width={64}
+                height={64}
+                className="w-12 h-12"
+              />
             </div>
             <div className="hidden sm:block">
               <h1 className="text-xl sm:text-2xl font-bold text-foreground">Cardlect</h1>
-              <p className="text-xs text-muted-foreground">Card Management System</p>
             </div>
             <div className="sm:hidden">
               <h1 className="text-lg font-bold text-foreground">Cardlect</h1>
