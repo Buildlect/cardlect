@@ -117,10 +117,18 @@ export function Sidebar({ open, onToggle, onNavigate, currentPage }: SidebarProp
       </nav>
 
       <div className="p-3 border-t border-gray-200 dark:border-[#111827]">
-        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-orange-50 transition-all dark:text-gray-200 dark:hover:bg-[rgba(234,88,12,0.06)]">
+        <Link
+          href="/logout"
+          onClick={(e) => {
+            e.preventDefault()
+            onNavigate('/auth/logout')
+          }}
+          aria-label="Logout"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-orange-50 transition-all dark:text-gray-200 dark:hover:bg-[rgba(234,88,12,0.06)]"
+        >
           <LogOut size={20} />
           {open && <span className="text-sm font-medium">Logout</span>}
-        </button>
+        </Link>
       </div>
 
     </aside>

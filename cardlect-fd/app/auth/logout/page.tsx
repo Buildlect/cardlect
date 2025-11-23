@@ -58,13 +58,6 @@ export default function LogoutPage() {
         {/* Success State */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center mb-4">
-            <Image
-              src="/cardlet-logo.png"
-              alt="Cardlet Logo"
-              width={64}
-              height={64}
-              className="w-16 h-16"
-            />
           </div>
 
           <h1 className="text-3xl font-bold text-balance">
