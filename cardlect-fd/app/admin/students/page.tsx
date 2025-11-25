@@ -71,7 +71,7 @@ export default function StudentsPage() {
     }
   }
 
-  const handleDeleteStudent = (id) => {
+  const handleDeleteStudent = (id: number) => {
     setStudents(students.filter((s) => s.id !== id))
   }
 

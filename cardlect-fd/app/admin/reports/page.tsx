@@ -442,7 +442,7 @@ export default function ReportsPage() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ category, value }) => `${category}: ${value}%`}
+                    label={({ payload, value }: any) => `${payload?.category}: ${value}%`}
                     outerRadius={80}
                     fill="#8884d8"
                     dataKey="value"

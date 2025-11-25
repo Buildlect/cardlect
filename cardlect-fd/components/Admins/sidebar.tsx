@@ -26,7 +26,7 @@ interface SidebarProps {
 const menuItems = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/admin", id: "dashboard" },
   { icon: Users, label: "Students", href: "/admin/students", id: "students" },
-  { icon: Users, label: "Staff", href: "/admin/staff", id: "staff" },
+  { icon: Users, label: "Staff", href: "/admin/staffs", id: "staff" },
   { icon: Book, label: "Classes", href: "/admin/classes", id: "classes" },
   { icon: CreditCard, label: "Cards", href: "/admin/cards", id: "cards" },
   { icon: Clock, label: "Attendance", href: "/admin/attendance", id: "attendance" },
