@@ -166,7 +166,7 @@ export default function SchoolAdminDashboard() {
 
               <div className="flex w-full md:w-auto flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <button
-                onClick={() => handleNavigate("/admin/students")}
+                onClick={() => handleNavigate("/admin/students", "students")}
                 className="w-full sm:w-auto inline-flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg bg-primary hover:scale-[1.01] transition transform text-sm"
               >
                 <UserPlus size={16} />
@@ -174,7 +174,7 @@ export default function SchoolAdminDashboard() {
               </button>
 
               <button
-                onClick={() => handleNavigate("/admin/classes")}
+                onClick={() => handleNavigate("/admin/classes", "classes")}
                 className="w-full sm:w-auto inline-flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg bg-border/20 hover:scale-[1.01] transition transform text-sm"
               >
                 <BookOpen size={16} />
@@ -182,7 +182,7 @@ export default function SchoolAdminDashboard() {
               </button>
 
               <button
-                onClick={() => handleNavigate("/admin/staff")}
+                onClick={() => handleNavigate("/admin/staff", "staff")}
                 className="w-full sm:w-auto inline-flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg bg-border/20 hover:scale-[1.01] transition transform text-sm"
               >
                 <Users size={16} />
