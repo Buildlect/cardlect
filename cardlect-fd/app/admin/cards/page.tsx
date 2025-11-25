@@ -39,7 +39,15 @@ const mockCards = [
 export default function CardsPage() {
   const [cards, setCards] = useState(mockCards)
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedCard, setSelectedCard] = useState(null)
+  const [selectedCard, setSelectedCard] = useState<null | {
+    id: number
+    cardId: string
+    holder: string
+    type: string
+    issued: string
+    status: string
+    balance: number
+  }>(null)
 
   const filteredCards = cards.filter(
     (c) =>
@@ -47,22 +55,36 @@ export default function CardsPage() {
       c.holder.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  const toggleCardStatus = (id) => {
-    setCards(cards.map((c) => (c.id === id ? { ...c, status: c.status === "Active" ? "Blocked" : "Active" } : c)))
+  const toggleCardStatus = (id: number) => {
+    setCards((prevCards) =>
+      prevCards.map((c) =>
+        c.id === id ? { ...c, status: c.status === "Active" ? "Blocked" : "Active" } : c,
+      ),
+    )
     // if modal is open and that card is selected, update it as well
-    setSelectedCard((prev) => (prev?.id === id ? { ...prev, status: prev.status === "Active" ? "Blocked" : "Active" } : prev))
+    setSelectedCard((prev) =>
+      prev && prev.id === id ? { ...prev, status: prev.status === "Active" ? "Blocked" : "Active" } : prev,
+    )
   }
 
-  const handleDeleteCard = (id) => {
-    setCards(cards.filter((c) => c.id !== id))
+  const handleDeleteCard = (id: number) => {
+    setCards((prev) => prev.filter((c) => c.id !== id))
     if (selectedCard?.id === id) setSelectedCard(null)
   }
 
-  const openCard = (card) => setSelectedCard(card)
+  const openCard = (card: {
+    id: number
+    cardId: string
+    holder: string
+    type: string
+    issued: string
+    status: string
+    balance: number
+  }) => setSelectedCard(card)
   const closeModal = () => setSelectedCard(null)
 
   useEffect(() => {
-    const onKey = (e) => {
+    const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeModal()
     }
     window.addEventListener("keydown", onKey)
