@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { LayoutShell } from "@/components/SuperAdmin/layout.shell"
 import { Sidebar } from '@/components/SuperAdmin/sidebar'
 import { Header } from '@/components/SuperAdmin/header'
 import { Plus, Eye, Pause, Play, X, Users, UserCheck, BookOpen, Settings, Activity, TrendingUp, Edit2, Trash2, Check, Server, Zap } from 'lucide-react'
@@ -98,10 +99,8 @@ export default function SchoolsPage() {
   }
 
   return (
+    <LayoutShell currentPage="schools">
     <div className="flex h-screen bg-background">
-      <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} onNavigate={(href) => router.push(href)} currentPage="schools" />
-      <div className="flex-1 flex flex-col">
-        <Header sidebarOpen={sidebarOpen} />
         <main className="flex-1 overflow-auto">
           <div className="p-8">
             <div className="flex justify-between items-center mb-8">
@@ -365,6 +364,6 @@ export default function SchoolsPage() {
           </div>
         </div>
       )}
-    </div>
+    </LayoutShell>
   )
 }

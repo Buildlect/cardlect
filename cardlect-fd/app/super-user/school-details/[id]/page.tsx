@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { LayoutShell } from "@/components/SuperAdmin/layout.shell"
 import { useRouter, useParams } from 'next/navigation'
 import { Sidebar } from '@/components/SuperAdmin/sidebar'
 import { Header } from '@/components/SuperAdmin/header'
@@ -37,10 +38,9 @@ export default function SchoolDetailsPage() {
 
   if (!school) {
     return (
+      <LayoutShell currentPage="schools">
       <div className="flex h-screen bg-background">
-        <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} onNavigate={(href) => router.push(href)} currentPage="schools" />
         <div className="flex-1 flex flex-col">
-          <Header sidebarOpen={sidebarOpen} />
           <main className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <p className="text-muted-foreground mb-4">School not found</p>
@@ -51,6 +51,7 @@ export default function SchoolDetailsPage() {
           </main>
         </div>
       </div>
+      </LayoutShell>
     )
   }
 
@@ -99,10 +100,8 @@ export default function SchoolDetailsPage() {
   const disabledFeatures = allFeatures.filter(f => !f.enabled)
 
   return (
+    <LayoutShell currentPage="schools">
     <div className="flex h-screen bg-background">
-      <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} onNavigate={(href) => router.push(href)} currentPage="schools" />
-      <div className="flex-1 flex flex-col">
-        <Header sidebarOpen={sidebarOpen} />
         <main className="flex-1 overflow-auto">
           <div className="p-8">
             {/* Header Section */}
@@ -673,6 +672,6 @@ export default function SchoolDetailsPage() {
           </div>
         </main>
       </div>
-    </div>
+    </LayoutShell>
   )
 }

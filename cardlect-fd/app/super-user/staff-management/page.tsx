@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { LayoutShell } from "@/components/SuperAdmin/layout.shell"
 import { Sidebar } from '@/components/SuperAdmin/sidebar'
 import { Header } from '@/components/SuperAdmin/header'
-import { Plus, Trash2, CheckCircle, AlertCircle } from 'lucide-react'
+import { Plus, Trash2, CheckCircle, AlertCircle, X } from 'lucide-react'
 import { useCardlect } from '@/contexts/cardlect-context'
 
 export default function StaffManagementPage() {
@@ -17,7 +18,7 @@ export default function StaffManagementPage() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [schoolStaff, setSchoolStaff] = useState(staff.filter(s => s.schoolId === schoolId))
   const [formData, setFormData] = useState({
-    name: '', role: '', email: '', phone: '', department: ''
+    name: '', role: '', email: '', phone: '', department: '', password: ''
   })
 
   useEffect(() => {
@@ -25,8 +26,8 @@ export default function StaffManagementPage() {
   }, [schoolId, staff])
 
   const handleAddStaff = () => {
-    if (!formData.name || !formData.role || !schoolId) {
-      alert('Please fill in required fields')
+    if (!formData.name || !formData.role || !schoolId || !formData.password) {
+      alert('Please fill in required fields (Name, Role, School and Password)')
       return
     }
 
@@ -42,7 +43,7 @@ export default function StaffManagementPage() {
       permissions: [],
     })
 
-    setFormData({ name: '', role: '', email: '', phone: '', department: '' })
+    setFormData({ name: '', role: '', email: '', phone: '', department: '', password: '' })
     setShowAddForm(false)
   }
 
@@ -54,10 +55,9 @@ export default function StaffManagementPage() {
   }
 
   return (
+    <LayoutShell currentPage="staff">
     <div className="flex h-screen bg-background">
-      <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} onNavigate={(href) => router.push(href)} currentPage="staff" />
       <div className="flex-1 flex flex-col">
-        <Header sidebarOpen={sidebarOpen} />
         <main className="flex-1 overflow-auto">
           <div className="p-8">
             <div className="flex justify-between items-center mb-8">
@@ -81,47 +81,71 @@ export default function StaffManagementPage() {
               </select>
             </div>
 
-            {showAddForm && schoolId && (
-              <div className="bg-card border border-border rounded-lg p-6 mb-8">
-                <h2 className="text-xl font-semibold text-foreground mb-4">Add Staff Member</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Name *</label>
-                    <input type="text" placeholder="Peter Pan" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+            {/* Modal for registration form */}
+            {showAddForm && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/40" onClick={() => setShowAddForm(false)} />
+                <div className="relative bg-card border border-border rounded-lg p-6 w-full max-w-2xl z-10">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h2 className="text-xl font-semibold text-foreground">Add Staff Member</h2>
+                      <p className="text-sm text-muted-foreground">Register a new staff account for the selected school</p>
+                    </div>
+                    <button onClick={() => setShowAddForm(false)} className="p-2 rounded hover:bg-secondary/20">
+                      <X size={18} />
+                    </button>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Role *</label>
-                    <select value={formData.role} onChange={(e) => setFormData({...formData, role: e.target.value})} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
-                      <option value="">Select Role</option>
-                      <option value="Principal">School Admin</option>
-                      <option value="Teacher">Class Teacher</option>
-                      <option value="IT Manager">Cafeterian</option>
-                      <option value="Admin">Librarian</option>
-                      <option value="Other">Security</option>
-                      <option value="Other">Clinic</option>
-                    </select>
+
+                  {!schoolId && (
+                    <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-700">
+                      Please select a school before adding a staff member.
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-2">Name *</label>
+                      <input type="text" placeholder="Peter Pan" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-2">Role *</label>
+                      <select value={formData.role} onChange={(e) => setFormData({...formData, role: e.target.value})} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">Select Role</option>
+                        <option value="Principal">School Admin</option>
+                        <option value="Teacher">Class Teacher</option>
+                        <option value="IT Manager">Cafeterian</option>
+                        <option value="Admin">Librarian</option>
+                        <option value="Other">Security</option>
+                        <option value="Other">Clinic</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-2">Email</label>
+                      <input type="email" placeholder="peter@school.edu" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-2">Phone</label>
+                      <input type="tel" placeholder="+234 (555) 000-0000" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-2">Password *</label>
+                      <input type="password" placeholder="Enter a password" value={formData.password} onChange={(e) => setFormData({...formData, password: e.target.value})} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-foreground mb-2">Department</label>
+                      <input type="text" placeholder="Administration" value={formData.department} onChange={(e) => setFormData({...formData, department: e.target.value})} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Email</label>
-                    <input type="email" placeholder="peter@school.edu" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
+
+                  <div className="flex gap-3">
+                    <button onClick={handleAddStaff} disabled={!schoolId} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all disabled:opacity-50">
+                      <Plus size={18} />
+                      Add Staff Member
+                    </button>
+                    <button onClick={() => setShowAddForm(false)} className="px-4 py-2 bg-destructive/10 text-destructive rounded-lg hover:bg-destructive/20 transition-all">
+                      Cancel
+                    </button>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-2">Phone</label>
-                    <input type="tel" placeholder="+234 (555) 000-0000" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-foreground mb-2">Department</label>
-                    <input type="text" placeholder="Administration" value={formData.department} onChange={(e) => setFormData({...formData, department: e.target.value})} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary" />
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <button onClick={handleAddStaff} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all">
-                    <Plus size={18} />
-                    Add Staff Member
-                  </button>
-                  <button onClick={() => setShowAddForm(false)} className="px-4 py-2 bg-destructive/10 text-destructive rounded-lg hover:bg-destructive/20 transition-all">
-                    Cancel
-                  </button>
                 </div>
               </div>
             )}
@@ -186,5 +210,6 @@ export default function StaffManagementPage() {
         </main>
       </div>
     </div>
+    </LayoutShell>
   )
 }

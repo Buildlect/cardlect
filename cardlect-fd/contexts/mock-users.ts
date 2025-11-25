@@ -86,7 +86,7 @@ export const getDashboardRoute = (role: UserRole): string => {
     case "super_admin":
       return "/super-user"
     case "school_admin":
-      return "/school-admin"
+      return "/admin"
     case "security_staff":
       return "/school-admin/gate-logs"
     case "teacher":

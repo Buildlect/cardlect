@@ -27,7 +27,7 @@ export default function LogoutPage() {
       const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
       return () => clearTimeout(timer);
     } else if (countdown === 0) {
-      window.location.href = "/auth/login";
+      window.location.href = "/";
     }
   }, [isLoggingOut, countdown]);
 
@@ -70,7 +70,7 @@ export default function LogoutPage() {
 
         {/* Action Card */}
         <div className="bg-card border mb-10 border-border rounded-lg p-6 shadow-lg space-y-4">
-          <Link href="/auth/login">
+          <Link href="/">
             <Button className="w-full" size="lg">
               Sign In Again
             </Button>

@@ -20,6 +20,7 @@ import {
   Pie,
   Cell
 } from 'recharts'
+import { LayoutShell } from '@/components/SuperAdmin/layout.shell'
 
 const attendanceData = [
   { month: 'Jan', present: 85, absent: 15 },
@@ -248,7 +249,7 @@ export default function AnalyticsPage() {
     },
     {
       title: 'Monthly Revenue',
-      value: `$${Number(monthlyRevenue).toLocaleString()}`,
+      value: `N${Number(monthlyRevenue).toLocaleString()}`,
       icon: <DollarSign size={20} className="text-pink-600" />,
       bg: 'bg-pink-600/10 text-pink-600'
     }
@@ -259,149 +260,142 @@ export default function AnalyticsPage() {
   })
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar
-        open={sidebarOpen}
-        onToggle={() => setSidebarOpen(!sidebarOpen)}
-        onNavigate={(href) => router.push(href)}
-        currentPage="analytics"
-      />
-
-      <div className="flex-1 flex flex-col">
-        <Header sidebarOpen={sidebarOpen} />
-
-        <main className="flex-1 overflow-auto">
-          <div className="p-8">
-            {/* Header + Filters */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">Analytics & Reports</h1>
-              </div>
-
-              <div className="flex flex-wrap gap-3 items-center">
-                <select
-                  value={school}
-                  onChange={(e) => setSchool(e.target.value as any)}
-                  className="px-3 py-2 rounded-lg border border-border bg-card"
-                >
-                  <option>All</option>
-                  <option>School A</option>
-                  <option>School B</option>
-                </select>
-                
-                <select
-                  value={period}
-                  onChange={(e) => setPeriod(e.target.value as any)}
-                  className="px-3 py-2 rounded-lg border border-border bg-card"
-                >
-                  <option value="3">Last 3 months</option>
-                  <option value="6">Last 6 months</option>
-                  <option value="12">Last 12 months</option>
-                </select>
-
-                <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <input
-                    type="checkbox"
-                    checked={showOnlyActive}
-                    onChange={(e) => setShowOnlyActive(e.target.checked)}
-                    className="accent-primary"
-                  />
-                  Only core metrics
-                </label>
-
-                <button
-                  onClick={handleExportCSV}
-                  className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl shadow-md hover:bg-primary/90 transition-all"
-                >
-                  <Download size={18} />
-                  Export Report
-                </button>
-              </div>
-            </div>
-
-            {/* Metric Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
-              {metricCards.map((c) => (
-                <div
-                  key={c.title}
-                  className="rounded-2xl p-6 border border-border bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-muted-foreground text-sm mb-2">{c.title}</p>
-                      <p className="text-3xl sm:text-4xl font-bold text-foreground">{c.value}</p>
-                    </div>
-                    <div className={`p-3 rounded-xl ${c.bg}`}>{c.icon}</div>
-                  </div>
+    <LayoutShell currentPage="analytics">
+      <div className="flex h-screen bg-background">
+        <div className="flex-1 flex flex-col">
+          <main className="flex-1 overflow-auto">
+            <div className="p-8">
+              {/* Header + Filters */}
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-foreground">Analytics & Reports</h1>
                 </div>
-              ))}
-            </div>
 
-            {/* Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-              {/* Attendance */}
+                <div className="flex flex-wrap gap-3 items-center">
+                  <select
+                    value={school}
+                    onChange={(e) => setSchool(e.target.value as any)}
+                    className="px-3 py-2 rounded-lg border border-border bg-card"
+                  >
+                    <option>All</option>
+                    <option>School A</option>
+                    <option>School B</option>
+                  </select>
+                  
+                  <select
+                    value={period}
+                    onChange={(e) => setPeriod(e.target.value as any)}
+                    className="px-3 py-2 rounded-lg border border-border bg-card"
+                  >
+                    <option value="3">Last 3 months</option>
+                    <option value="6">Last 6 months</option>
+                    <option value="12">Last 12 months</option>
+                  </select>
+
+                  <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      checked={showOnlyActive}
+                      onChange={(e) => setShowOnlyActive(e.target.checked)}
+                      className="accent-primary"
+                    />
+                    Only core metrics
+                  </label>
+
+                  <button
+                    onClick={handleExportCSV}
+                    className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl shadow-md hover:bg-primary/90 transition-all"
+                  >
+                    <Download size={18} />
+                    Export Report
+                  </button>
+                </div>
+              </div>
+
+              {/* Metric Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+                {metricCards.map((c) => (
+                  <div
+                    key={c.title}
+                    className="rounded-2xl p-6 border border-border bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">{c.title}</p>
+                        <p className="text-3xl sm:text-4xl font-bold text-foreground">{c.value}</p>
+                      </div>
+                      <div className={`p-3 rounded-xl ${c.bg}`}>{c.icon}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Charts Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                {/* Attendance */}
+                <div className="rounded-2xl p-6 border border-border bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-foreground">Attendance Trends</h3>
+                    <p className="text-sm text-muted-foreground">{school} · Last {period} months</p>
+                  </div>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={filteredAttendance}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+                      <XAxis dataKey="month" stroke="var(--color-muted-foreground)" />
+                      <YAxis stroke="var(--color-muted-foreground)" />
+                      <Tooltip contentStyle={{ backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)' }} />
+                      <Legend />
+                      <Line type="monotone" dataKey="present" stroke="#ff5c1c" strokeWidth={3} />
+                      <Line type="monotone" dataKey="absent" stroke="#999" strokeWidth={2} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Behavior Chart */}
+                <div className="rounded-2xl p-6 border border-border bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Behavior Distribution</h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={filteredBehavior}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {filteredBehavior.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{ backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Wallet */}
               <div className="rounded-2xl p-6 border border-border bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-foreground">Attendance Trends</h3>
-                  <p className="text-sm text-muted-foreground">{school} · Last {period} months</p>
+                  <h3 className="text-lg font-semibold text-foreground">Wallet Transactions Over Time</h3>
+                  <p className="text-sm text-muted-foreground">Est. revenue: ${monthlyRevenue.toLocaleString()}</p>
                 </div>
                 <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={filteredAttendance}>
+                  <BarChart data={filteredWallet}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                     <XAxis dataKey="month" stroke="var(--color-muted-foreground)" />
                     <YAxis stroke="var(--color-muted-foreground)" />
                     <Tooltip contentStyle={{ backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)' }} />
                     <Legend />
-                    <Line type="monotone" dataKey="present" stroke="#ff5c1c" strokeWidth={3} />
-                    <Line type="monotone" dataKey="absent" stroke="#999" strokeWidth={2} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Behavior Chart */}
-              <div className="rounded-2xl p-6 border border-border bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
-                <h3 className="text-lg font-semibold text-foreground mb-4">Behavior Distribution</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={filteredBehavior}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {filteredBehavior.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip contentStyle={{ backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)' }} />
-                  </PieChart>
+                    <Bar dataKey="transactions" fill="#ff5c1c" radius={[8, 8, 0, 0]} />
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
             </div>
-
-            {/* Wallet */}
-            <div className="rounded-2xl p-6 border border-border bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-foreground">Wallet Transactions Over Time</h3>
-                <p className="text-sm text-muted-foreground">Est. revenue: ${monthlyRevenue.toLocaleString()}</p>
-              </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={filteredWallet}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                  <XAxis dataKey="month" stroke="var(--color-muted-foreground)" />
-                  <YAxis stroke="var(--color-muted-foreground)" />
-                  <Tooltip contentStyle={{ backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)' }} />
-                  <Legend />
-                  <Bar dataKey="transactions" fill="#ff5c1c" radius={[8, 8, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
-    </div>
+    </LayoutShell>
   )
 }

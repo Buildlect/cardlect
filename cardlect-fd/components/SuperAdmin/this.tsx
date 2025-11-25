@@ -1,40 +1,47 @@
-"use client"
+'use client'
 
+import * as Icons from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { ComponentType, SVGProps } from 'react'
 import {
-  LayoutGrid,
-  Building2,
+  LayoutDashboard,
+  Users,
+  Book,
   CreditCard,
+  LogIn,
   BarChart3,
-  FileText,
-  Upload,
-  Key,
   Settings,
   LogOut,
-  X,
   Menu,
+  X,
+  Clock,
+  DollarSign,
 } from "lucide-react"
-import Link from "next/link"
-import type { LucideIcon } from "lucide-react"
 
 interface SidebarProps {
   open: boolean
   onToggle: () => void
   onNavigate: (href: string) => void
   currentPage: string
-  isMobile?: boolean
 }
 
-const menuItems: { icon: LucideIcon; label: string; href: string; id: string }[] = [
-  { icon: LayoutGrid, label: "Dashboard", href: "/super-user", id: "dashboard" },
-  { icon: Building2, label: "Manage Schools", href: "/super-user/schools", id: "schools" },
-  { icon: CreditCard, label: "Cards", href: "/super-user/cards", id: "cards" },
-  { icon: BarChart3, label: "Analytics", href: "/super-user/analytics", id: "analytics" },
-  { icon: FileText, label: "Logs", href: "/super-user/logs", id: "logs" },
-  { icon: Upload, label: "Bulk Import", href: "/super-user/bulk-import", id: "bulk-import" },
-  { icon: Key, label: "Manage API Keys", href: "/super-user/api", id: "api" },
-  { icon: Settings, label: "Settings", href: "/super-user/settings", id: "settings" },
-]
+type IconComp = ComponentType<SVGProps<SVGSVGElement>>
 
+ const menuItems = [
+    { icon: LayoutDashboard, label: "Dashboard", href: "/admin", id: "dashboard" },
+    { icon: Users, label: "Students", href: "/admin/students", id: "students" },
+    { icon: Users, label: "Staff", href: "/admin/staff", id: "staff" },
+    { icon: Users, label: "Parents", href: "/admin/parents", id: "parents" },
+    { icon: Book, label: "Classes", href: "/admin/classes", id: "classes" },
+    { icon: CreditCard, label: "Cards", href: "/admin/cards", id: "cards" },
+    { icon: Clock, label: "Attendance", href: "/admin/attendance", id: "attendance" },
+    { icon: LogIn, label: "Gate Logs", href: "/admin/gate-logs", id: "gate-logs" },
+    { icon: DollarSign, label: "Wallet", href: "/admin/wallet", id: "wallet" },
+    { icon: BarChart3, label: "Reports", href: "/admin/reports", id: "reports" },
+    { icon: Settings, label: "Settings", href: "/admin/settings", id: "settings" },
+  ]
+
+// Reusable tooltip (light-first, dark variants included)
 function Tooltip({ text }: { text: string }) {
   return (
     <span
@@ -50,56 +57,49 @@ function Tooltip({ text }: { text: string }) {
         dark:bg-[rgba(17,24,39,0.95)] dark:text-white dark:border-transparent
       "
     >
+      {/* Arrow */}
       <span className="absolute left-[-6px] top-1/2 -translate-y-1/2 w-2 h-2 bg-white rotate-45 border border-gray-200 shadow-sm dark:bg-[rgba(17,24,39,0.95)] dark:border-transparent" />
       {text}
     </span>
   )
 }
 
-export function Sidebar({ open, onToggle, onNavigate, currentPage, isMobile }: SidebarProps) {
+export function Sidebar({ open, onToggle, onNavigate, currentPage }: SidebarProps) {
   return (
     <aside
       className={`
-        ${open ? "w-64" : "w-20"}
-        h-screen overflow-hidden justify-between
+        ${open ? 'w-64' : 'w-20'} 
         bg-white text-gray-700 border-r border-gray-200
-        transition-all duration-300 flex flex-col mb-0
+        transition-all duration-300 flex flex-col
         dark:bg-[#151517] dark:text-gray-200 dark:border-[#111827]
-        ${isMobile ? "fixed md:relative z-50 left-0 top-0" : ""}
       `}
     >
       {/* Header */}
       <div className="p-6 flex items-center justify-between">
-        {open && <span className="text-2xl font-bold text-orange-500 tracking-tight">Cardlect</span>}
+        {open && (
+          <span className="text-2xl font-bold text-orange-500 tracking-tight">
+            Cardlect
+          </span>
+        )}
 
-        {isMobile && open && (
-          <button
-            onClick={onToggle}
-            className="group relative p-1 hover:bg-orange-50 rounded-lg dark:hover:bg-[#111827]"
-            aria-label="Close sidebar"
-          >
-            <X className="h-5 w-5 text-gray-500 group-hover:text-orange-600 dark:text-gray-200 dark:group-hover:text-orange-400" />
-            <Tooltip text="Close sidebar" />
-          </button>
-        )}
-        {!isMobile && (
-          <button
-            onClick={onToggle}
-            className="group relative p-1 hover:bg-orange-50 rounded-lg dark:hover:bg-[#111827]"
-            aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
-          >
-            {open ? (
-              <X className="h-5 w-5 text-gray-500 group-hover:text-orange-600 dark:text-gray-200 dark:group-hover:text-orange-400" />
-            ) : (
-              <Menu className="h-5 w-5 text-gray-500 group-hover:text-orange-600 dark:text-gray-200 dark:group-hover:text-orange-400" />
-            )}
-            <Tooltip text={open ? "Collapse sidebar" : "Expand sidebar"} />
-          </button>
-        )}
+        <button
+          onClick={onToggle}
+          className="group relative p-1 hover:bg-orange-50 rounded-lg dark:hover:bg-[#111827]"
+          aria-label={open ? 'Collapse sidebar' : 'Expand sidebar'}
+        >
+          {open ? (
+            <Icons.XMarkIcon className="h-5 w-5 text-gray-500 group-hover:text-orange-600 dark:text-gray-200 dark:group-hover:text-orange-400" />
+          ) : (
+            <Icons.Bars3Icon className="h-5 w-5 text-gray-500 group-hover:text-orange-600 dark:text-gray-200 dark:group-hover:text-orange-400" />
+          )}
+
+          {/* Toggle tooltip */}
+          <Tooltip text={open ? 'Collapse sidebar' : 'Expand sidebar'} />
+        </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-3 space-y-2 overflow-hidden">
+      <nav className="flex-1 px-3 py-3 space-y-2">
         {menuItems.map(({ icon: Icon, label, href, id }) => {
           return (
             <Link
@@ -137,7 +137,7 @@ export function Sidebar({ open, onToggle, onNavigate, currentPage, isMobile }: S
           href="/logout"
           onClick={(e) => {
             e.preventDefault()
-            onNavigate("/auth/logout")
+            onNavigate('/auth/logout')
           }}
           aria-label="Logout"
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-orange-50 transition-all dark:text-gray-200 dark:hover:bg-[rgba(234,88,12,0.06)]"
@@ -146,6 +146,11 @@ export function Sidebar({ open, onToggle, onNavigate, currentPage, isMobile }: S
           {open && <span className="text-sm font-medium">Logout</span>}
         </Link>
       </div>
+
     </aside>
   )
 }
+
+
+
+ 

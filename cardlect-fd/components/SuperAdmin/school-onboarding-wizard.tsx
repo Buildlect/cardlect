@@ -120,7 +120,7 @@ export function SchoolOnboardingWizard({ onComplete, onCancel }: WizardProps) {
         <div
             role="dialog"
             aria-modal="true"
-            className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8"
+            className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6"
         >
             {/* Backdrop */}
             <div
@@ -129,18 +129,26 @@ export function SchoolOnboardingWizard({ onComplete, onCancel }: WizardProps) {
             />
 
             {/* Modal */}
-            <div className="relative w-full max-w-6xl bg-background border border-border rounded-xl shadow-2xl overflow-hidden z-10 grid grid-cols-12">
+            <div className="relative w-full max-w-lg md:max-w-6xl bg-background border border-border rounded-xl shadow-2xl overflow-hidden z-10 flex flex-col md:grid md:grid-cols-12 max-h-[90vh]">
                 {/* Left sidebar: Steps */}
-                <aside className="col-span-4 lg:col-span-3 bg-secondary/5 p-6 flex flex-col gap-6">
-                    <div className="flex items-start justify-between">
+                <aside className="col-span-12 md:col-span-4 lg:col-span-3 bg-secondary/5 p-4 md:p-6 flex md:flex-col flex-row md:gap-6 gap-2 items-center md:items-start">
+                    <div className="flex items-center justify-between w-full md:block">
                         <div>
-                            <h2 className="text-lg font-bold text-foreground">School Onboarding</h2>
-                            <p className="text-sm text-muted-foreground mt-1">Guided setup to get you started</p>
+                            <h2 className="text-base md:text-lg font-bold text-foreground">School Onboarding</h2>
+                            <p className="text-xs md:text-sm text-muted-foreground mt-1">Guided setup to get you started</p>
                         </div>
-                        
+
+                        {/* close button for small screens */}
+                        <button
+                            onClick={onCancel}
+                            className="md:hidden p-2 rounded-md text-muted-foreground hover:bg-secondary/50 ml-2"
+                            aria-label="Close onboarding"
+                        >
+                            <X size={18} />
+                        </button>
                     </div>
 
-                    <nav className="flex-1 flex flex-col gap-3 pt-2 overflow-auto">
+                    <nav className="flex-1 flex md:flex-col flex-row gap-3 pt-2 overflow-auto w-full">
                         {steps.map((s, idx) => {
                             const isActive = idx === currentStep
                             const done = idx < currentStep
@@ -151,30 +159,30 @@ export function SchoolOnboardingWizard({ onComplete, onCancel }: WizardProps) {
                                         // allow jumping to completed steps or current step
                                         if (done || isActive) setCurrentStep(idx)
                                     }}
-                                    className={`w-full text-left flex items-center gap-3 p-3 rounded-lg transition ${
+                                    className={`shrink-0 min-w-[150px] md:w-full text-left flex items-center gap-3 p-3 rounded-lg transition ${
                                         isActive ? 'bg-primary/10 border border-primary' : 'hover:bg-secondary/50'
                                     } ${done ? 'opacity-90' : ''}`}
                                 >
                                     <div className={`w-8 h-8 flex items-center justify-center rounded-full ${done ? 'bg-primary text-white' : isActive ? 'bg-primary/80 text-white' : 'bg-secondary/50 text-muted-foreground'}`}>
                                         {done ? <Check size={16} /> : <span className="text-sm font-medium">{idx + 1}</span>}
                                     </div>
-                                    <div>
-                                        <div className={`text-sm font-medium ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>{s.title}</div>
-                                        <div className="text-xs text-muted-foreground">{s.description}</div>
+                                    <div className="truncate">
+                                        <div className={`text-sm font-medium truncate ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>{s.title}</div>
+                                        <div className="text-xs text-muted-foreground truncate">{s.description}</div>
                                     </div>
                                 </button>
                             )
                         })}
                     </nav>
 
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-muted-foreground w-full md:mt-auto md:block hidden">
                         <div>Step {currentStep + 1} of {steps.length}</div>
                     </div>
                 </aside>
 
                 {/* Right content */}
-                <div className="col-span-8 mx-20 lg:col-span-9 p-8 min-h-[420px] flex flex-col m-8">
-                    <div className="flex-1 overflow-auto">
+                <div className="col-span-12 md:col-span-8 lg:col-span-9 p-4 md:p-8 overflow-auto flex flex-col min-h-[420px]">
+                    <div className="flex-1">
                         {currentStep === 0 && (
                             <div className="space-y-6">
                                 <div>
@@ -368,28 +376,30 @@ export function SchoolOnboardingWizard({ onComplete, onCancel }: WizardProps) {
                     </div>
 
                     {/* Footer */}
-                    <div className="mt-6 pt-6 border-t border-border flex items-center justify-between gap-4">
-                        <button
-                            onClick={onCancel}
-                            className="px-4 py-2 text-foreground hover:bg-secondary/50 rounded-lg transition-all"
-                        >
-                            Cancel
-                        </button>
+                    <div className="mt-4 pt-4 border-t border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="w-full flex justify-between sm:justify-start gap-3">
+                            <button
+                                onClick={onCancel}
+                                className="px-4 py-2 text-foreground hover:bg-secondary/50 rounded-lg transition-all w-full sm:w-auto"
+                            >
+                                Cancel
+                            </button>
 
-                        <div className="flex gap-3">
                             <button
                                 onClick={handlePrevious}
                                 disabled={currentStep === 0}
-                                className="flex items-center gap-2 px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center justify-center gap-2 px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                             >
                                 <ChevronLeft size={18} />
                                 Previous
                             </button>
+                        </div>
 
+                        <div className="w-full sm:w-auto flex gap-3">
                             {currentStep < steps.length - 1 ? (
                                 <button
                                     onClick={handleNext}
-                                    className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all"
+                                    className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all w-full"
                                 >
                                     Next
                                     <ChevronRight size={18} />
@@ -397,7 +407,7 @@ export function SchoolOnboardingWizard({ onComplete, onCancel }: WizardProps) {
                             ) : (
                                 <button
                                     onClick={handleComplete}
-                                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all"
+                                    className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all w-full"
                                 >
                                     <Check size={18} />
                                     Create School

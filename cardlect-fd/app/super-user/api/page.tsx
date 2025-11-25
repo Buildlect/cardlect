@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/SuperAdmin/sidebar'
 import { Header } from '@/components/SuperAdmin/header'
 import { Copy, Eye, EyeOff, Plus, Trash2, AlertCircle, CheckCircle, Sun, Moon } from 'lucide-react'
+import { LayoutShell } from '@/components/SuperAdmin/layout.shell'
 
 interface ApiKey {
   id: string
@@ -123,10 +124,9 @@ export default function ApiPage() {
   const webhooks = useMemo(() => mockWebhooks, [])
 
   return (
+    <LayoutShell currentPage='api'>
     <div className="flex h-screen bg-background">
-      <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} onNavigate={(href) => router.push(href)} currentPage="api" />
       <div className="flex-1 flex flex-col">
-        <Header sidebarOpen={sidebarOpen} />
         <main className="flex-1 overflow-auto">
           <div className="p-8">
             <div className="mb-8">
@@ -282,5 +282,6 @@ export default function ApiPage() {
         </main>
       </div>
     </div>
+    </LayoutShell>
   )
 }
