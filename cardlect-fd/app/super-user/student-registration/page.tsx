@@ -114,7 +114,7 @@ export default function StudentRegistrationPage() {
       cardStatus: 'pending',
       imageVerified: false,
       enrollmentDate: new Date().toISOString().split('T')[0],
-      // include imageData if your context supports it; otherwise remove
+      // include imageData
       imageData: formData.imageData,
     } as any)
 
