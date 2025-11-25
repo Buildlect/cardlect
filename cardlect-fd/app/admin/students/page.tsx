@@ -80,7 +80,7 @@ export default function StudentsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold">Student Management</h2>
-        <Button onClick={() => setShowForm(!showForm)} className="bg-accent hover:bg-accent/90 gap-2">
+        <Button onClick={() => setShowForm(!showForm)} className="bg-primary hover:bg-primary/90 gap-2">
           <Plus size={18} /> Add Student
         </Button>
       </div>
@@ -119,7 +119,7 @@ export default function StudentsPage() {
               />
             </div>
             <div className="flex gap-3 mt-4">
-              <Button onClick={handleAddStudent} className="bg-accent hover:bg-accent/90">
+              <Button onClick={handleAddStudent} className="bg-primary hover:bg-primary/90">
                 Save Student
               </Button>
               <Button onClick={() => setShowForm(false)} variant="outline">
