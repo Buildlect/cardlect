@@ -9,10 +9,11 @@ import { Plus, Search, Edit, Trash2 } from "lucide-react"
 
 // selectable roles (could be moved to a separate file and imported)
 const roles = [
-  "Mathematics Teacher",
-  "English Teacher",
-  "Science Teacher",
-  "Principal",
+  "Class Teacher",
+  "Security Personnel",
+  "Clinic Staff",
+  "Cafeteria Staff",
+  "clinical Staff",
 ]
 
 const mockStaff = [
@@ -83,7 +84,7 @@ export default function StaffPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold">Staff Management</h2>
-          <Button onClick={() => setShowForm(true)} className="bg-accent hover:bg-accent/90 gap-2">
+          <Button onClick={() => setShowForm(true)} className="bg-primary hover:bg-primary/90 gap-2">
             <Plus size={18} /> Add Staff
           </Button>
         </div>
@@ -144,13 +145,13 @@ export default function StaffPage() {
                     />
                     <Input
                       type="password"
-                      placeholder="Password"
+                      placeholder="Set password"
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     />
                   </div>
                   <div className="flex gap-3 mt-4">
-                    <Button onClick={handleAddStaff} className="bg-primary hover:bg-accent/90">
+                    <Button onClick={handleAddStaff} className="bg-primary hover:bg-primary/90">
                       Save Staff
                     </Button>
                     <Button onClick={() => setShowForm(false)} variant="outline">

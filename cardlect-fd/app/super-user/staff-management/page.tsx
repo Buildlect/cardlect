@@ -38,7 +38,6 @@ export default function StaffManagementPage() {
       email: formData.email,
       phone: formData.phone,
       department: formData.department || 'General',
-      password: formData.password,
       joinDate: new Date().toISOString().split('T')[0],
       status: 'active',
       permissions: [],
