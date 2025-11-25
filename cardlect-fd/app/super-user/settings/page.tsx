@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { LayoutShell } from "@/components/SuperAdmin/layout.shell"
 import { useTheme } from '@/components/theme-provider'
-import { Sidebar } from '@/components/SuperAdmin/sidebar'
-import { Header } from '@/components/SuperAdmin/header'
+import Link from 'next/link'
 import { Lock, Bell, Globe, Shield, LogOut, Save, Sun, Moon } from 'lucide-react'
 
 export default function SettingsPage() {
@@ -20,10 +20,8 @@ export default function SettingsPage() {
   const [dateFormat, setDateFormat] = useState('DD/MM/YYYY')
 
   return (
+    <LayoutShell currentPage="settings">
     <div className="flex h-screen bg-background">
-      <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} onNavigate={(href) => router.push(href)} currentPage="settings" />
-      <div className="flex-1 flex flex-col">
-        <Header sidebarOpen={sidebarOpen} />
         <main className="flex-1 overflow-auto">
           <div className="p-8 max-w-4xl">
             <div className="mb-8">
@@ -243,9 +241,8 @@ export default function SettingsPage() {
 
               <div className="space-y-3">
                 {[
-                  { device: 'Chrome on MacOS', location: 'New York, NY', time: '5 minutes ago' },
-                  { device: 'Safari on iPhone', location: 'New York, NY', time: '2 hours ago' },
-                  { device: 'Firefox on Windows', location: 'New York, NY', time: '1 day ago' },
+                  { device: 'Chrome on Windows', location: 'Lagos, NG', time: '5 minutes ago' },
+                  
                 ].map((login, idx) => (
                   <div key={idx} className="flex items-center justify-between p-3 border border-border rounded-lg">
                     <div>
@@ -263,14 +260,16 @@ export default function SettingsPage() {
                 <Save size={18} />
                 Save Changes
               </button>
-              <button className="flex items-center gap-2 px-6 py-3 bg-destructive/10 text-destructive rounded-lg hover:bg-destructive/20 transition-all font-medium">
+              <Link href="/auth/logout">
+              <button className="flex items-center gap-2 px-6 py-3 bg-destructive/10 text-destructive rounded-lg hover:bg-destructive transition-all font-medium">
                 <LogOut size={18} />
                 Logout
               </button>
+              </Link>
             </div>
           </div>
         </main>
       </div>
-    </div>
+      </LayoutShell>
   )
 }

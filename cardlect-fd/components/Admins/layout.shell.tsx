@@ -1,18 +1,20 @@
 "use client"
 
 import type React from "react"
-
-import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
-import { Header } from "@/components/SuperAdmin/header"
-import { Sidebar } from "@/components/SuperAdmin/sidebar"
+import { useRouter } from "next/navigation"
+import { Sidebar } from "@/components/Admins/sidebar"
+import { Header } from "@/components/Admins/header"
 
 interface LayoutShellProps {
   children: React.ReactNode
   currentPage?: string
 }
 
-export function LayoutShell({ children, currentPage = "Dashboard" }: LayoutShellProps) {
+export default function SchoolAdminLayout({
+  children,
+  currentPage = "dashboard",
+}: LayoutShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -82,7 +84,13 @@ export function LayoutShell({ children, currentPage = "Dashboard" }: LayoutShell
         <Header sidebarOpen={sidebarOpen} onMenuClick={handleMobileMenuToggle} />
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto">{children}</main>
+        <main className="flex-1 overflow-auto">
+          {/* Center content and add responsive horizontal padding + vertical padding */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* vertical spacing between direct children */}
+            <div className="">{children}</div>
+          </div>
+        </main>
       </div>
     </div>
   )

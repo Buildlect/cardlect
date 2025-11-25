@@ -7,7 +7,24 @@ import {
   ArrowUp,
   ArrowDown,
 } from 'lucide-react'
-import { LineChart, Line, ResponsiveContainer } from 'recharts'
+import {
+  LineChart,
+  Line,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
+
+function ChartTooltip({ active, payload }: any) {
+  if (!active || !payload || !payload.length) return null
+  const value = payload[0].value
+  return (
+    <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-lg whitespace-nowrap">
+      {typeof value === 'number' ? value.toLocaleString() : String(value)}
+    </div>
+  )
+}
 
 export function MetricsGrid() {
   const metrics = [
@@ -35,7 +52,6 @@ export function MetricsGrid() {
       change: '+124',
       icon: BookOpen,
       color: '#d96126',
-
       data: [6000, 6200, 6400, 6600, 7000, 7800, 8462],
       tooltip: 'Total number of students enrolled across all schools.',
     },
@@ -78,7 +94,7 @@ export function MetricsGrid() {
                 <p className="text-muted-foreground text-xs font-medium mb-1">
                   {metric.label}
                 </p>
-                <p className="text-3xl font-extrabold text-foreground tracking-tight">
+                <p className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
                   {metric.value.toLocaleString()}
                 </p>
                 <div className="flex items-center gap-2 mt-2">
@@ -110,10 +126,22 @@ export function MetricsGrid() {
               </div>
             </div>
 
-            {/* Recharts sparkline */}
+            {/* Recharts sparkline with tooltip */}
             <div className="mt-5 relative z-10 h-10">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
+                <LineChart data={chartData} aria-hidden>
+                  <defs>
+                    <linearGradient id={`grad-${i}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={metric.color} stopOpacity={0.2} />
+                      <stop offset="100%" stopColor={metric.color} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+
+                  <XAxis dataKey="x" hide />
+                  <YAxis hide domain={['dataMin', 'dataMax']} />
+
+                  <Tooltip content={<ChartTooltip />} cursor={{ stroke: metric.color, strokeWidth: 2, opacity: 0.1 }} />
+
                   <Line
                     type="monotone"
                     dataKey="y"
@@ -121,6 +149,8 @@ export function MetricsGrid() {
                     strokeWidth={2}
                     dot={false}
                     isAnimationActive={true}
+                    activeDot={{ r: 3, stroke: metric.color, strokeWidth: 1 }}
+                    fill={`url(#grad-${i})`}
                   />
                 </LineChart>
               </ResponsiveContainer>

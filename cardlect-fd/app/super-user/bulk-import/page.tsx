@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { LayoutShell } from "@/components/SuperAdmin/layout.shell"
 import { Sidebar } from '@/components/SuperAdmin/sidebar'
 import { Header } from '@/components/SuperAdmin/header'
 import { Upload, Download, Plus, CheckCircle, AlertCircle } from 'lucide-react'
@@ -150,10 +151,9 @@ Mr. James Davis,james@email.com,9876543232,Father,STU-003`
   }
 
   return (
+    <LayoutShell currentPage="bulk-import">
     <div className="flex h-screen bg-background">
-      <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} onNavigate={(href) => router.push(href)} currentPage="bulk-import" />
       <div className="flex-1 flex flex-col">
-        <Header sidebarOpen={sidebarOpen} />
         <main className="flex-1 overflow-auto">
           <div className="p-8">
             <div className="mb-8">
@@ -334,5 +334,6 @@ Mr. James Davis,james@email.com,9876543232,Father,STU-003`
         </main>
       </div>
     </div>
+    </LayoutShell>
   )
 }
