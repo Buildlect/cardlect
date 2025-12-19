@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { LayoutShell } from "@/components/Security/layout.shell"
+import { LayoutShell } from "@/app/security/components/layout.shell"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
