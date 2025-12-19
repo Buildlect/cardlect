@@ -1,0 +1,145 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+:root {
+  --font-sans: 'Inter', 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Source Code Pro', 'Source Code Pro Fallback';
+  --background: #fffbf5;
+  --foreground: #262626;
+  --card: #fcfcfc;
+  --card-foreground: #262626;
+  --primary: #d96126;
+  --primary-foreground: #fafafa;
+  --border: #e5e5f0;
+  --input: #ebebff;
+  --ring: #d96126;
+  --radius: 0.5rem;
+  --sidebar: #000000;
+  --sidebar-foreground: #262626;
+  --gap: 1.25rem;
+  --gutter: 2rem;
+  --content-max-width: 1200px;
+  --elevation-1: 0 6px 18px rgba(12, 15, 20, 0.06);
+  --elevation-2: 0 12px 30px rgba(12, 15, 20, 0.08);
+}
+
+.dark {
+  --background: #1a1a1a;
+  --foreground: #f2f2f2;
+  --card: #212121;
+  --card-foreground: #f2f2f2;
+  --primary: #d96126;
+  --primary-foreground: #fafafa;
+  --border: #333333;
+  --input: #2e2e2e;
+  --ring: #d96126;
+  --sidebar: #151517;
+  --sidebar-foreground: #f4f4f6;
+}
+
+@theme inline {
+  --font-sans: 'Inter', 'Montserrat', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'Source Code Pro', 'Source Code Pro Fallback';
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    @apply border-border outline-ring/50;
+  }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    font-family: var(--font-sans);
+    background: var(--color-background);
+    color: var(--color-foreground);
+    overflow-x: hidden;
+    overflow-y: hidden;
+  }
+
+  .background-bg {
+    background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+      linear-gradient(180deg, rgba(255, 140, 0, 0.12), rgba(255, 140, 0, 0.06)),
+      url("/id-scan-bg.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: rgba(0, 0, 0, 0.6);
+    background-blend-mode: multiply;
+  }
+}
+
+/* Flex Layout for Full Height */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  flex-grow: 1;
+}
+
+/* Main Content */
+.main-content {
+  flex-grow: 1;
+}
+
+/* Sidebar */
+.sidebar {
+  height: 100%;
+  transition: transform 0.3s ease-in-out;
+  margin: 0;
+}
+
+/* Mobile Sidebar */
+@media (max-width: 768px) {
+
+  .sidebar.sidebar--open {
+    display: block; /* Show sidebar when open */
+    transform: translateX(0);
+  }
+
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .header {
+    padding-left: var(--gutter);
+    padding-right: var(--gutter);
+  }
+
+  .grid-cards {
+    grid-template-columns: 1fr;
+  }
+
+  html {
+    font-size: 14px;
+  }
+}
+
+/* Desktop Sidebar */
+@media (min-width: 768px) {
+  .sidebar {
+    display: block; /* Always show sidebar on desktop */
+  }
+
+  .grid-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
