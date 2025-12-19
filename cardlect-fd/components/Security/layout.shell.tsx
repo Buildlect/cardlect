@@ -4,8 +4,8 @@ import type React from "react"
 
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
-import { Header } from "./header"
-import { Sidebar } from "./sidebar"
+import { Header } from "@/components/Security/header"
+import { Sidebar } from "@/components/Security/sidebar"
 
 interface LayoutShellProps {
     children: React.ReactNode
