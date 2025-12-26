@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search, Edit, Trash2 } from "lucide-react"
 
-// selectable roles (could be moved to a separate file and imported)
+// selectable roles (will be from api)
 const roles = [
   "Class Teacher",
   "Security Personnel",
