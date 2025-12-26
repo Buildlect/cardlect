@@ -1,5 +1,6 @@
 'use client'
 
+import { useProtectedRoute } from '@/contexts/auth-context'
 import { useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Button } from "@/components/ui/button"
@@ -35,6 +36,7 @@ import {
   Pie,
   Cell
 } from 'recharts'
+import { CARDLECT_COLORS, SEMANTIC_COLORS } from '@/lib/cardlect-colors'
 
 interface MetricCard {
   title: string
@@ -72,7 +74,7 @@ export default function SecurityDashboard() {
       value: 1247,
       change: 'Enrolled this year',
       icon: <Users className="w-5 h-5" />,
-      borderColor: 'border-l-blue-500',
+      borderColor: `border-l-[${CARDLECT_COLORS.info.main}]`,
       href: '/admin/students'
     },
     {
@@ -80,14 +82,14 @@ export default function SecurityDashboard() {
       value: 8,
       change: 'All operational',
       icon: <DoorOpen className="w-5 h-5" />,
-      borderColor: 'border-l-green-500'
+      borderColor: `border-l-[${SEMANTIC_COLORS.status.online}]`
     },
     {
       title: 'TODAY\'S ALERTS',
       value: 3,
       change: '2 resolved',
       icon: <Bell className="w-5 h-5" />,
-      borderColor: 'border-l-yellow-500',
+      borderColor: `border-l-[${CARDLECT_COLORS.warning.main}]`,
       href: '/security/alerts'
     },
     {
@@ -95,7 +97,7 @@ export default function SecurityDashboard() {
       value: 234,
       change: 'Peak: 312',
       icon: <UserCheck className="w-5 h-5" />,
-      borderColor: 'border-l-purple-500'
+      borderColor: `border-l-[${CARDLECT_COLORS.accent.main}]`
     }
   ]
 
@@ -234,69 +236,81 @@ export default function SecurityDashboard() {
           </div>
 
           {/* Metrics Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {metrics.map((metric, idx) => (
               <div
                 key={idx}
-                className={`bg-card border-l-4 ${metric.borderColor} border border-border rounded-lg p-6 hover:bg-secondary/40 transition-colors ${metric.href ? 'cursor-pointer' : ''}`}
+                className={`bg-card border border-border rounded-3xl p-6 hover:shadow-2xl hover:scale-[1.02] transition-all ${metric.href ? 'cursor-pointer' : ''}`}
                 onClick={() => metric.href && (window.location.href = metric.href)}
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="text-muted-foreground text-xs font-medium tracking-wide">
-                    {metric.title}
+                <div className="flex items-start justify-between relative z-10">
+                  <div>
+                    <p className="text-muted-foreground text-xs font-medium mb-1">
+                      {metric.title}
+                    </p>
+                    <p className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                      {metric.value.toLocaleString()}
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-green-400">
+                        {metric.icon}
+                        <span className="opacity-90">{metric.change}</span>
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-muted-foreground">{metric.icon}</div>
                 </div>
-                <div className="text-4xl font-bold mb-2">{metric.value}</div>
-                <div className="text-xs text-muted-foreground">{metric.change}</div>
               </div>
             ))}
           </div>
 
           {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Access Patterns Chart */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <TrendingUp className="w-5 h-5 text-primary" />
-                <h2 className="text-xl font-semibold text-foreground">Access Patterns Today</h2>
-              </div>
-              <div className="h-80">
+            <div className="bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all">
+              <h3 className="text-lg font-semibold mb-5 text-foreground tracking-tight">
+                Access Patterns Today
+              </h3>
+              <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={accessPatternsData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
                     <XAxis
                       dataKey="time"
-                      stroke="var(--color-muted-foreground)"
-                      fontSize={12}
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 12 }}
                     />
-                    <YAxis
-                      stroke="var(--color-muted-foreground)"
-                      fontSize={12}
-                    />
+                    <YAxis hide />
                     <Tooltip
+                      cursor={{ stroke: '#06B6D4', strokeWidth: 1, opacity: 0.2 }}
                       contentStyle={{
-                        backgroundColor: 'var(--color-card)',
-                        border: '1px solid var(--color-border)',
-                        borderRadius: '8px',
-                        color: 'var(--color-foreground)'
+                        background: 'var(--card)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '10px',
+                        color: 'var(--foreground)'
                       }}
+                      formatter={(value) => [`${value}`, '']}
                     />
+                    <defs>
+                      <linearGradient id="entriesGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#06B6D4" stopOpacity={0.3} />
+                        <stop offset="100%" stopColor="#06B6D4" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
                     <Line
                       type="monotone"
                       dataKey="entries"
-                      stroke="var(--color-primary)"
+                      stroke="#06B6D4"
                       strokeWidth={2}
+                      dot={false}
                       name="Entries"
-                      dot={{ fill: 'var(--color-primary)', strokeWidth: 2, r: 4 }}
                     />
                     <Line
                       type="monotone"
                       dataKey="exits"
                       stroke="#10B981"
                       strokeWidth={2}
+                      dot={false}
                       name="Exits"
-                      dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -304,50 +318,31 @@ export default function SecurityDashboard() {
             </div>
 
             {/* Alerts Over Time Chart */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <div className="flex items-center gap-3 mb-6">
-                <BarChart3 className="w-5 h-5 text-primary" />
-                <h2 className="text-xl font-semibold text-foreground">Alerts This Week</h2>
-              </div>
-              <div className="h-80">
+            <div className="bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all">
+              <h3 className="text-lg font-semibold mb-5 text-foreground tracking-tight">
+                Alerts This Week
+              </h3>
+              <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={alertsData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                     <XAxis
                       dataKey="time"
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 12 }}
                     />
-                    <YAxis
-                      stroke="hsl(var(--muted-foreground))"
-                      fontSize={12}
-                    />
+                    <YAxis hide />
                     <Tooltip
                       contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px',
-                        color: 'hsl(var(--foreground))'
+                        background: 'var(--card)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '10px',
+                        color: 'var(--foreground)'
                       }}
                     />
-                    <Bar
-                      dataKey="critical"
-                      stackId="a"
-                      fill="#EF4444"
-                      name="Critical"
-                    />
-                    <Bar
-                      dataKey="warning"
-                      stackId="a"
-                      fill="#F59E0B"
-                      name="Warning"
-                    />
-                    <Bar
-                      dataKey="info"
-                      stackId="a"
-                      fill="#3B82F6"
-                      name="Info"
-                    />
+                    <Bar dataKey="critical" stackId="a" fill="#EF4444" />
+                    <Bar dataKey="warning" stackId="a" fill="#F59E0B" />
+                    <Bar dataKey="info" stackId="a" fill="#3B82F6" />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

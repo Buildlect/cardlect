@@ -1,5 +1,6 @@
 'use client'
 
+import { useProtectedRoute } from '@/contexts/auth-context'
 import { useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Users, Home, BookOpen, Activity, ArrowUp, ArrowDown, AlertTriangle, Cpu, RefreshCw } from 'lucide-react'
@@ -13,8 +14,10 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { CARDLECT_COLORS, SEMANTIC_COLORS } from '@/lib/cardlect-colors'
 
 export default function Dashboard() {
+  
   // MetricsGrid component
   function ChartTooltip({ active, payload }: any) {
     if (!active || !payload || !payload.length) return null
@@ -32,7 +35,7 @@ export default function Dashboard() {
       value: 24,
       change: '+2',
       icon: Home,
-      color: '#d96126',
+      color: CARDLECT_COLORS.primary.main,
       data: [2, 3, 4, 5, 6, 7, 8],
       tooltip: 'The total number of schools registered in the system.',
     },
@@ -41,7 +44,7 @@ export default function Dashboard() {
       value: 22,
       change: '+0',
       icon: Users,
-      color: '#d96126',
+      color: SEMANTIC_COLORS.status.online,
       data: [8, 7, 7, 8, 8, 9, 9],
       tooltip: 'Number of schools that have been active this week.',
     },
@@ -50,7 +53,7 @@ export default function Dashboard() {
       value: 8462,
       change: '+124',
       icon: BookOpen,
-      color: '#d96126',
+      color: CARDLECT_COLORS.info.main,
       data: [6000, 6200, 6400, 6600, 7000, 7800, 8462],
       tooltip: 'Total number of students enrolled across all schools.',
     },
@@ -59,7 +62,7 @@ export default function Dashboard() {
       value: 12500,
       change: '+15%',
       icon: Activity,
-      color: '#d96126',
+      color: CARDLECT_COLORS.accent.main,
       data: [6, 7, 9, 11, 12, 12.3, 12.5],
       tooltip: 'Total number of NFC card scans recorded today.',
     },

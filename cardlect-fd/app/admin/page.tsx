@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Users, BookOpen, Clock, Wallet, CreditCard, FileText, UserPlus } from "lucide-react"
 import {
@@ -14,6 +15,7 @@ import {
   CartesianGrid,
   Legend,
 } from "recharts"
+import { CARDLECT_COLORS, SEMANTIC_COLORS } from "@/lib/cardlect-colors"
 
 type Metric = {
   icon: any
@@ -82,8 +84,8 @@ export default function AdminDashboard() {
       label: "Total Students",
       value: "1,248",
       change: "+12%",
-      colorClass: "from-blue-400 to-blue-600",
-      colorHex: "#3b82f6",
+      colorClass: "from-cyan-400 to-cyan-600",
+      colorHex: CARDLECT_COLORS.secondary.main,
       data: sampleSeries,
     },
     {
@@ -91,8 +93,8 @@ export default function AdminDashboard() {
       label: "Total Staff",
       value: "45",
       change: "+2%",
-      colorClass: "from-green-400 to-green-600",
-      colorHex: "#22c55e",
+      colorClass: "from-emerald-400 to-emerald-600",
+      colorHex: CARDLECT_COLORS.success.main,
       data: sampleSeries.map((d) => ({ ...d, value: Math.round(d.value / 4) })),
     },
     {
@@ -100,8 +102,8 @@ export default function AdminDashboard() {
       label: "Active Classes",
       value: "24",
       change: "0%",
-      colorClass: "from-violet-400 to-violet-600",
-      colorHex: "#a855f7",
+      colorClass: "from-orange-400 to-orange-600",
+      colorHex: CARDLECT_COLORS.primary.main,
       data: sampleSeries.map((d, i) => ({ ...d, value: 20 + (i % 3) * 2 })),
     },
     {
@@ -109,8 +111,8 @@ export default function AdminDashboard() {
       label: "Active Cards",
       value: "1,180",
       change: "+8%",
-      colorClass: "from-orange-400 to-orange-600",
-      colorHex: "#f97316",
+      colorClass: "from-amber-400 to-amber-600",
+      colorHex: CARDLECT_COLORS.warning.main,
       data: sampleSeries.map((d) => ({ ...d, value: d.value + 20 })),
     },
     {
@@ -118,8 +120,8 @@ export default function AdminDashboard() {
       label: "Attendance Today",
       value: "92%",
       change: "+4%",
-      colorClass: "from-amber-400 to-amber-600",
-      colorHex: "#f59e0b",
+      colorClass: "from-emerald-400 to-emerald-600",
+      colorHex: SEMANTIC_COLORS.attendance.present,
       data: sampleSeries.map((d) => ({ ...d, value: Math.round((d.value / 100) * 92) })),
     },
     {
@@ -127,8 +129,8 @@ export default function AdminDashboard() {
       label: "Wallet Balance",
       value: "₦45,230",
       change: "+15%",
-      colorClass: "from-emerald-400 to-emerald-600",
-      colorHex: "#10b981",
+      colorClass: "from-blue-400 to-blue-600",
+      colorHex: CARDLECT_COLORS.info.main,
       data: sampleSeries.map((d, i) => ({ ...d, value: 300 + i * 20 })),
     },
   ]

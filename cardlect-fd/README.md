@@ -1,5 +1,14 @@
-# cardlect
-Cardlect is a single smart card for ID, pickup, and payments in schools — a secure solution that manages student identities, authorizes parent pickups, and provides a built-in wallet for cashless transactions, giving schools safer and smarter control.
+# Cardlect
+
+Cardlect is an all in one NFC + QR smart card platform built for modern school environments. It brings student identification, parent pickup authorization, and cashless payments together into a single secure system. Schools maintain full control over student identities, can digitally authorize and verify pickups in real time, and run a centralized wallet across cafeterias, school stores, approved partner vendors, and other internal services.
+
+The platform delivers powerful parent wallet capabilities, including detailed transaction history, configurable spending limits, parent to parent transfers, and inter school wallet transfers where enabled. All financial activity flows through the school’s administration, ensuring transparency, traceability, and accountability at every level.
+
+Cardlect is fully role based and permission driven, supporting super admins, school admins, staff, students, school approved partner stores, and parents, each with clearly defined access boundaries. Visitors are managed through temporary card issuance for identification and activity logging, without login access.
+
+Cardlect is built on a feature first architecture. Every capability is modular, and schools access only the features enabled for them. The platform already includes a wide range of integrated systems such as CBT and examination modules, library management, access control infrastructure, gate pass and movement control, school management tools, and support for external services. Additional functionality can be enabled without changing the core system.
+
+With a secure and extensible API and a multi school architecture, Cardlect is scalable, secure by design, and engineered to give schools centralized, real time control over identities, access, pickups, and financial operations across their entire ecosystem.
 
 
 

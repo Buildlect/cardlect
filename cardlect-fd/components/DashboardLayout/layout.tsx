@@ -5,11 +5,12 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Sidebar, defaultMenuItems, type MenuItem } from "@/components/DashboardLayout/sidebar"
 import { Header } from "@/components/DashboardLayout/header"
+import { useProtectedRoute } from "@/contexts/auth-context"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
   currentPage?: string
-  role?: "admin" | "security" | "super-user"
+  role?: "admin" | "security" | "super-user" | "parents" | "students" | "finance" | "store" | "teacher" | "clinic" | "approved-stores" | "exam-officer" | "librarian" | "visitor"
   menuItems?: MenuItem[]
 }
 
@@ -19,18 +20,15 @@ export default function DashboardLayout({
   role = "admin",
   menuItems,
 }: DashboardLayoutProps) {
+  const { isLoading, isAuthorized } = useProtectedRoute(role as any)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
 
-  // Use provided menuItems or default based on role
-  const finalMenuItems = menuItems || (defaultMenuItems[role] ?? defaultMenuItems.admin)
-
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
-      // Close mobile menu on resize to desktop
       if (window.innerWidth >= 768) {
         setMobileMenuOpen(false)
       }
@@ -41,11 +39,30 @@ export default function DashboardLayout({
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
+  if (isLoading) {
+    return (
+      <div className="w-screen h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-full border-4 border-border border-t-primary animate-spin" />
+          <p className="text-muted-foreground text-sm">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAuthorized) {
+    return null
+  }
+
+  const finalMenuItems =
+    menuItems ||
+    defaultMenuItems[role as keyof typeof defaultMenuItems] ||
+    defaultMenuItems.admin
+
   const handleMobileMenuToggle = () => {
     setMobileMenuOpen(!mobileMenuOpen)
   }
 
-  // Navigate and close mobile menu when applicable
   const handleNavigation = (href: string) => {
     if (isMobile) {
       setMobileMenuOpen(false)
@@ -63,7 +80,7 @@ export default function DashboardLayout({
 
   return (
     <div className="flex h-screen bg-background">
-      <div className="hidden md:block">
+      <div className="hidden md:flex h-screen">
         <Sidebar
           open={sidebarOpen}
           onToggle={() => setSidebarOpen(!sidebarOpen)}
@@ -74,7 +91,6 @@ export default function DashboardLayout({
         />
       </div>
 
-      {/* Mobile sidebar - shows as overlay drawer */}
       {isMobile && mobileMenuOpen && (
         <>
           {mobileOverlay}
@@ -90,16 +106,12 @@ export default function DashboardLayout({
         </>
       )}
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header sidebarOpen={sidebarOpen} onMenuClick={handleMobileMenuToggle} />
+        <Header sidebarOpen={sidebarOpen} onMenuClick={handleMobileMenuToggle} role={role} />
 
-        {/* Page Content */}
         <main className="flex-1 overflow-auto">
-          {/* Center content and add responsive horizontal padding + vertical padding */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* vertical spacing between direct children */}
-            <div className="">{children}</div>
+            <div>{children}</div>
           </div>
         </main>
       </div>

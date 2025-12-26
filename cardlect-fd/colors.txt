@@ -1,0 +1,8 @@
+# Cardlect Dashboard Color Palette
+
+## Primary Brand Colors
+# Primary: Vibrant Orange
+primary-light: #FFA726
+primary-main: #FF9800
+primary-dark: #F57C00
+primary-darker: #E65100
