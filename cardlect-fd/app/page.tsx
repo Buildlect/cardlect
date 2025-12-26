@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { MOCK_USERS } from "@/contexts/mock-users"  // Import the MOCK_USERS from context
+import { setAuthUser, getAuthUser } from "@/contexts/auth-context"
+import type { UserRole } from "@/contexts/auth-context"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -22,6 +24,30 @@ export default function LoginPage() {
   const [credentialError, setCredentialError] = useState("") // Invalid credentials error
   const [termsError, setTermsError] = useState("") // Terms acceptance error
   const [touched, setTouched] = useState({ email: false, password: false })
+
+  // Check if already authenticated and redirect
+  useEffect(() => {
+    const user = getAuthUser()
+    if (user) {
+      // Redirect to their dashboard
+      const dashboardRoutes: Record<UserRole, string> = {
+        'super-user': '/super-user',
+        'admin': '/admin',
+        'finance': '/finance',
+        'security': '/security',
+        'teacher': '/teacher',
+        'parents': '/parent',
+        'students': '/student',
+        'clinic': '/clinic',
+        'store': '/store',
+        'approved-stores': '/approved-stores',
+        'exam-officer': '/exam-officer',
+        'librarian': '/librarian',
+        'visitor': '/',
+      }
+      router.push(dashboardRoutes[user.role] || '/admin')
+    }
+  }, [])
 
   const textOptions = [
     "You can Now manage and monitor what goes in and out of your school with Cardlet!",
@@ -103,9 +129,31 @@ export default function LoginPage() {
         return
       }
       
-      // Store the role in localStorage before redirecting to 2FA page
-      localStorage.setItem("userRole", matched.role)
-      router.push("/auth/2fa")
+      // Log in the user directly
+      setAuthUser({
+        id: matched.id,
+        name: matched.name,
+        email: matched.email,
+        role: matched.role,
+      })
+      
+      // Redirect to their dashboard
+      const dashboardRoutes: Record<UserRole, string> = {
+        'super-user': '/super-user',
+        'admin': '/admin',
+        'finance': '/finance',
+        'security': '/security',
+        'teacher': '/teacher',
+        'parents': '/parent',
+        'students': '/student',
+        'clinic': '/clinic',
+        'store': '/store',
+        'approved-stores': '/approved-stores',
+        'exam-officer': '/exam-officer',
+        'librarian': '/librarian',
+        'visitor': '/',
+      }
+      router.push(dashboardRoutes[matched.role] || '/admin')
     }, 700)
   }
 
@@ -295,7 +343,7 @@ export default function LoginPage() {
               <p className="text-center text-sm text-gray-600 mt-6 md:text-left">
                 Don't have an account?{" "}
                 <Link
-                  href="/auth/signup"
+                  href="#"
                   className="text-orange-600 hover:text-orange-700 hover:underline font-medium"
                 >
                   Contact Support
