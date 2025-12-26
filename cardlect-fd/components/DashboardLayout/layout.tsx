@@ -3,22 +3,29 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Sidebar } from "@/components/Admins/sidebar"
-import { Header } from "@/components/Admins/header"
+import { Sidebar, defaultMenuItems, type MenuItem } from "@/components/DashboardLayout/sidebar"
+import { Header } from "@/components/DashboardLayout/header"
 
-interface LayoutShellProps {
+interface DashboardLayoutProps {
   children: React.ReactNode
   currentPage?: string
+  role?: "admin" | "security" | "super-user"
+  menuItems?: MenuItem[]
 }
 
-export default function SchoolAdminLayout({
+export default function DashboardLayout({
   children,
   currentPage = "dashboard",
-}: LayoutShellProps) {
+  role = "admin",
+  menuItems,
+}: DashboardLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
+
+  // Use provided menuItems or default based on role
+  const finalMenuItems = menuItems || (defaultMenuItems[role] ?? defaultMenuItems.admin)
 
   useEffect(() => {
     const checkMobile = () => {
@@ -62,6 +69,8 @@ export default function SchoolAdminLayout({
           onToggle={() => setSidebarOpen(!sidebarOpen)}
           onNavigate={(href: string) => router.push(href)}
           currentPage={currentPage}
+          menuItems={finalMenuItems}
+          role={role}
         />
       </div>
 
@@ -75,6 +84,8 @@ export default function SchoolAdminLayout({
             onNavigate={handleNavigation}
             currentPage={currentPage}
             isMobile={true}
+            menuItems={finalMenuItems}
+            role={role}
           />
         </>
       )}

@@ -2,9 +2,7 @@
 
 import { useCallback, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { LayoutShell } from "@/components/SuperAdmin/layout.shell"
-import { Sidebar } from '@/components/SuperAdmin/sidebar'
-import { Header } from '@/components/SuperAdmin/header'
+import DashboardLayout from "@/components/DashboardLayout/layout"
 import {
   CheckCircle,
   Lock,
@@ -230,9 +228,7 @@ export default function CardsPage() {
   }
 
   return (
-
-    <LayoutShell currentPage="cards">
-    
+    <DashboardLayout currentPage="cards" role="super-user">
     <div className="flex h-screen bg-white text-slate-900 dark:bg-background dark:text-foreground">
         <main className="flex-1 overflow-auto">
           <div className="p-8">
@@ -585,6 +581,6 @@ export default function CardsPage() {
         </div>
       )}
 
-    </LayoutShell>
+    </DashboardLayout>
   )
 }

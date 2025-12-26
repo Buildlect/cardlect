@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import LayoutShell from "@/components/Admins/layout.shell"
+import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search, Edit, Trash2, Users } from "lucide-react"
@@ -40,7 +40,7 @@ export default function ClassesPage() {
   }
 
   return (
-    <LayoutShell currentPage="classes">
+    <DashboardLayout currentPage="classes" role="admin">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold">Classes Management</h2>
@@ -162,6 +162,6 @@ export default function ClassesPage() {
           </div>
         )}
       </div>
-    </LayoutShell>
+    </DashboardLayout>
   )
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import LayoutShell from "@/components/Admins/layout.shell"
+import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Input } from "@/components/ui/input"
 import { Search, Lock, Unlock, Trash2 } from "lucide-react"
 
@@ -92,7 +92,7 @@ export default function CardsPage() {
   }, [])
 
   return (
-    <LayoutShell currentPage="cards">
+    <DashboardLayout currentPage="cards" role="admin">
       <div className="space-y-6">
         <div>
           <h2 className="text-3xl font-bold">Card Management</h2>
@@ -255,6 +255,6 @@ export default function CardsPage() {
           </div>
         </div>
       )}
-    </LayoutShell>
+    </DashboardLayout>
   )
 }

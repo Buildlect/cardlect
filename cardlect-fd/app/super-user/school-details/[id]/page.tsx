@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { LayoutShell } from "@/components/SuperAdmin/layout.shell"
+import DashboardLayout from "@/components/DashboardLayout/layout"
 import { useRouter, useParams } from 'next/navigation'
-import { Sidebar } from '@/components/SuperAdmin/sidebar'
-import { Header } from '@/components/SuperAdmin/header'
 import { X, Edit2, Save, Users, UserCheck, BookOpen, Settings, Activity, TrendingUp, Wifi, HardDrive, Lock, Bell, Zap, BarChart3, MapPin, Mail, Phone, Calendar, Check, AlertCircle, Server, Shield, Trash2, Plus } from 'lucide-react'
 import { useCardlect, School } from '@/contexts/cardlect-context'
 
@@ -16,7 +14,6 @@ export default function SchoolDetailsPage() {
   const schoolId = params?.id as string
   const school = schools.find(s => s.id === schoolId)
   
-  const [sidebarOpen, setSidebarOpen] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
   const [editData, setEditData] = useState(school || {})
   const [activeTab, setActiveTab] = useState<'overview' | 'people' | 'hardware' | 'features' | 'settings'>('overview')
@@ -38,7 +35,7 @@ export default function SchoolDetailsPage() {
 
   if (!school) {
     return (
-      <LayoutShell currentPage="schools">
+      <DashboardLayout currentPage="schools" role="super-user">
       <div className="flex h-screen bg-background">
         <div className="flex-1 flex flex-col">
           <main className="flex-1 flex items-center justify-center">
@@ -51,7 +48,7 @@ export default function SchoolDetailsPage() {
           </main>
         </div>
       </div>
-      </LayoutShell>
+      </DashboardLayout>
     )
   }
 
@@ -100,7 +97,7 @@ export default function SchoolDetailsPage() {
   const disabledFeatures = allFeatures.filter(f => !f.enabled)
 
   return (
-    <LayoutShell currentPage="schools">
+    <DashboardLayout currentPage="schools" role="super-user">
     <div className="flex h-screen bg-background">
         <main className="flex-1 overflow-auto">
           <div className="p-8">
@@ -672,6 +669,6 @@ export default function SchoolDetailsPage() {
           </div>
         </main>
       </div>
-    </LayoutShell>
+    </DashboardLayout>
   )
 }

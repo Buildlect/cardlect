@@ -1,13 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { LayoutShell } from "@/components/SuperAdmin/layout.shell"
-import { Sidebar } from '@/components/SuperAdmin/sidebar'
-import { Header } from '@/components/SuperAdmin/header'
-import { Plus, Eye, Pause, Play, X, Users, UserCheck, BookOpen, Settings, Activity, TrendingUp, Edit2, Trash2, Check, Server, Zap } from 'lucide-react'
+import DashboardLayout from "@/components/DashboardLayout/layout"
+import { Plus, Eye, Pause, Play, X, Users, UserCheck, BookOpen, Settings, Activity, TrendingUp, Edit2, Trash2, Check, Server, Zap, ChevronRight, ChevronLeft } from 'lucide-react'
 import { useCardlect, School } from '@/contexts/cardlect-context'
-import SchoolOnboardingWizard from '@/components/SuperAdmin/school-onboarding-wizard'
 
 interface SchoolDetailsModal extends School {
   staffList: Array<{ id: string; name: string; role: string; email: string }>
@@ -32,6 +29,112 @@ export default function SchoolsPage() {
     principalEmail: '',
     subscriptionPlan: 'basic' as const,
   })
+
+  // SchoolOnboardingWizard component inline
+  const [currentStep, setCurrentStep] = useState(0)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [wizardFormData, setWizardFormData] = useState({
+    name: '',
+    subdomain: '',
+    address: '',
+    email: '',
+    phone: '',
+    principalName: '',
+    principalEmail: '',
+    subscriptionPlan: 'basic' as const,
+  })
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowAddForm(false)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [])
+
+  const wizardSteps = [
+    { title: 'Basic Information', description: 'School name and location' },
+    { title: 'Contact Details', description: 'Email and phone number' },
+    { title: 'Principal Information', description: 'Principal details' },
+    { title: 'Plan & Review', description: 'Subscription plan and confirmation' },
+  ]
+
+  const validateWizardStep = (step: number) => {
+    const newErrors: Record<string, string> = {}
+
+    if (step === 0) {
+      if (!wizardFormData.name.trim()) newErrors.name = 'School name is required'
+      if (!wizardFormData.subdomain.trim()) newErrors.subdomain = 'Subdomain is required'
+      if (wizardFormData.subdomain && !/^[a-z0-9-]+$/.test(wizardFormData.subdomain)) {
+        newErrors.subdomain = 'Subdomain can only contain lowercase letters, numbers, and hyphens'
+      }
+      if (!wizardFormData.address.trim()) newErrors.address = 'Address is required'
+    } else if (step === 1) {
+      if (!wizardFormData.email.trim()) newErrors.email = 'Email is required'
+      if (wizardFormData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(wizardFormData.email)) {
+        newErrors.email = 'Invalid email format'
+      }
+      if (!wizardFormData.phone.trim()) newErrors.phone = 'Phone number is required'
+    } else if (step === 2) {
+      if (!wizardFormData.principalName.trim()) newErrors.principalName = 'Principal name is required'
+      if (!wizardFormData.principalEmail.trim()) newErrors.principalEmail = 'Principal email is required'
+      if (wizardFormData.principalEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(wizardFormData.principalEmail)) {
+        newErrors.principalEmail = 'Invalid email format'
+      }
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleWizardNext = () => {
+    if (validateWizardStep(currentStep)) {
+      if (currentStep < wizardSteps.length - 1) {
+        setCurrentStep(currentStep + 1)
+      }
+    }
+  }
+
+  const handleWizardPrevious = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1)
+      setErrors({})
+    }
+  }
+
+  const handleWizardComplete = () => {
+    if (validateWizardStep(currentStep)) {
+      addSchool({
+        ...wizardFormData,
+        status: 'pending',
+        students: 0,
+        staff: 0,
+        parents: 0,
+        cardUsage: 0,
+        walletActivity: 'low',
+        totalTransactions: 0,
+        attendance: 0,
+        lastActivity: 'Just now',
+        establishedDate: new Date().toISOString().split('T')[0],
+        features: {
+          fastScan: false, liveVerification: false, usbCamera: false, qrCode: false, nfcReader: false,
+          attendance: false, wallet: false, library: false, clinic: false, events: false, notifications: false, analytics: false
+        }
+      })
+      setShowAddForm(false)
+      setCurrentStep(0)
+      setWizardFormData({
+        name: '', subdomain: '', address: '', email: '', phone: '', principalName: '', principalEmail: '', subscriptionPlan: 'basic'
+      })
+    }
+  }
+
+  const updateWizardField = (field: string, value: string) => {
+    setWizardFormData(prev => ({ ...prev, [field]: value }))
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }))
+    }
+  }
 
   const openSchoolDetails = (school: School) => {
     const staffList = getSchoolStaff(school.id)
@@ -99,7 +202,7 @@ export default function SchoolsPage() {
   }
 
   return (
-    <LayoutShell currentPage="schools">
+    <DashboardLayout currentPage="schools" role="super-user">
     <div className="flex h-screen bg-background">
         <main className="flex-1 overflow-auto">
           <div className="p-8">
@@ -150,7 +253,306 @@ export default function SchoolsPage() {
             </div>
 
             {showAddForm && (
-              <SchoolOnboardingWizard onCancel={() => setShowAddForm(false)} onComplete={() => setShowAddForm(false)} />
+              <div
+                role="dialog"
+                aria-modal="true"
+                className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6"
+              >
+                {/* Backdrop */}
+                <div
+                  onClick={() => setShowAddForm(false)}
+                  className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+                />
+
+                {/* Modal */}
+                <div className="relative w-full max-w-lg md:max-w-6xl bg-background border border-border rounded-xl shadow-2xl overflow-hidden z-10 flex flex-col md:grid md:grid-cols-12 max-h-[90vh]">
+                  {/* Left sidebar: Steps */}
+                  <aside className="col-span-12 md:col-span-4 lg:col-span-3 bg-secondary/5 p-4 md:p-6 flex md:flex-col flex-row md:gap-6 gap-2 items-center md:items-start">
+                    <div className="flex items-center justify-between w-full md:block">
+                      <div>
+                        <h2 className="text-base md:text-lg font-bold text-foreground">School Onboarding</h2>
+                        <p className="text-xs md:text-sm text-muted-foreground mt-1">Guided setup to get you started</p>
+                      </div>
+
+                      {/* close button for small screens */}
+                      <button
+                        onClick={() => setShowAddForm(false)}
+                        className="md:hidden p-2 rounded-md text-muted-foreground hover:bg-secondary/50 ml-2"
+                        aria-label="Close onboarding"
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
+
+                    <nav className="flex-1 flex md:flex-col flex-row gap-3 pt-2 overflow-auto w-full">
+                      {wizardSteps.map((s, idx) => {
+                        const isActive = idx === currentStep
+                        const done = idx < currentStep
+                        return (
+                          <button
+                            key={s.title}
+                            onClick={() => {
+                              if (done || isActive) setCurrentStep(idx)
+                            }}
+                            className={`shrink-0 min-w-[150px] md:w-full text-left flex items-center gap-3 p-3 rounded-lg transition ${
+                              isActive ? 'bg-primary/10 border border-primary' : 'hover:bg-secondary/50'
+                            } ${done ? 'opacity-90' : ''}`}
+                          >
+                            <div className={`w-8 h-8 flex items-center justify-center rounded-full ${done ? 'bg-primary text-white' : isActive ? 'bg-primary/80 text-white' : 'bg-secondary/50 text-muted-foreground'}`}>
+                              {done ? <Check size={16} /> : <span className="text-sm font-medium">{idx + 1}</span>}
+                            </div>
+                            <div className="truncate">
+                              <div className={`text-sm font-medium truncate ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>{s.title}</div>
+                              <div className="text-xs text-muted-foreground truncate">{s.description}</div>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </nav>
+
+                    <div className="text-xs text-muted-foreground w-full md:mt-auto md:block hidden">
+                      <div>Step {currentStep + 1} of {wizardSteps.length}</div>
+                    </div>
+                  </aside>
+
+                  {/* Right content */}
+                  <div className="col-span-12 md:col-span-8 lg:col-span-9 p-4 md:p-8 overflow-auto flex flex-col min-h-[420px]">
+                    <div className="flex-1">
+                      {currentStep === 0 && (
+                        <div className="space-y-6">
+                          <div>
+                            <h3 className="text-lg font-semibold text-foreground mb-1">{wizardSteps[0].title}</h3>
+                            <p className="text-sm text-muted-foreground mb-6">{wizardSteps[0].description}</p>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                              School Name *
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="e.g., lagos international school"
+                              value={wizardFormData.name}
+                              onChange={(e) => updateWizardField('name', e.target.value)}
+                              className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none  ${
+                                errors.name ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary'
+                              }`}
+                            />
+                            {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name}</p>}
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-foreground mb-2">
+                                Subdomain * <span className="text-muted-foreground">.cardlect.io</span>
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="e.g., lagosinternationalschool"
+                                value={wizardFormData.subdomain}
+                                onChange={(e) => updateWizardField('subdomain', e.target.value.toLowerCase())}
+                                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none ${
+                                  errors.subdomain ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary'
+                                }`}
+                              />
+                              {errors.subdomain && <p className="text-xs text-red-600 mt-1">{errors.subdomain}</p>}
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-foreground mb-2">
+                                Address *
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="123 Main Street, Lagos, Nigeria"
+                                value={wizardFormData.address}
+                                onChange={(e) => updateWizardField('address', e.target.value)}
+                                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none  ${
+                                  errors.address ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary'
+                                }`}
+                              />
+                              {errors.address && <p className="text-xs text-red-600 mt-1">{errors.address}</p>}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {currentStep === 1 && (
+                        <div className="space-y-6">
+                          <div>
+                            <h3 className="text-lg font-semibold text-foreground mb-1">{wizardSteps[1].title}</h3>
+                            <p className="text-sm text-muted-foreground mb-6">{wizardSteps[1].description}</p>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-foreground mb-2">
+                                School Email *
+                              </label>
+                              <input
+                                type="email"
+                                placeholder="admin@school.edu"
+                                value={wizardFormData.email}
+                                onChange={(e) => updateWizardField('email', e.target.value)}
+                                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none  ${
+                                  errors.email ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary'
+                                }`}
+                              />
+                              {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-foreground mb-2">
+                                School Phone *
+                              </label>
+                              <input
+                                type="tel"
+                                placeholder="+234 (555) 000-0000"
+                                value={wizardFormData.phone}
+                                onChange={(e) => updateWizardField('phone', e.target.value)}
+                                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none  ${
+                                  errors.phone ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary'
+                                }`}
+                              />
+                              {errors.phone && <p className="text-xs text-red-600 mt-1">{errors.phone}</p>}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {currentStep === 2 && (
+                        <div className="space-y-6">
+                          <div>
+                            <h3 className="text-lg font-semibold text-foreground mb-1">{wizardSteps[2].title}</h3>
+                            <p className="text-sm text-muted-foreground mb-6">{wizardSteps[2].description}</p>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-foreground mb-2">
+                                Principal Name *
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="Dr. John Smith"
+                                value={wizardFormData.principalName}
+                                onChange={(e) => updateWizardField('principalName', e.target.value)}
+                                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none  ${
+                                  errors.principalName ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary'
+                                }`}
+                              />
+                              {errors.principalName && <p className="text-xs text-red-600 mt-1">{errors.principalName}</p>}
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-foreground mb-2">
+                                Principal Email *
+                              </label>
+                              <input
+                                type="email"
+                                placeholder="principal@school.edu"
+                                value={wizardFormData.principalEmail}
+                                onChange={(e) => updateWizardField('principalEmail', e.target.value)}
+                                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none  ${
+                                  errors.principalEmail ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary'
+                                }`}
+                              />
+                              {errors.principalEmail && <p className="text-xs text-red-600 mt-1">{errors.principalEmail}</p>}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {currentStep === 3 && (
+                        <div className="space-y-6">
+                          <div>
+                            <h3 className="text-lg font-semibold text-foreground mb-1">{wizardSteps[3].title}</h3>
+                            <p className="text-sm text-muted-foreground mb-6">{wizardSteps[3].description}</p>
+                          </div>
+
+                          <div>
+                            <label className="block text-sm font-medium text-foreground mb-2">
+                              Subscription Plan
+                            </label>
+                            <select
+                              value={wizardFormData.subscriptionPlan}
+                              onChange={(e) => updateWizardField('subscriptionPlan', e.target.value)}
+                              className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground focus:outline-none  focus:ring-primary"
+                            >
+                              <option value="basic">Basic - Core features (NFC, Attendance, Wallet)</option>
+                              <option value="premium">Premium - Basic + Live Verification & Analytics</option>
+                              <option value="enterprise">Enterprise - All features including advanced modules</option>
+                            </select>
+                          </div>
+
+                          <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                            <h4 className="text-sm font-semibold text-foreground mb-3">Review Information</h4>
+                            <div className="space-y-2 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">School Name:</span>
+                                <span className="text-foreground font-medium">{wizardFormData.name}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Subdomain:</span>
+                                <span className="text-foreground font-medium">{wizardFormData.subdomain}.cardlect.io</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Principal:</span>
+                                <span className="text-foreground font-medium">{wizardFormData.principalName}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Plan:</span>
+                                <span className="text-foreground font-medium capitalize">{wizardFormData.subscriptionPlan}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="mt-4 pt-4 border-t border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div className="w-full flex justify-between sm:justify-start gap-3">
+                        <button
+                          onClick={() => setShowAddForm(false)}
+                          className="px-4 py-2 text-foreground hover:bg-secondary/50 rounded-lg transition-all w-full sm:w-auto"
+                        >
+                          Cancel
+                        </button>
+
+                        <button
+                          onClick={handleWizardPrevious}
+                          disabled={currentStep === 0}
+                          className="flex items-center justify-center gap-2 px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                        >
+                          <ChevronLeft size={18} />
+                          Previous
+                        </button>
+                      </div>
+
+                      <div className="w-full sm:w-auto flex gap-3">
+                        {currentStep < wizardSteps.length - 1 ? (
+                          <button
+                            onClick={handleWizardNext}
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all w-full"
+                          >
+                            Next
+                            <ChevronRight size={18} />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={handleWizardComplete}
+                            className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all w-full"
+                          >
+                            <Check size={18} />
+                            Create School
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
 
             <div className="bg-card border border-border rounded-lg overflow-hidden">
@@ -364,6 +766,6 @@ export default function SchoolsPage() {
           </div>
         </div>
       )}
-    </LayoutShell>
+    </DashboardLayout>
   )
 }

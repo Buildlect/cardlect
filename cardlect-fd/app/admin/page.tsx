@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import LayoutShell from "@/components/Admins/layout.shell"
-import { Users, BookOpen, Clock, Wallet, CreditCard, Settings, FileText, UserPlus } from "lucide-react"
+import DashboardLayout from "@/components/DashboardLayout/layout"
+import { Users, BookOpen, Clock, Wallet, CreditCard, FileText, UserPlus } from "lucide-react"
 import {
   ResponsiveContainer,
   AreaChart,
@@ -56,8 +56,7 @@ function CustomTooltip({ active, payload, label, color, unit }: any) {
   )
 }
 
-export default function SchoolAdminDashboard() {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+export default function AdminDashboard() {
   const [currentPage, setCurrentPage] = useState("dashboard")
   const router = useRouter()
 
@@ -66,7 +65,7 @@ export default function SchoolAdminDashboard() {
     router.push(href)
   }
 
-  // Sample sparkline data (replace with real data)
+  // Sample sparkline data
   const sampleSeries = [
     { name: "Mon", value: 60 },
     { name: "Tue", value: 75 },
@@ -84,7 +83,7 @@ export default function SchoolAdminDashboard() {
       value: "1,248",
       change: "+12%",
       colorClass: "from-blue-400 to-blue-600",
-      colorHex: "#ff6a00ff",
+      colorHex: "#3b82f6",
       data: sampleSeries,
     },
     {
@@ -93,7 +92,7 @@ export default function SchoolAdminDashboard() {
       value: "45",
       change: "+2%",
       colorClass: "from-green-400 to-green-600",
-      colorHex: "#ff6a00ff",
+      colorHex: "#22c55e",
       data: sampleSeries.map((d) => ({ ...d, value: Math.round(d.value / 4) })),
     },
     {
@@ -102,7 +101,7 @@ export default function SchoolAdminDashboard() {
       value: "24",
       change: "0%",
       colorClass: "from-violet-400 to-violet-600",
-      colorHex: "#ff6a00ff",
+      colorHex: "#a855f7",
       data: sampleSeries.map((d, i) => ({ ...d, value: 20 + (i % 3) * 2 })),
     },
     {
@@ -111,7 +110,7 @@ export default function SchoolAdminDashboard() {
       value: "1,180",
       change: "+8%",
       colorClass: "from-orange-400 to-orange-600",
-      colorHex: "#ff6a00ff",
+      colorHex: "#f97316",
       data: sampleSeries.map((d) => ({ ...d, value: d.value + 20 })),
     },
     {
@@ -120,7 +119,7 @@ export default function SchoolAdminDashboard() {
       value: "92%",
       change: "+4%",
       colorClass: "from-amber-400 to-amber-600",
-      colorHex: "#ff6a00ff",
+      colorHex: "#f59e0b",
       data: sampleSeries.map((d) => ({ ...d, value: Math.round((d.value / 100) * 92) })),
     },
     {
@@ -129,12 +128,12 @@ export default function SchoolAdminDashboard() {
       value: "₦45,230",
       change: "+15%",
       colorClass: "from-emerald-400 to-emerald-600",
-      colorHex: "#ff6a00ff",
+      colorHex: "#10b981",
       data: sampleSeries.map((d, i) => ({ ...d, value: 300 + i * 20 })),
     },
   ]
 
-  // Overview data for the larger chart (months)
+  // Overview data for the larger chart
   const overviewData = [
     { name: "Jan", students: 1000, cards: 900 },
     { name: "Feb", students: 1050, cards: 920 },
@@ -151,299 +150,249 @@ export default function SchoolAdminDashboard() {
   ]
 
   return (
-    <LayoutShell currentPage="dashboard">
-    <div className="flex h-screen bg-background">
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
-            <div className="mb-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-              <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Hope High College, Lagos.</h1>
-              <p className="text-muted-foreground">
-                Welcome back, You are signed in as an Admin, be cautious of your session.
-              </p>
-              </div>
+    <DashboardLayout currentPage="dashboard" role="admin">
+      <div className="space-y-8">
+        {/* Metrics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+          {metrics.map((metric, idx) => {
+            const Icon = metric.icon
+            const positive = metric.change.startsWith("+")
+            const gradientId = `sparkline-grad-${idx}`
 
-              <div className="flex w-full md:w-auto flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            return (
+              <div
+                key={idx}
+                className="bg-card p-6 rounded-xl border border-border shadow-sm transform hover:-translate-y-1 transition-transform"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">{metric.label}</p>
+                    <p className="text-2xl font-extrabold text-foreground">{metric.value}</p>
+                    <p className={`text-sm mt-2 ${positive ? "text-green-500" : "text-red-500"}`}>
+                      {metric.change} from last month
+                    </p>
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-card shadow" style={{ color: metric.colorHex }}>
+                    <Icon size={22} />
+                  </div>
+                </div>
+
+                <div className="mt-4 h-14">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={metric.data} margin={{ top: 6, right: 0, left: 0, bottom: 6 }}>
+                      <defs>
+                        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={metric.colorHex} stopOpacity={0.35} />
+                          <stop offset="60%" stopColor={metric.colorHex} stopOpacity={0.12} />
+                          <stop offset="100%" stopColor={metric.colorHex} stopOpacity={0.02} />
+                        </linearGradient>
+                      </defs>
+
+                      <XAxis dataKey="name" hide />
+                      <YAxis hide domain={["auto", "auto"]} />
+
+                      <Tooltip
+                        wrapperStyle={{ outline: "none" }}
+                        cursor={false}
+                        content={<CustomTooltip color={metric.colorHex} unit={metric.label === "Wallet Balance" ? "₦" : ""} />}
+                      />
+
+                      <Area
+                        type="monotone"
+                        dataKey="value"
+                        stroke={metric.colorHex}
+                        strokeWidth={2.2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill={`url(#${gradientId})`}
+                        activeDot={{ r: 4, strokeWidth: 2, stroke: "#fff", fill: metric.colorHex }}
+                        dot={false}
+                        isAnimationActive={true}
+                        animationDuration={800}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Overview Chart + Quick Actions */}
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 bg-card p-6 rounded-xl border border-border shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-foreground">Overview</h2>
+              <div className="text-sm text-muted-foreground">Monthly trend</div>
+            </div>
+
+            <div className="h-60">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={overviewData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="gradStudents" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#2563eb" stopOpacity={0.28} />
+                      <stop offset="60%" stopColor="#2563eb" stopOpacity={0.08} />
+                      <stop offset="100%" stopColor="#2563eb" stopOpacity={0.02} />
+                    </linearGradient>
+                    <linearGradient id="gradCards" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#f97316" stopOpacity={0.26} />
+                      <stop offset="60%" stopColor="#f97316" stopOpacity={0.07} />
+                      <stop offset="100%" stopColor="#f97316" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.06} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v) => numberFormatter(v as number)}
+                  />
+                  <Tooltip content={<CustomTooltip color="#2563eb" />} />
+                  <Legend
+                    verticalAlign="top"
+                    align="right"
+                    wrapperStyle={{ color: "var(--muted-foreground)", fontSize: 13 }}
+                    iconType="circle"
+                  />
+
+                  <Area
+                    type="monotone"
+                    dataKey="students"
+                    stroke="#2563eb"
+                    fill="url(#gradStudents)"
+                    strokeWidth={2.5}
+                    name="Students"
+                    activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff", fill: "#2563eb" }}
+                    isAnimationActive
+                    animationDuration={900}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="cards"
+                    stroke="#f97316"
+                    fill="url(#gradCards)"
+                    strokeWidth={2.5}
+                    name="Active Cards"
+                    activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff", fill: "#f97316" }}
+                    isAnimationActive
+                    animationDuration={900}
+                    animationEasing="ease-in-out"
+                    opacity={0.98}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
+            <h3 className="text-lg font-bold text-foreground mb-2">Quick Actions</h3>
+            <p className="text-sm text-muted-foreground mb-4">Common admin tasks</p>
+
+            <div className="grid grid-cols-1 gap-3">
               <button
                 onClick={() => handleNavigate("/admin/students", "students")}
-                className="w-full sm:w-auto inline-flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg bg-primary hover:scale-[1.01] transition transform text-sm"
+                className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
               >
-                <UserPlus size={16} />
-                <span>Add Student</span>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-foreground">Manage Students</p>
+                    <p className="text-xs text-muted-foreground">Add, edit, or view records</p>
+                  </div>
+                  <Users size={18} className="text-primary" />
+                </div>
+              </button>
+
+              <button
+                onClick={() => handleNavigate("/admin/staffs", "staffs")}
+                className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-foreground">Manage Staff</p>
+                    <p className="text-xs text-muted-foreground">Add or edit staff profiles</p>
+                  </div>
+                  <UserPlus size={18} className="text-primary" />
+                </div>
               </button>
 
               <button
                 onClick={() => handleNavigate("/admin/classes", "classes")}
-                className="w-full sm:w-auto inline-flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg bg-border/20 hover:scale-[1.01] transition transform text-sm"
+                className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
               >
-                <BookOpen size={16} />
-                <span>Create Class</span>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-foreground">Manage Classes</p>
+                    <p className="text-xs text-muted-foreground">Create or modify class schedules</p>
+                  </div>
+                  <BookOpen size={18} className="text-primary" />
+                </div>
               </button>
 
               <button
-                onClick={() => handleNavigate("/admin/staff", "staff")}
-                className="w-full sm:w-auto inline-flex items-center justify-center sm:justify-start gap-2 px-3 py-2 rounded-lg bg-border/20 hover:scale-[1.01] transition transform text-sm"
+                onClick={() => handleNavigate("/admin/attendance", "attendance")}
+                className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
               >
-                <Users size={16} />
-                <span>Manage Staffs</span>
-              </button>
-              </div>
-            </div>
-            </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {metrics.map((metric, idx) => {
-              const Icon = metric.icon
-              const positive = metric.change.startsWith("+")
-              const gradientId = `sparkline-grad-${idx}`
-              const shadowId = `sparkline-shadow-${idx}`
-
-              return (
-                <div
-                  key={idx}
-                  className="bg-card p-6 rounded-xl border border-border shadow-sm transform hover:-translate-y-1 transition-transform"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-2">{metric.label}</p>
-                      <p className="text-2xl font-extrabold text-foreground">{metric.value}</p>
-                      <p className={`text-sm mt-2 ${positive ? "text-green-500" : "text-red-500"}`}>
-                        {metric.change} from last month
-                      </p>
-                    </div>
-
-                    <div className={`p-3 rounded-lg bg-card text-[#ff6a00ff] shadow`}>
-                      <Icon size={22} />
-                    </div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-foreground">View Attendance</p>
+                    <p className="text-xs text-muted-foreground">Track daily attendance</p>
                   </div>
-
-                  <div className="mt-4 h-14">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={metric.data} margin={{ top: 6, right: 0, left: 0, bottom: 6 }}>
-                        <defs>
-                          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor={metric.colorHex} stopOpacity={0.35} />
-                            <stop offset="60%" stopColor={metric.colorHex} stopOpacity={0.12} />
-                            <stop offset="100%" stopColor={metric.colorHex} stopOpacity={0.02} />
-                          </linearGradient>
-
-                          <filter id={shadowId} x="-20%" y="-50%" width="140%" height="200%">
-                            <feDropShadow dx="0" dy="8" stdDeviation="8" floodColor={metric.colorHex} floodOpacity="0.08" />
-                          </filter>
-                        </defs>
-
-                        {/* hidden axes for clean sparkline */}
-                        <XAxis dataKey="name" hide />
-                        <YAxis hide domain={["auto", "auto"]} />
-
-                        <Tooltip
-                          wrapperStyle={{ outline: "none" }}
-                          cursor={false}
-                          content={<CustomTooltip color={metric.colorHex} unit={metric.label === "Wallet Balance" ? "₦" : ""} />}
-                        />
-
-                        <Area
-                          type="monotone"
-                          dataKey="value"
-                          stroke={metric.colorHex}
-                          strokeWidth={2.2}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          fill={`url(#${gradientId})`}
-                          activeDot={{ r: 4, strokeWidth: 2, stroke: "#fff", fill: metric.colorHex }}
-                          dot={false}
-                          isAnimationActive={true}
-                          animationDuration={800}
-                          filter={`url(#${shadowId})`}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
+                  <Clock size={18} className="text-primary" />
                 </div>
-              )
-            })}
-          </div>
+              </button>
 
-          <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 bg-card p-6 rounded-xl border border-border shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-foreground">Overview</h2>
-                <div className="text-sm text-muted-foreground">Monthly trend</div>
-              </div>
-
-              <div className="h-60">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={overviewData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="gradStudents" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#2563eb" stopOpacity={0.28} />
-                        <stop offset="60%" stopColor="#2563eb" stopOpacity={0.08} />
-                        <stop offset="100%" stopColor="#2563eb" stopOpacity={0.02} />
-                      </linearGradient>
-                      <linearGradient id="gradCards" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#f97316" stopOpacity={0.26} />
-                        <stop offset="60%" stopColor="#f97316" stopOpacity={0.07} />
-                        <stop offset="100%" stopColor="#f97316" stopOpacity={0.02} />
-                      </linearGradient>
-
-                      <filter id="overview-shadow" x="-20%" y="-50%" width="140%" height="200%">
-                        <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="#0f172a" floodOpacity="0.06" />
-                      </filter>
-                    </defs>
-
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.06} />
-                    <XAxis
-                      dataKey="name"
-                      tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-                      axisLine={false}
-                      tickLine={false}
-                      tickFormatter={(v) => numberFormatter(v as number)}
-                    />
-                    <Tooltip content={<CustomTooltip color="#2563eb" />} />
-                    <Legend
-                      verticalAlign="top"
-                      align="right"
-                      wrapperStyle={{ color: "var(--muted-foreground)", fontSize: 13 }}
-                      iconType="circle"
-                    />
-
-                    <Area
-                      type="monotone"
-                      dataKey="students"
-                      stroke="#2563eb"
-                      fill="url(#gradStudents)"
-                      strokeWidth={2.5}
-                      name="Students"
-                      activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff", fill: "#2563eb" }}
-                      isAnimationActive
-                      animationDuration={900}
-                      filter="url(#overview-shadow)"
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="cards"
-                      stroke="#f97316"
-                      fill="url(#gradCards)"
-                      strokeWidth={2.5}
-                      name="Active Cards"
-                      activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff", fill: "#f97316" }}
-                      isAnimationActive
-                      animationDuration={900}
-                      animationEasing="ease-in-out"
-                      opacity={0.98}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
-              <h3 className="text-lg font-bold text-foreground mb-2">Quick Actions</h3>
-              <p className="text-sm text-muted-foreground mb-4">Common admin tasks</p>
-
-              <div className="grid grid-cols-1 gap-3">
-                <button
-                  onClick={() => handleNavigate("/school-admin/students", "students")}
-                  className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-foreground">Manage Students</p>
-                      <p className="text-xs text-muted-foreground">Add, edit, or view records</p>
-                    </div>
-                    <Users size={18} className="text-primary" />
+              <button
+                onClick={() => handleNavigate("/admin/reports", "reports")}
+                className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-foreground">View Reports</p>
+                    <p className="text-xs text-muted-foreground">Export or view analytics</p>
                   </div>
-                </button>
+                  <FileText size={18} className="text-primary" />
+                </div>
+              </button>
 
-                <button
-                  onClick={() => handleNavigate("/school-admin/staff", "staff")}
-                  className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-foreground">Manage Staff</p>
-                      <p className="text-xs text-muted-foreground">Add or edit staff profiles</p>
-                    </div>
-                    <UserPlus size={18} className="text-primary" />
+              <button
+                onClick={() => handleNavigate("/admin/wallet", "wallet")}
+                className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-foreground">Manage Wallet</p>
+                    <p className="text-xs text-muted-foreground">Balances & transactions (₦)</p>
                   </div>
-                </button>
+                  <Wallet size={18} className="text-primary" />
+                </div>
+              </button>
 
-                <button
-                  onClick={() => handleNavigate("/school-admin/classes", "classes")}
-                  className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-foreground">Manage Classes</p>
-                      <p className="text-xs text-muted-foreground">Create or modify class schedules</p>
-                    </div>
-                    <BookOpen size={18} className="text-primary" />
+              <button
+                onClick={() => handleNavigate("/admin/cards", "cards")}
+                className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-foreground">Manage Cards</p>
+                    <p className="text-xs text-muted-foreground">View or lock cards</p>
                   </div>
-                </button>
-
-                <button
-                  onClick={() => handleNavigate("/school-admin/attendance", "attendance")}
-                  className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-foreground">View Attendance</p>
-                      <p className="text-xs text-muted-foreground">Track daily attendance</p>
-                    </div>
-                    <Clock size={18} className="text-primary" />
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => handleNavigate("/school-admin/reports", "reports")}
-                  className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-foreground">View Reports</p>
-                      <p className="text-xs text-muted-foreground">Export or view analytics</p>
-                    </div>
-                    <FileText size={18} className="text-primary" />
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => handleNavigate("/school-admin/wallet", "wallet")}
-                  className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-foreground">Manage Wallet</p>
-                      <p className="text-xs text-muted-foreground">Balances & transactions (₦)</p>
-                    </div>
-                    <Wallet size={18} className="text-primary" />
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => handleNavigate("/admin/settings", "settings")}
-                  className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold text-foreground">System Settings</p>
-                      <p className="text-xs text-muted-foreground">Manage permissions & integrations</p>
-                    </div>
-                    <Settings size={18} className="text-primary" />
-                  </div>
-                </button>
-              </div>
+                  <CreditCard size={18} className="text-primary" />
+                </div>
+              </button>
             </div>
           </div>
         </div>
-      </main>
-    </div>
-    </LayoutShell>
+      </div>
+    </DashboardLayout>
   )
 }

@@ -2,8 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Sidebar } from '@/components/SuperAdmin/sidebar'
-import { Header } from '@/components/SuperAdmin/header'
+import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Download, TrendingUp, Users, DollarSign, Calendar, Clock, Plus } from 'lucide-react'
 import {
   LineChart,
@@ -20,7 +19,6 @@ import {
   Pie,
   Cell
 } from 'recharts'
-import { LayoutShell } from '@/components/SuperAdmin/layout.shell'
 
 const attendanceData = [
   { month: 'Jan', present: 85, absent: 15 },
@@ -260,13 +258,9 @@ export default function AnalyticsPage() {
   })
 
   return (
-    <LayoutShell currentPage="analytics">
-      <div className="flex h-screen bg-background">
-        <div className="flex-1 flex flex-col">
-          <main className="flex-1 overflow-auto">
-            <div className="p-8">
-              {/* Header + Filters */}
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+    <DashboardLayout currentPage="analytics" role="super-user">
+      <div className="mb-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                   <h1 className="text-3xl font-bold text-foreground">Analytics & Reports</h1>
                 </div>
@@ -392,10 +386,7 @@ export default function AnalyticsPage() {
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-            </div>
-          </main>
         </div>
-      </div>
-    </LayoutShell>
+    </DashboardLayout>
   )
 }

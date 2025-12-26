@@ -14,7 +14,7 @@ import {
   ResponsiveContainer,
 } from "recharts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import LayoutShell from "@/components/Admins/layout.shell"
+import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Button } from "@/components/ui/button"
 import { Download, FileText, Calendar, Users, CreditCard, X } from "lucide-react"
 
@@ -191,7 +191,7 @@ export default function ReportsPage() {
     startMonth === "Jan" && endMonth === "May" && selectedClass === "All" && selectedWalletCategory === "All"
 
   return (
-    <LayoutShell currentPage="reports">
+    <DashboardLayout currentPage="reports" role="admin">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -516,6 +516,6 @@ export default function ReportsPage() {
           </CardContent>
         </Card>
       </div>
-    </LayoutShell>
+    </DashboardLayout>
   )
 }

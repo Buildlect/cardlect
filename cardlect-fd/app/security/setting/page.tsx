@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { LayoutShell } from "@/components/Security/layout.shell"
+import DashboardLayout from "@/components/DashboardLayout/layout"
 import { useTheme } from '@/components/theme-provider'
 import Link from 'next/link'
 import { Lock, Bell, Globe, Shield, LogOut, Save, Sun, Moon } from 'lucide-react'
@@ -20,7 +20,7 @@ export default function SecuritySettingsPage() {
   const [dateFormat, setDateFormat] = useState('DD/MM/YYYY')
 
   return (
-    <LayoutShell currentPage="setting">
+    <DashboardLayout currentPage="setting" role="security">
     <div className="flex h-screen bg-background">
         <main className="flex-1 overflow-auto">
           <div className="p-8 max-w-4xl">
@@ -270,6 +270,6 @@ export default function SecuritySettingsPage() {
           </div>
         </main>
       </div>
-      </LayoutShell>
+    </DashboardLayout>
   )
 }

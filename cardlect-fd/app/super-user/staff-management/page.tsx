@@ -2,9 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { LayoutShell } from "@/components/SuperAdmin/layout.shell"
-import { Sidebar } from '@/components/SuperAdmin/sidebar'
-import { Header } from '@/components/SuperAdmin/header'
+import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Plus, Trash2, CheckCircle, AlertCircle, X } from 'lucide-react'
 import { useCardlect } from '@/contexts/cardlect-context'
 
@@ -55,7 +53,7 @@ export default function StaffManagementPage() {
   }
 
   return (
-    <LayoutShell currentPage="staff">
+    <DashboardLayout currentPage="staff-management" role="super-user">
     <div className="flex h-screen bg-background">
       <div className="flex-1 flex flex-col">
         <main className="flex-1 overflow-auto">
@@ -210,6 +208,6 @@ export default function StaffManagementPage() {
         </main>
       </div>
     </div>
-    </LayoutShell>
+    </DashboardLayout>
   )
 }

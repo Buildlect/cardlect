@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { LayoutShell } from "@/components/Security/layout.shell"
+import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -201,7 +201,7 @@ export default function GateLogs() {
   }
 
   return (
-    <LayoutShell currentPage="gate-logs">
+    <DashboardLayout currentPage="gate-logs" role="security">
       <div className="min-h-screen bg-background text-foreground">
         <div className="p-6 md:p-8">
           {/* Header */}
@@ -349,6 +349,6 @@ export default function GateLogs() {
           </div>
         </div>
       </div>
-    </LayoutShell>
+    </DashboardLayout>
   )
 }

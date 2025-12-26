@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, Plus, X } from "lucide-react"
-import LayoutShell from '@/components/Admins/layout.shell'
+import DashboardLayout from '@/components/DashboardLayout/layout'
 
 type Wallet = {
   id: number
@@ -104,7 +104,7 @@ export default function WalletPage() {
   }
 
   return (
-    <LayoutShell currentPage="wallet">
+    <DashboardLayout currentPage="wallet" role="admin">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -330,6 +330,6 @@ export default function WalletPage() {
           </div>
         )}
       </div>
-    </LayoutShell>
+    </DashboardLayout>
   )
 }

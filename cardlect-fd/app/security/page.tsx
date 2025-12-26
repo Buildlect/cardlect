@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { LayoutShell } from "@/components/Security/layout.shell"
+import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Button } from "@/components/ui/button"
 import {
   Users,
@@ -209,7 +209,7 @@ export default function SecurityDashboard() {
   }
 
   return (
-    <LayoutShell currentPage="dashboard">
+    <DashboardLayout currentPage="dashboard" role="security">
       <div className="min-h-screen bg-background text-foreground">
         <div className="p-6 md:p-8">
           {/* Header */}
@@ -379,6 +379,6 @@ export default function SecurityDashboard() {
           </div>
         </div>
       </div>
-    </LayoutShell >
+    </DashboardLayout>
   )
 }

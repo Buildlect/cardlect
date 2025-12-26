@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import LayoutShell from "@/components/Admins/layout.shell"
+import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search, Edit, Trash2 } from "lucide-react"
@@ -80,7 +80,7 @@ export default function StaffPage() {
   }
 
   return (
-    <LayoutShell currentPage="staff">
+    <DashboardLayout currentPage="staffs" role="admin">
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold">Staff Management</h2>
@@ -232,6 +232,6 @@ export default function StaffPage() {
           </CardContent>
         </Card>
       </div>
-    </LayoutShell>
+    </DashboardLayout>
   )
 }

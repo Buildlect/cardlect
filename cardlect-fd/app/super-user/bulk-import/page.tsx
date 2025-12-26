@@ -2,9 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { LayoutShell } from "@/components/SuperAdmin/layout.shell"
-import { Sidebar } from '@/components/SuperAdmin/sidebar'
-import { Header } from '@/components/SuperAdmin/header'
+import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Upload, Download, Plus, CheckCircle, AlertCircle } from 'lucide-react'
 import { useCardlect } from '@/contexts/cardlect-context'
 
@@ -151,7 +149,7 @@ Mr. James Davis,james@email.com,9876543232,Father,STU-003`
   }
 
   return (
-    <LayoutShell currentPage="bulk-import">
+    <DashboardLayout currentPage="bulk-import" role="super-user">
     <div className="flex h-screen bg-background">
       <div className="flex-1 flex flex-col">
         <main className="flex-1 overflow-auto">
@@ -334,6 +332,6 @@ Mr. James Davis,james@email.com,9876543232,Father,STU-003`
         </main>
       </div>
     </div>
-    </LayoutShell>
+    </DashboardLayout>
   )
 }

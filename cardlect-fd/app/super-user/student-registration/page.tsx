@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { LayoutShell } from "@/components/SuperAdmin/layout.shell"
+import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Plus, Upload, Camera, LinkIcon, Tag, Trash2, Edit2 } from 'lucide-react'
 import { useCardlect } from '@/contexts/cardlect-context'
 
@@ -132,7 +132,7 @@ export default function StudentRegistrationPage() {
   }
 
   return (
-    <LayoutShell currentPage="student-registration">
+    <DashboardLayout currentPage="student-registration" role="super-user">
     <div className="flex h-screen bg-background">
       <div className="flex-1 flex flex-col">
         <main className="flex-1 overflow-auto">
@@ -332,6 +332,6 @@ export default function StudentRegistrationPage() {
         </main>
       </div>
     </div>
-    </LayoutShell>
+    </DashboardLayout>
   )
 }

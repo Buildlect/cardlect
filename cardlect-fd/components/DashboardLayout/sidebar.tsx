@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import {
   LayoutDashboard,
@@ -12,8 +12,25 @@ import {
   Menu,
   Clock,
   DollarSign,
+  LayoutGrid,
+  UserCheck,
+  Bell,
+  DoorOpen,
+  FileText,
+  Building2,
+  Upload,
+  Key,
+  Settings,
 } from "lucide-react"
-import Link from 'next/link'
+import Link from "next/link"
+import type { LucideIcon } from "lucide-react"
+
+export interface MenuItem {
+  icon: LucideIcon
+  label: string
+  href: string
+  id: string
+}
 
 interface SidebarProps {
   open: boolean
@@ -21,21 +38,43 @@ interface SidebarProps {
   onNavigate: (href: string) => void
   currentPage: string
   isMobile?: boolean
+  menuItems: MenuItem[]
+  role?: "admin" | "security" | "super-user"
 }
 
-const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/admin", id: "dashboard" },
-  { icon: Users, label: "Students", href: "/admin/students", id: "students" },
-  { icon: Users, label: "Staff", href: "/admin/staffs", id: "staff" },
-  { icon: Book, label: "Classes", href: "/admin/classes", id: "classes" },
-  { icon: CreditCard, label: "Cards", href: "/admin/cards", id: "cards" },
-  { icon: Clock, label: "Attendance", href: "/admin/attendance", id: "attendance" },
-  { icon: LogIn, label: "Gate Logs", href: "/admin/gate-logs", id: "gate-logs" },
-  { icon: DollarSign, label: "Wallet", href: "/admin/wallet", id: "wallet" },
-  { icon: BarChart3, label: "Reports", href: "/admin/reports", id: "reports" },
-]
+// Role-based default menu items
+export const defaultMenuItems = {
+  admin: [
+    { icon: LayoutDashboard, label: "Dashboard", href: "/admin", id: "dashboard" },
+    { icon: Users, label: "Students", href: "/admin/students", id: "students" },
+    { icon: Users, label: "Staff", href: "/admin/staffs", id: "staff" },
+    { icon: Book, label: "Classes", href: "/admin/classes", id: "classes" },
+    { icon: CreditCard, label: "Cards", href: "/admin/cards", id: "cards" },
+    { icon: Clock, label: "Attendance", href: "/admin/attendance", id: "attendance" },
+    { icon: LogIn, label: "Gate Logs", href: "/admin/gate-logs", id: "gate-logs" },
+    { icon: DollarSign, label: "Wallet", href: "/admin/wallet", id: "wallet" },
+    { icon: BarChart3, label: "Reports", href: "/admin/reports", id: "reports" },
+  ] as MenuItem[],
+  security: [
+    { icon: LayoutGrid, label: "Dashboard", href: "/security", id: "dashboard" },
+    { icon: UserCheck, label: "Pickup Authorization", href: "/security/pickup-authorization", id: "pickup-authorization" },
+    { icon: Bell, label: "Alerts", href: "/security/alerts", id: "alerts" },
+    { icon: DoorOpen, label: "Gate Logs", href: "/security/gate-logs", id: "gate-logs" },
+    { icon: FileText, label: "Visitor & Incident Log", href: "/security/visitor-incident-log", id: "visitor-incident-log" },
+    { icon: Settings, label: "Settings", href: "/security/setting", id: "setting" },
+  ] as MenuItem[],
+  "super-user": [
+    { icon: LayoutGrid, label: "Dashboard", href: "/super-user", id: "dashboard" },
+    { icon: Building2, label: "Manage Schools", href: "/super-user/schools", id: "schools" },
+    { icon: CreditCard, label: "Cards", href: "/super-user/cards", id: "cards" },
+    { icon: BarChart3, label: "Analytics", href: "/super-user/analytics", id: "analytics" },
+    { icon: FileText, label: "Logs", href: "/super-user/logs", id: "logs" },
+    { icon: Upload, label: "Bulk Import", href: "/super-user/bulk-import", id: "bulk-import" },
+    { icon: Key, label: "Manage API Keys", href: "/super-user/api", id: "api" },
+    { icon: Settings, label: "Settings", href: "/super-user/settings", id: "settings" },
+  ] as MenuItem[],
+}
 
-// Reusable tooltip (light-first, dark variants included)
 function Tooltip({ text }: { text: string }) {
   return (
     <span
@@ -51,14 +90,21 @@ function Tooltip({ text }: { text: string }) {
         dark:bg-[rgba(17,24,39,0.95)] dark:text-white dark:border-transparent
       "
     >
-      {/* Arrow */}
       <span className="absolute left-[-6px] top-1/2 -translate-y-1/2 w-2 h-2 bg-white rotate-45 border border-gray-200 shadow-sm dark:bg-[rgba(17,24,39,0.95)] dark:border-transparent" />
       {text}
     </span>
   )
 }
 
-export function Sidebar({ open, onToggle, onNavigate, isMobile = false }: SidebarProps) {
+export function Sidebar({
+  open,
+  onToggle,
+  onNavigate,
+  currentPage,
+  isMobile = false,
+  menuItems,
+  role = "admin",
+}: SidebarProps) {
   return (
     <>
       {/* Mobile backdrop: click to close */}
@@ -72,8 +118,8 @@ export function Sidebar({ open, onToggle, onNavigate, isMobile = false }: Sideba
 
       <aside
         className={`
-          ${isMobile ? 'fixed inset-y-0 left-0 z-50 transform transition-transform duration-300' : ''}
-          ${isMobile ? (open ? 'translate-x-0 w-64' : '-translate-x-full w-64') : (open ? 'w-64' : 'w-20')}
+          ${isMobile ? "fixed inset-y-0 left-0 z-50 transform transition-transform duration-300" : ""}
+          ${isMobile ? (open ? "translate-x-0 w-64" : "-translate-x-full w-64") : open ? "w-64" : "w-20"}
           bg-white text-gray-700 border-r border-gray-200
           flex flex-col
           dark:bg-[#151517] dark:text-gray-200 dark:border-[#111827]
@@ -91,7 +137,7 @@ export function Sidebar({ open, onToggle, onNavigate, isMobile = false }: Sideba
           <button
             onClick={onToggle}
             className="group relative p-1 hover:bg-orange-50 rounded-lg dark:hover:bg-[#111827]"
-            aria-label={open ? 'Collapse sidebar' : 'Expand sidebar'}
+            aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
           >
             {open ? (
               <X className="h-5 w-5 text-gray-500 group-hover:text-orange-600 dark:text-gray-200 dark:group-hover:text-orange-400" />
@@ -100,12 +146,12 @@ export function Sidebar({ open, onToggle, onNavigate, isMobile = false }: Sideba
             )}
 
             {/* Toggle tooltip */}
-            <Tooltip text={open ? 'Collapse sidebar' : 'Expand sidebar'} />
+            <Tooltip text={open ? "Collapse sidebar" : "Expand sidebar"} />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-3 space-y-2">
+        <nav className="flex-1 px-3 py-3 space-y-2 overflow-hidden">
           {menuItems.map(({ icon: Icon, label, href, id }) => {
             return (
               <Link
@@ -144,7 +190,7 @@ export function Sidebar({ open, onToggle, onNavigate, isMobile = false }: Sideba
             href="/logout"
             onClick={(e) => {
               e.preventDefault()
-              onNavigate('/auth/logout')
+              onNavigate("/auth/logout")
               if (isMobile) onToggle()
             }}
             aria-label="Logout"
@@ -154,7 +200,6 @@ export function Sidebar({ open, onToggle, onNavigate, isMobile = false }: Sideba
             {open && <span className="text-sm font-medium">Logout</span>}
           </Link>
         </div>
-
       </aside>
     </>
   )

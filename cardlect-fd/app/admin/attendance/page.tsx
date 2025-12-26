@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import LayoutShell from "@/components/Admins/layout.shell"
+import DashboardLayout from "@/components/DashboardLayout/layout"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
 
 const attendanceData = [
@@ -24,7 +24,7 @@ export default function AttendancePage() {
   const [filterDate, setFilterDate] = useState("2024-01-19")
 
   return (
-    <LayoutShell currentPage="attendance">
+    <DashboardLayout currentPage="attendance" role="admin">
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold">Attendance Tracking</h2>
@@ -133,6 +133,6 @@ export default function AttendancePage() {
         </CardContent>
       </Card>
     </div>
-    </LayoutShell>
+    </DashboardLayout>
   )
 }

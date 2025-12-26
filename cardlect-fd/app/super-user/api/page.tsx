@@ -2,10 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Sidebar } from '@/components/SuperAdmin/sidebar'
-import { Header } from '@/components/SuperAdmin/header'
+import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Copy, Eye, EyeOff, Plus, Trash2, AlertCircle, CheckCircle, Sun, Moon } from 'lucide-react'
-import { LayoutShell } from '@/components/SuperAdmin/layout.shell'
 
 interface ApiKey {
   id: string
@@ -124,7 +122,7 @@ export default function ApiPage() {
   const webhooks = useMemo(() => mockWebhooks, [])
 
   return (
-    <LayoutShell currentPage='api'>
+    <DashboardLayout currentPage="api" role="super-user">
     <div className="flex h-screen bg-background">
       <div className="flex-1 flex flex-col">
         <main className="flex-1 overflow-auto">
@@ -282,6 +280,6 @@ export default function ApiPage() {
         </main>
       </div>
     </div>
-    </LayoutShell>
+    </DashboardLayout>
   )
 }

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import LayoutShell from "@/components/Admins/layout.shell"
+import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Input } from "@/components/ui/input"
 import { Search } from "lucide-react"
 
@@ -65,7 +65,7 @@ export default function GateLogsPage() {
   )
 
   return (
-    <LayoutShell currentPage="gate-logs">
+    <DashboardLayout currentPage="gate-logs" role="admin">
     <div className="space-y-6">
       <div>
         <h2 className="text-3xl font-bold">Gate Activity Logs</h2>
@@ -177,6 +177,6 @@ export default function GateLogsPage() {
         </CardContent>
       </Card>
     </div>
-    </LayoutShell>
+    </DashboardLayout>
   )
 }
