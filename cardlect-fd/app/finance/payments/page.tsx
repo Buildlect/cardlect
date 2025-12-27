@@ -52,9 +52,9 @@ export default function PaymentsPage() {
 
   const getStatusIcon = (status: string) => {
     switch(status) {
-      case 'completed': return <CheckCircle className="text-green-600" size={16} />
-      case 'pending': return <Clock className="text-yellow-600" size={16} />
-      case 'failed': return <DollarSign className="text-red-600" size={16} />
+      case 'completed': return <CheckCircle style={{ color: CARDLECT_COLORS.success.main }} size={16} />
+      case 'pending': return <Clock style={{ color: CARDLECT_COLORS.warning.main }} size={16} />
+      case 'failed': return <DollarSign style={{ color: CARDLECT_COLORS.danger.main }} size={16} />
       default: return null
     }
   }
@@ -74,7 +74,7 @@ export default function PaymentsPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Processed</div>
-              <div className="text-2xl font-bold text-green-600">₦{(stats.processed / 1000).toFixed(0)}k</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.success.main }}>₦{(stats.processed / 1000).toFixed(0)}k</div>
               <div className="text-xs text-muted-foreground mt-2">{payments.filter(p => p.status === 'completed').length} transactions</div>
             </CardContent>
           </Card>
@@ -82,7 +82,7 @@ export default function PaymentsPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Pending</div>
-              <div className="text-2xl font-bold text-yellow-600">₦{(stats.pending / 1000).toFixed(0)}k</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.warning.main }}>₦{(stats.pending / 1000).toFixed(0)}k</div>
               <div className="text-xs text-muted-foreground mt-2">{payments.filter(p => p.status === 'pending').length} in queue</div>
             </CardContent>
           </Card>
@@ -90,7 +90,7 @@ export default function PaymentsPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Failed</div>
-              <div className="text-2xl font-bold text-red-600">₦{(stats.failed / 1000).toFixed(0)}k</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.danger.main }}>₦{(stats.failed / 1000).toFixed(0)}k</div>
               <div className="text-xs text-muted-foreground mt-2">0 transactions</div>
             </CardContent>
           </Card>
@@ -99,7 +99,7 @@ export default function PaymentsPage() {
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Success Rate</div>
               <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.warning.main }}>100%</div>
-              <div className="text-xs text-green-600 mt-2">No failures</div>
+              <div className="text-xs text-muted-foreground mt-2">No failures</div>
             </CardContent>
           </Card>
         </div>

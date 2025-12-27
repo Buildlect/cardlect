@@ -54,10 +54,10 @@ export default function InvoicesPage() {
 
   const getStatusColor = (status: string) => {
     switch(status) {
-      case 'paid': return 'text-green-600 bg-green-50'
-      case 'pending': return 'text-yellow-600 bg-yellow-50'
-      case 'overdue': return 'text-red-600 bg-red-50'
-      default: return 'text-gray-600 bg-gray-50'
+      case 'paid': return { color: CARDLECT_COLORS.success.main, backgroundColor: `${CARDLECT_COLORS.success.main}20` }
+      case 'pending': return { color: CARDLECT_COLORS.warning.main, backgroundColor: `${CARDLECT_COLORS.warning.main}20` }
+      case 'overdue': return { color: CARDLECT_COLORS.danger.main, backgroundColor: `${CARDLECT_COLORS.danger.main}20` }
+      default: return { color: '#6B7280', backgroundColor: '#F3F4F6' }
     }
   }
 
@@ -80,14 +80,14 @@ export default function InvoicesPage() {
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Total Billed</div>
               <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.warning.main }}>₦{(stats.total / 1000).toFixed(0)}k</div>
-              <div className="text-xs text-green-600 mt-2">↑ 12% from last month</div>
+              <div className="text-xs mt-2" style={{ color: CARDLECT_COLORS.success.main }}>↑ 12% from last month</div>
             </CardContent>
           </Card>
 
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Paid</div>
-              <div className="text-2xl font-bold text-green-600">₦{(stats.paid / 1000).toFixed(0)}k</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.success.main }}>₦{(stats.paid / 1000).toFixed(0)}k</div>
               <div className="text-xs text-muted-foreground mt-2">{((stats.paid / stats.total) * 100).toFixed(0)}% collection rate</div>
             </CardContent>
           </Card>
@@ -95,7 +95,7 @@ export default function InvoicesPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Pending</div>
-              <div className="text-2xl font-bold text-yellow-600">₦{(stats.pending / 1000).toFixed(0)}k</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.warning.main }}>₦{(stats.pending / 1000).toFixed(0)}k</div>
               <div className="text-xs text-muted-foreground mt-2">{invoices.filter(i => i.status === 'pending').length} invoices</div>
             </CardContent>
           </Card>
@@ -103,8 +103,8 @@ export default function InvoicesPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Overdue</div>
-              <div className="text-2xl font-bold text-red-600">₦{(stats.overdue / 1000).toFixed(0)}k</div>
-              <div className="text-xs text-red-600 mt-2">{invoices.filter(i => i.status === 'overdue').length} invoices</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.danger.main }}>₦{(stats.overdue / 1000).toFixed(0)}k</div>
+              <div className="text-xs mt-2" style={{ color: CARDLECT_COLORS.danger.main }}>{invoices.filter(i => i.status === 'overdue').length} invoices</div>
             </CardContent>
           </Card>
         </div>
@@ -178,7 +178,7 @@ export default function InvoicesPage() {
                       <td className="py-3 px-4 text-sm text-muted-foreground">{new Date(invoice.date).toLocaleDateString()}</td>
                       <td className="py-3 px-4 text-sm text-muted-foreground">{new Date(invoice.dueDate).toLocaleDateString()}</td>
                       <td className="py-3 px-4 text-center">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(invoice.status)}`}>
+                        <span style={{ ...getStatusColor(invoice.status), padding: '0.75rem 1rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: '600' }}>
                           {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
                         </span>
                       </td>

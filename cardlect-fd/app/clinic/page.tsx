@@ -4,6 +4,7 @@ import { useProtectedRoute } from '@/contexts/auth-context'
 import { useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Users, ClipboardList, AlertTriangle, CheckCircle, TrendingUp, Bell, Activity, Calendar } from 'lucide-react'
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 import {
   LineChart,
   Line,
@@ -65,7 +66,7 @@ export default function ClinicDashboard() {
       value: 83,
       change: '+12% this week',
       icon: Users,
-      color: '#3B82F6',
+      color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Total clinic visits this week',
     },
@@ -74,7 +75,7 @@ export default function ClinicDashboard() {
       value: 68,
       change: '+8 today',
       icon: CheckCircle,
-      color: '#10B981',
+      color: CARDLECT_COLORS.success.main,
       data: sampleData,
       tooltip: 'Students treated this week',
     },
@@ -83,7 +84,7 @@ export default function ClinicDashboard() {
       value: 5,
       change: '2 follow-ups needed',
       icon: ClipboardList,
-      color: '#F59E0B',
+      color: CARDLECT_COLORS.warning.main,
       data: sampleData,
       tooltip: 'Cases requiring follow-up',
     },
@@ -92,7 +93,7 @@ export default function ClinicDashboard() {
       value: '88%',
       change: '+4% from last month',
       icon: TrendingUp,
-      color: '#8B5CF6',
+      color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Overall student health score',
     },
@@ -200,8 +201,8 @@ export default function ClinicDashboard() {
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="grad-clinic" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.2} />
-                    <stop offset="100%" stopColor="#3B82F6" stopOpacity={0} />
+                    <stop offset="0%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.2} />
+                    <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0} />
                   </linearGradient>
                 </defs>
 
@@ -222,13 +223,13 @@ export default function ClinicDashboard() {
                       </div>
                     )
                   }}
-                  cursor={{ stroke: '#3B82F6', strokeWidth: 2, opacity: 0.1 }}
+                  cursor={{ stroke: CARDLECT_COLORS.primary.darker, strokeWidth: 2, opacity: 0.1 }}
                 />
 
                 <Area
                   type="monotone"
                   dataKey="visits"
-                  stroke="#3B82F6"
+                  stroke={CARDLECT_COLORS.primary.darker}
                   strokeWidth={2}
                   fill="url(#grad-clinic)"
                   isAnimationActive={true}

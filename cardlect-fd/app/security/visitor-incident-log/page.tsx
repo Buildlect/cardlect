@@ -4,6 +4,7 @@ import { useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 import {
   Users,
   UserCheck,
@@ -129,28 +130,28 @@ export default function VisitorIncidentLog() {
       value: 24,
       change: '+12% from yesterday',
       icon: <Users className="w-5 h-5" />,
-      borderColor: 'border-l-primary'
+      borderColor: CARDLECT_COLORS.primary.darker
     },
     {
       title: 'CURRENTLY CHECKED IN',
       value: 8,
       change: '3 expected soon',
       icon: <UserCheck className="w-5 h-5" />,
-      borderColor: 'border-l-green-500'
+      borderColor: CARDLECT_COLORS.success.main
     },
     {
       title: 'AVERAGE VISIT TIME',
       value: 45,
       change: 'minutes',
       icon: <Clock className="w-5 h-5" />,
-      borderColor: 'border-l-purple-500'
+      borderColor: CARDLECT_COLORS.secondary.main
     },
     {
       title: 'INCIDENTS REPORTED',
       value: 2,
       change: 'This week',
       icon: <UserCheck className="w-5 h-5" />, // Could use a different icon for incidents
-      borderColor: 'border-l-destructive'
+      borderColor: CARDLECT_COLORS.danger.main
     }
   ]
 
@@ -158,26 +159,13 @@ export default function VisitorIncidentLog() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'checked_in':
-        return 'text-green-500'
+        return { color: CARDLECT_COLORS.success.main, backgroundColor: CARDLECT_COLORS.success.main + '20' }
       case 'checked_out':
-        return 'text-gray-500'
+        return { color: '#9E9E9E', backgroundColor: '#9E9E9E20' }
       case 'expected':
-        return 'text-blue-500'
+        return { color: CARDLECT_COLORS.info.main, backgroundColor: CARDLECT_COLORS.info.main + '20' }
       default:
-        return 'text-gray-500'
-    }
-  }
-
-  const getStatusBg = (status: string) => {
-    switch (status) {
-      case 'checked_in':
-        return 'bg-green-500/10'
-      case 'checked_out':
-        return 'bg-gray-500/10'
-      case 'expected':
-        return 'bg-blue-500/10'
-      default:
-        return 'bg-gray-500/10'
+        return { color: '#9E9E9E', backgroundColor: '#9E9E9E20' }
     }
   }
 
@@ -253,7 +241,8 @@ export default function VisitorIncidentLog() {
             {stats.map((stat, idx) => (
               <div
                 key={idx}
-                className={`bg-card border-l-4 ${stat.borderColor} border border-border rounded-lg p-6 hover:bg-secondary/40 transition-colors`}
+                className="bg-card border border-border rounded-lg p-6 hover:bg-secondary/40 transition-colors"
+                style={{ borderLeftColor: stat.borderColor, borderLeftWidth: '4px' }}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="text-muted-foreground text-xs font-medium tracking-wide">
@@ -427,8 +416,22 @@ export default function VisitorIncidentLog() {
 
                   {/* Status */}
                   <div className="col-span-1">
-                    <div className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium ${getStatusBg(log.status)} ${getStatusColor(log.status)}`}>
-                      <div className={`w-1.5 h-1.5 rounded-full ${log.status === 'checked_in' ? 'bg-green-500' : log.status === 'checked_out' ? 'bg-muted-foreground' : 'bg-blue-500'}`} />
+                    <div style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '9999px',
+                      fontSize: '0.75rem',
+                      fontWeight: '500',
+                      ...getStatusColor(log.status)
+                    }}>
+                      <div style={{
+                        width: '0.375rem',
+                        height: '0.375rem',
+                        borderRadius: '9999px',
+                        backgroundColor: log.status === 'checked_in' ? CARDLECT_COLORS.success.main : log.status === 'checked_out' ? '#6B7280' : CARDLECT_COLORS.info.main
+                      }} />
                       {formatStatus(log.status)}
                     </div>
                   </div>

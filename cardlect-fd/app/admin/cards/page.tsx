@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Input } from "@/components/ui/input"
 import { Search, Lock, Unlock, Trash2 } from "lucide-react"
+import { CARDLECT_COLORS } from "@/lib/cardlect-colors"
 
 const mockCards = [
   {
@@ -146,7 +147,10 @@ export default function CardsPage() {
                         <td className="py-2 px-4 font-mono text-xs">{card.cardId}</td>
                         <td className="py-2 px-4">{card.holder}</td>
                         <td className="py-2 px-4">
-                          <span className="px-2 py-1 rounded text-xs font-medium bg-accent/10 text-accent">
+                          <span style={{
+                            backgroundColor: `${CARDLECT_COLORS.primary.darker}20`,
+                            color: CARDLECT_COLORS.primary.darker
+                          }} className="px-2 py-1 rounded text-xs font-medium">
                             {card.type}
                           </span>
                         </td>
@@ -154,11 +158,15 @@ export default function CardsPage() {
                         <td className="py-2 px-4 font-semibold">₦{card.balance.toLocaleString()}</td>
                         <td className="py-2 px-4">
                           <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
-                              card.status === "Active"
-                                ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200"
-                                : "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200"
-                            }`}
+                            style={{
+                              backgroundColor: card.status === "Active" 
+                                ? `${CARDLECT_COLORS.success.main}20` 
+                                : `${CARDLECT_COLORS.danger.main}20`,
+                              color: card.status === "Active" 
+                                ? CARDLECT_COLORS.success.main 
+                                : CARDLECT_COLORS.danger.main
+                            }}
+                            className="px-2 py-1 rounded text-xs font-medium"
                           >
                             {card.status}
                           </span>
@@ -241,13 +249,21 @@ export default function CardsPage() {
                 onClick={() => {
                   toggleCardStatus(selectedCard.id)
                 }}
-                className="px-3 py-1 rounded bg-accent/10 hover:bg-accent/20"
+                style={{ 
+                  backgroundColor: `${CARDLECT_COLORS.primary.darker}15`, 
+                  color: CARDLECT_COLORS.primary.darker 
+                }}
+                className="px-3 py-1 rounded hover:opacity-80"
               >
                 {selectedCard.status === "Active" ? "Block" : "Unblock"}
               </button>
               <button
                 onClick={() => handleDeleteCard(selectedCard.id)}
-                className="px-3 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100"
+                style={{ 
+                  backgroundColor: `${CARDLECT_COLORS.danger.main}15`, 
+                  color: CARDLECT_COLORS.danger.main 
+                }}
+                className="px-3 py-1 rounded hover:opacity-80"
               >
                 Delete
               </button>

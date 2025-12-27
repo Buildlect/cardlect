@@ -4,6 +4,7 @@ import { useProtectedRoute } from '@/contexts/auth-context'
 import { useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { DollarSign, TrendingUp, AlertTriangle, Check, CreditCard, BarChart3, Bell, Calendar } from 'lucide-react'
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 import {
   LineChart,
   Line,
@@ -79,40 +80,40 @@ export default function FinanceDashboard() {
       value: 95800,
       change: '+12% this month',
       icon: TrendingUp,
-      color: '#10B981',
+      color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Total income this month',
-      prefix: '$',
+      prefix: '₦',
     },
     {
       label: 'Pending Payments',
       value: 12500,
       change: '8 invoices outstanding',
       icon: AlertTriangle,
-      color: '#EF4444',
+      color: CARDLECT_COLORS.danger.main,
       data: sampleData,
       tooltip: 'Amount awaiting payment',
-      prefix: '$',
+      prefix: '₦',
     },
     {
       label: 'Monthly Expenses',
       value: 45200,
       change: '-5% from last month',
       icon: CreditCard,
-      color: '#3B82F6',
+      color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Total expenditure',
-      prefix: '$',
+      prefix: '₦',
     },
     {
       label: 'Net Balance',
       value: 48300,
       change: '+18% growth',
       icon: DollarSign,
-      color: '#8B5CF6',
+      color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Current net balance',
-      prefix: '$',
+      prefix: '₦',
     },
   ]
 
@@ -122,17 +123,17 @@ export default function FinanceDashboard() {
       value: 25400,
       change: '+8% this month',
       icon: TrendingUp,
-      color: '#F59E0B',
+      color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Revenue from partner store network',
-      prefix: '$',
+      prefix: '₦',
     },
     {
       label: 'Active Partner Stores',
       value: 12,
       change: '+2 new stores',
       icon: BarChart3,
-      color: '#06B6D4',
+      color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Number of active approved partner stores',
     },
@@ -141,7 +142,7 @@ export default function FinanceDashboard() {
       value: 847,
       change: '+45 today',
       icon: CreditCard,
-      color: '#8B5CF6',
+      color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Total orders from partner network',
     },
@@ -150,7 +151,7 @@ export default function FinanceDashboard() {
       value: '4.7',
       change: '+0.2 this month',
       icon: BarChart3,
-      color: '#EC4899',
+      color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Average partner store rating',
     },
@@ -348,8 +349,8 @@ export default function FinanceDashboard() {
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="grad-income" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10B981" stopOpacity={0.2} />
-                    <stop offset="100%" stopColor="#10B981" stopOpacity={0} />
+                    <stop offset="0%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.2} />
+                    <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0} />
                   </linearGradient>
                 </defs>
 
@@ -370,13 +371,13 @@ export default function FinanceDashboard() {
                       </div>
                     )
                   }}
-                  cursor={{ stroke: '#10B981', strokeWidth: 2, opacity: 0.1 }}
+                  cursor={{ stroke: CARDLECT_COLORS.primary.darker, strokeWidth: 2, opacity: 0.1 }}
                 />
 
                 <Area
                   type="monotone"
                   dataKey="income"
-                  stroke="#10B981"
+                  stroke={CARDLECT_COLORS.primary.darker}
                   strokeWidth={2}
                   fill="url(#grad-income)"
                   isAnimationActive={true}

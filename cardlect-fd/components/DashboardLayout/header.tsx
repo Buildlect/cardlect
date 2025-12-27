@@ -2,9 +2,12 @@
 
 import { Bell, Search, Menu, X, LogOut, Settings, User } from "lucide-react"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ThemeToggleMobile } from "@/components/theme-toggle-mobile"
 import { CARDLECT_COLORS } from "@/lib/cardlect-colors"
+import { logout } from "@/contexts/auth-context"
 
 interface HeaderProps {
   sidebarOpen: boolean
@@ -13,6 +16,7 @@ interface HeaderProps {
 }
 
 export function Header({ sidebarOpen, onMenuClick, role = "admin" }: HeaderProps) {
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState("")
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
@@ -52,6 +56,23 @@ export function Header({ sidebarOpen, onMenuClick, role = "admin" }: HeaderProps
     "visitor": "VI",
   }
 
+  // Settings routes for each role
+  const settingsRoutes = {
+    "super-user": "/super-user/settings",
+    "admin": "/admin/settings",
+    "security": "/security/setting",
+    "finance": "/finance/settings",
+    "teacher": "/teacher/settings",
+    "parents": "/parent/settings",
+    "students": "/student/settings",
+    "clinic": "/clinic/settings",
+    "store": "/store/settings",
+    "approved-stores": "/approved-stores/settings",
+    "exam-officer": "/exam-officer/settings",
+    "librarian": "/librarian/settings",
+    "visitor": "/",
+  }
+
   // Different placeholders based on role
   const searchPlaceholders = {
     admin: "Search students, staff...",
@@ -67,6 +88,11 @@ export function Header({ sidebarOpen, onMenuClick, role = "admin" }: HeaderProps
     "exam-officer": "Search exams, results...",
     "librarian": "Search books, students...",
     "visitor": "Search information...",
+  }
+
+  const handleLogout = () => {
+    logout()
+    router.push("/auth/logout")
   }
 
   return (
@@ -113,37 +139,59 @@ export function Header({ sidebarOpen, onMenuClick, role = "admin" }: HeaderProps
                 setNotificationsOpen(!notificationsOpen)
                 setProfileOpen(false)
               }}
-              className="relative p-2 hover:bg-secondary rounded-lg transition-all"
+              className="relative p-2 hover:bg-secondary rounded-lg transition-all group"
               aria-label="Notifications"
+              title="Notifications"
             >
-              <Bell size={20} />
-              <span style={{ backgroundColor: CARDLECT_COLORS.danger.main }} className="absolute top-1 right-1 w-2 h-2 rounded-full animate-pulse" />
+              <Bell size={20} style={{ color: notificationsOpen ? CARDLECT_COLORS.primary.darker : 'inherit' }} className="transition-colors" />
+              <span style={{ backgroundColor: CARDLECT_COLORS.danger.main }} className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full animate-pulse" />
             </button>
 
             {notificationsOpen && (
-              <div className="absolute top-full right-0 mt-2 w-80 bg-card border border-border rounded-lg shadow-xl z-50">
-                <div className="p-4 border-b border-border">
-                  <p className="font-semibold text-foreground text-sm">Notifications</p>
+              <div className="absolute top-full right-0 mt-2 w-96 bg-card border-2 rounded-lg shadow-xl z-50" style={{ borderColor: CARDLECT_COLORS.primary.darker }}>
+                <div className="p-4 border-b" style={{ borderColor: CARDLECT_COLORS.primary.darker, backgroundColor: CARDLECT_COLORS.primary.darker + '10' }}>
+                  <div className="flex items-center justify-between">
+                    <p className="font-bold text-foreground text-sm">Notifications</p>
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: CARDLECT_COLORS.primary.darker, color: '#fafafa' }}>3 New</span>
+                  </div>
                 </div>
                 <div className="max-h-96 overflow-y-auto">
-                  <div className="p-4 space-y-3">
-                    <div className="p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors cursor-pointer">
-                      <p className="text-sm font-medium text-foreground">Welcome to Cardlect</p>
-                      <p className="text-xs text-muted-foreground mt-1">Get started with your dashboard</p>
+                  <div className="p-4 space-y-2">
+                    <div className="p-3 bg-muted/40 rounded-lg hover:bg-muted transition-all cursor-pointer border-l-4 border-l-blue-500">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-foreground">Welcome to Cardlect</p>
+                          <p className="text-xs text-muted-foreground mt-1">Get started with your dashboard and explore features</p>
+                        </div>
+                        <span className="text-xs font-medium" style={{ color: CARDLECT_COLORS.info.main }}>●</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">2 hours ago</p>
                     </div>
-                    <div className="p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors cursor-pointer">
-                      <p className="text-sm font-medium text-foreground">System Update</p>
-                      <p className="text-xs text-muted-foreground mt-1">Updates available for your account</p>
+                    <div className="p-3 bg-muted/40 rounded-lg hover:bg-muted transition-all cursor-pointer border-l-4 border-l-yellow-500">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-foreground">System Update Available</p>
+                          <p className="text-xs text-muted-foreground mt-1">Updates available for your account and system</p>
+                        </div>
+                        <span className="text-xs font-medium" style={{ color: CARDLECT_COLORS.warning.main }}>●</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">4 hours ago</p>
                     </div>
-                    <div className="p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors cursor-pointer">
-                      <p className="text-sm font-medium text-foreground">New Message</p>
-                      <p className="text-xs text-muted-foreground mt-1">You have a new message</p>
+                    <div className="p-3 bg-muted/40 rounded-lg hover:bg-muted transition-all cursor-pointer border-l-4 border-l-green-500">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-foreground">New Message</p>
+                          <p className="text-xs text-muted-foreground mt-1">You have a new message from your administrator</p>
+                        </div>
+                        <span className="text-xs font-medium" style={{ color: CARDLECT_COLORS.success.main }}>●</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-2">Just now</p>
                     </div>
                   </div>
                 </div>
-                <div className="p-3 border-t border-border text-center">
-                  <button className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-                    View all notifications
+                <div className="p-3 border-t" style={{ borderColor: CARDLECT_COLORS.primary.darker }}>
+                  <button className="text-xs font-semibold w-full py-2 rounded transition-all" style={{ color: CARDLECT_COLORS.primary.darker, backgroundColor: CARDLECT_COLORS.primary.darker + '15' }}>
+                    View all notifications →
                   </button>
                 </div>
               </div>
@@ -172,8 +220,8 @@ export function Header({ sidebarOpen, onMenuClick, role = "admin" }: HeaderProps
                       {roleInitials[role as keyof typeof roleInitials]}
                     </div>
                     <div>
-                      <p className="font-semibold text-foreground text-sm">{roleDisplayNames[role as keyof typeof roleDisplayNames]}</p>
-                      <p className="text-xs text-muted-foreground">Cardlect Dashboard</p>
+                      <p className="font-semibold text-foreground text-sm" style={{ color: CARDLECT_COLORS.primary.main }}>{roleDisplayNames[role as keyof typeof roleDisplayNames]}</p>
+                      <p className="text-xs text-muted-foreground">user@cardlect.io</p>
                     </div>
                   </div>
                 </div>
@@ -183,14 +231,21 @@ export function Header({ sidebarOpen, onMenuClick, role = "admin" }: HeaderProps
                     <User size={16} className="text-muted-foreground" />
                     <span className="text-sm text-foreground">My Profile</span>
                   </button>
-                  <button className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors text-left">
+                  <Link
+                    href={settingsRoutes[role as keyof typeof settingsRoutes]}
+                    onClick={() => setProfileOpen(false)}
+                    className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors text-left"
+                  >
                     <Settings size={16} className="text-muted-foreground" />
                     <span className="text-sm text-foreground">Settings</span>
-                  </button>
+                  </Link>
                 </div>
 
                 <div className="p-3 border-t border-border">
-                  <button className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-destructive/10 transition-colors text-left">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-destructive/10 transition-colors text-left"
+                  >
                     <LogOut size={16} style={{ color: CARDLECT_COLORS.danger.main }} />
                     <span className="text-sm" style={{ color: CARDLECT_COLORS.danger.main }}>Logout</span>
                   </button>

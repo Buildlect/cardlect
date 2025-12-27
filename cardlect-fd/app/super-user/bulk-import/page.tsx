@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Upload, Download, Plus, CheckCircle, AlertCircle } from 'lucide-react'
 import { useCardlect } from '@/contexts/cardlect-context'
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 
 type ImportType = 'students' | 'staff' | 'parents'
 
@@ -245,18 +246,18 @@ Mr. James Davis,james@email.com,9876543232,Father,STU-003`
                 </div>
 
                 {importResult && (
-                  <div className={`bg-card border rounded-lg p-6 ${importResult.failed === 0 ? 'border-green-500/20 bg-green-500/5' : 'border-yellow-500/20 bg-yellow-500/5'}`}>
+                  <div className="bg-card border rounded-lg p-6" style={{ borderColor: importResult.failed === 0 ? `${CARDLECT_COLORS.success.main}33` : `${CARDLECT_COLORS.warning.main}33`, backgroundColor: importResult.failed === 0 ? `${CARDLECT_COLORS.success.main}0D` : `${CARDLECT_COLORS.warning.main}0D` }}>
                     <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                       {importResult.failed === 0 ? (
-                        <><CheckCircle size={20} className="text-green-600" /> Import Successful</>
+                        <><CheckCircle size={20} style={{ color: CARDLECT_COLORS.success.main }} /> Import Successful</>
                       ) : (
-                        <><AlertCircle size={20} className="text-yellow-600" /> Import Completed with Errors</>
+                        <><AlertCircle size={20} style={{ color: CARDLECT_COLORS.warning.main }} /> Import Completed with Errors</>
                       )}
                     </h3>
                     <div className="space-y-2 mb-4">
-                      <p className="text-sm text-foreground">Successfully Registered: <span className="font-semibold text-green-600">{importResult.success}</span></p>
+                      <p className="text-sm text-foreground">Successfully Registered: <span className="font-semibold" style={{ color: CARDLECT_COLORS.success.main }}>{importResult.success}</span></p>
                       {importResult.failed > 0 && (
-                        <p className="text-sm text-foreground">Failed: <span className="font-semibold text-yellow-600">{importResult.failed}</span></p>
+                        <p className="text-sm text-foreground">Failed: <span className="font-semibold" style={{ color: CARDLECT_COLORS.warning.main }}>{importResult.failed}</span></p>
                       )}
                     </div>
                     {importResult.errors.length > 0 && (
@@ -271,9 +272,9 @@ Mr. James Davis,james@email.com,9876543232,Father,STU-003`
               </div>
 
               <div className="space-y-6">
-                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-                  <h3 className="font-semibold text-blue-600 mb-2">CSV Format</h3>
-                  <div className="text-xs text-blue-600/80 space-y-1">
+                <div className="border rounded-lg p-4" style={{ backgroundColor: `${CARDLECT_COLORS.info.main}19`, borderColor: `${CARDLECT_COLORS.info.main}33` }}>
+                  <h3 className="font-semibold mb-2" style={{ color: CARDLECT_COLORS.info.main }}>CSV Format</h3>
+                  <div className="text-xs space-y-1" style={{ color: `${CARDLECT_COLORS.info.main}CC` }}>
                     <p>First row must be headers</p>
                     <p>Required fields vary by type</p>
                     <p>Emails can be semicolon-separated for multiple values</p>

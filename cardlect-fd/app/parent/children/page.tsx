@@ -5,7 +5,7 @@ import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus, Edit, Phone, Mail, Smartphone } from 'lucide-react'
-import { ROLE_COLORS } from '@/lib/cardlect-colors'
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 
 interface Child {
   id: string
@@ -30,10 +30,10 @@ export default function ChildrenPage() {
 
   const getCardStatusColor = (status: string) => {
     switch(status) {
-      case 'active': return 'text-green-600 bg-green-50'
-      case 'inactive': return 'text-yellow-600 bg-yellow-50'
-      case 'lost': return 'text-red-600 bg-red-50'
-      default: return 'text-gray-600 bg-gray-50'
+      case 'active': return { color: CARDLECT_COLORS.success.main, backgroundColor: `${CARDLECT_COLORS.success.main}20` }
+      case 'inactive': return { color: CARDLECT_COLORS.warning.main, backgroundColor: `${CARDLECT_COLORS.warning.main}20` }
+      case 'lost': return { color: CARDLECT_COLORS.danger.main, backgroundColor: `${CARDLECT_COLORS.danger.main}20` }
+      default: return { color: '#6B7280', backgroundColor: '#F3F4F6' }
     }
   }
 
@@ -45,7 +45,7 @@ export default function ChildrenPage() {
             <h1 className="text-3xl font-bold text-foreground">My Children</h1>
             <p className="text-muted-foreground">Manage and monitor your children's profiles</p>
           </div>
-          <Button style={{ backgroundColor: ROLE_COLORS.parents.main }} className="text-white">
+          <Button style={{ backgroundColor: CARDLECT_COLORS.primary.darker }} className="text-white hover:opacity-90">
             <Plus size={18} /> Add Child
           </Button>
         </div>
@@ -55,7 +55,7 @@ export default function ChildrenPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Total Children</div>
-              <div className="text-2xl font-bold" style={{ color: ROLE_COLORS.parents.main }}>{children.length}</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.primary.darker }}>{children.length}</div>
               <div className="text-xs text-muted-foreground mt-2">Registered profiles</div>
             </CardContent>
           </Card>
@@ -63,7 +63,7 @@ export default function ChildrenPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Active Cards</div>
-              <div className="text-2xl font-bold text-green-600">{children.filter(c => c.cardStatus === 'active').length}</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.success.main }}>{children.filter(c => c.cardStatus === 'active').length}</div>
               <div className="text-xs text-muted-foreground mt-2">With active cards</div>
             </CardContent>
           </Card>
@@ -71,7 +71,7 @@ export default function ChildrenPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Issues</div>
-              <div className="text-2xl font-bold text-yellow-600">{children.filter(c => c.cardStatus !== 'active').length}</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.warning.main }}>{children.filter(c => c.cardStatus !== 'active').length}</div>
               <div className="text-xs text-muted-foreground mt-2">Need attention</div>
             </CardContent>
           </Card>
@@ -87,7 +87,7 @@ export default function ChildrenPage() {
                     <h3 className="font-semibold text-lg">{child.name}</h3>
                     <p className="text-sm text-muted-foreground">{child.grade}</p>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getCardStatusColor(child.cardStatus)}`}>
+                  <span style={{ ...getCardStatusColor(child.cardStatus), padding: '0.75rem 1rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: '600' }}>
                     {child.cardStatus.charAt(0).toUpperCase() + child.cardStatus.slice(1)}
                   </span>
                 </div>

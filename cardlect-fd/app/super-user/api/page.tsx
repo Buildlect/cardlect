@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Copy, Eye, EyeOff, Plus, Trash2, AlertCircle, CheckCircle, Sun, Moon } from 'lucide-react'
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 
 interface ApiKey {
   id: string
@@ -169,9 +170,8 @@ export default function ApiPage() {
                         <div className="flex items-center gap-3">
                           <h3 className="text-lg font-semibold text-foreground">{apiKey.name}</h3>
                           <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${
-                              apiKey.status === 'active' ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                            }`}
+                            className="px-2 py-1 rounded text-xs font-medium"
+                            style={apiKey.status === 'active' ? { backgroundColor: `${CARDLECT_COLORS.primary.main}19`, color: CARDLECT_COLORS.primary.main } : { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
                           >
                             {apiKey.status.charAt(0).toUpperCase() + apiKey.status.slice(1)}
                           </span>
@@ -217,7 +217,7 @@ export default function ApiPage() {
                       </div>
                       <div className="bg-secondary/20 rounded-lg p-3">
                         <p className="text-xs text-muted-foreground mb-1">Requests Today</p>
-                        <p className="text-lg font-semibold text-primary">{apiKey.requestsToday.toLocaleString()}</p>
+                        <p className="text-lg font-semibold" style={{ color: CARDLECT_COLORS.primary.main }}>{apiKey.requestsToday.toLocaleString()}</p>
                       </div>
                       <div className="bg-secondary/20 rounded-lg p-3">
                         <p className="text-xs text-muted-foreground mb-1">Last Used</p>
@@ -253,18 +253,17 @@ export default function ApiPage() {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
                               {log.status === 'success' ? (
-                                <CheckCircle size={16} className="text-primary" />
+                                <CheckCircle size={16} style={{ color: CARDLECT_COLORS.success.main }} />
                               ) : (
-                                <AlertCircle size={16} className="text-destructive" />
+                                <AlertCircle size={16} style={{ color: CARDLECT_COLORS.danger.main }} />
                               )}
                               <span className="text-sm font-medium text-foreground capitalize">{log.status}</span>
                             </div>
                           </td>
                           <td className="px-6 py-4 text-sm">
                             <span
-                              className={`px-2 py-1 rounded text-xs font-mono ${
-                                log.status === 'success' ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'
-                              }`}
+                              className="px-2 py-1 rounded text-xs font-mono"
+                              style={log.status === 'success' ? { backgroundColor: `${CARDLECT_COLORS.success.main}19`, color: CARDLECT_COLORS.success.main } : { backgroundColor: `${CARDLECT_COLORS.danger.main}19`, color: CARDLECT_COLORS.danger.main }}
                             >
                               {log.statusCode}
                             </span>

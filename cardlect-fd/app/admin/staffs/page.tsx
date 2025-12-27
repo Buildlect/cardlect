@@ -6,6 +6,7 @@ import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search, Edit, Trash2 } from "lucide-react"
+import { CARDLECT_COLORS } from "@/lib/cardlect-colors"
 
 // selectable roles (will be from api)
 const roles = [
@@ -84,7 +85,7 @@ export default function StaffPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold">Staff Management</h2>
-          <Button onClick={() => setShowForm(true)} className="bg-primary hover:bg-primary/90 gap-2">
+          <Button onClick={() => setShowForm(true)} style={{ backgroundColor: CARDLECT_COLORS.primary.darker }} className="text-white hover:opacity-90 gap-2">
             <Plus size={18} /> Add Staff
           </Button>
         </div>
@@ -151,7 +152,7 @@ export default function StaffPage() {
                     />
                   </div>
                   <div className="flex gap-3 mt-4">
-                    <Button onClick={handleAddStaff} className="bg-primary hover:bg-primary/90">
+                    <Button onClick={handleAddStaff} style={{ backgroundColor: CARDLECT_COLORS.primary.darker }} className="text-white hover:opacity-90">
                       Save Staff
                     </Button>
                     <Button onClick={() => setShowForm(false)} variant="outline">
@@ -208,7 +209,10 @@ export default function StaffPage() {
                         <td className="py-2 px-4">{member.class}</td>
                         <td className="py-2 px-4">{member.email}</td>
                         <td className="py-2 px-4">
-                          <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200">
+                          <span style={{
+                            backgroundColor: `${CARDLECT_COLORS.success.main}20`,
+                            color: CARDLECT_COLORS.success.main
+                          }} className="px-2 py-1 rounded text-xs font-medium">
                             {member.status}
                           </span>
                         </td>

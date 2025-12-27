@@ -4,6 +4,7 @@ import { useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 import {
   Scan,
   User,
@@ -229,8 +230,10 @@ export default function PickupAuthorization() {
                         {student.recentPickups.map((pickup, idx) => (
                           <div key={idx} className="flex justify-between text-sm">
                             <span>{pickup.parent}</span>
-                            <span className={`px-2 py-1 rounded text-xs ${pickup.status === 'authorized' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                              }`}>
+                            <span style={{
+                              backgroundColor: pickup.status === 'authorized' ? CARDLECT_COLORS.success.main + '20' : CARDLECT_COLORS.danger.main + '20',
+                              color: pickup.status === 'authorized' ? CARDLECT_COLORS.success.main : CARDLECT_COLORS.danger.main
+                            }} className="px-2 py-1 rounded text-xs">
                               {pickup.status}
                             </span>
                           </div>
@@ -306,8 +309,10 @@ export default function PickupAuthorization() {
                       <div>
                         <h3 className="font-semibold text-lg">{parent.name}</h3>
                         <p className="text-muted-foreground">{parent.relationship}</p>
-                        <span className={`px-2 py-1 rounded text-xs ${parent.cardStatus === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'
-                          }`}>
+                        <span style={{
+                          backgroundColor: parent.cardStatus === 'active' ? CARDLECT_COLORS.success.main + '20' : CARDLECT_COLORS.danger.main + '20',
+                          color: parent.cardStatus === 'active' ? CARDLECT_COLORS.success.main : CARDLECT_COLORS.danger.main
+                        }} className="px-2 py-1 rounded text-xs">
                           {parent.cardStatus}
                         </span>
                       </div>
@@ -318,8 +323,8 @@ export default function PickupAuthorization() {
                         <span className="text-sm">Live Image Verification</span>
                         <button
                           onClick={() => setLiveVerification(!liveVerification)}
-                          className={`w-10 h-6 rounded-full transition-colors ${liveVerification ? 'bg-primary' : 'bg-secondary'
-                            }`}
+                          className="w-10 h-6 rounded-full transition-colors"
+                          style={{ backgroundColor: liveVerification ? CARDLECT_COLORS.primary.darker : '#9E9E9E' }}
                         >
                           <div className={`w-4 h-4 rounded-full bg-white transition-transform ${liveVerification ? 'translate-x-5' : 'translate-x-1'
                             }`} />
@@ -330,8 +335,8 @@ export default function PickupAuthorization() {
                         <span className="text-sm">PIN Verification</span>
                         <button
                           onClick={() => setPinVerification(!pinVerification)}
-                          className={`w-10 h-6 rounded-full transition-colors ${pinVerification ? 'bg-primary' : 'bg-secondary'
-                            }`}
+                          className="w-10 h-6 rounded-full transition-colors"
+                          style={{ backgroundColor: pinVerification ? CARDLECT_COLORS.primary.darker : '#9E9E9E' }}
                         >
                           <div className={`w-4 h-4 rounded-full bg-white transition-transform ${pinVerification ? 'translate-x-5' : 'translate-x-1'
                             }`} />

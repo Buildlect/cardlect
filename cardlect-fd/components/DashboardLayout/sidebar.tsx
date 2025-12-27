@@ -29,9 +29,12 @@ import {
   ClipboardList,
   Activity,
   MessageSquare,
+  BookMarked,
 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import type { LucideIcon } from "lucide-react"
+import { logout } from "@/contexts/auth-context"
 
 export interface MenuItem {
   icon: LucideIcon
@@ -61,6 +64,7 @@ export const defaultMenuItems = {
     { icon: Clock, label: "Attendance", href: "/admin/attendance", id: "attendance" },
     { icon: LogIn, label: "Gate Logs", href: "/admin/gate-logs", id: "gate-logs" },
     { icon: DollarSign, label: "Wallet", href: "/admin/wallet", id: "wallet" },
+    { icon: Award, label: "CBT Exams", href: "/admin/exams", id: "exams" },
     { icon: BarChart3, label: "Reports", href: "/admin/reports", id: "reports" },
     { icon: MessageSquare, label: "Communication", href: "/admin/communication", id: "communication" },
   ] as MenuItem[],
@@ -77,6 +81,7 @@ export const defaultMenuItems = {
     { icon: LayoutGrid, label: "Dashboard", href: "/super-user", id: "dashboard" },
     { icon: Building2, label: "Manage Schools", href: "/super-user/schools", id: "schools" },
     { icon: CreditCard, label: "Cards", href: "/super-user/cards", id: "cards" },
+    { icon: Award, label: "CBT Exams", href: "/super-user/exams", id: "exams" },
     { icon: BarChart3, label: "Analytics", href: "/super-user/analytics", id: "analytics" },
     { icon: FileText, label: "Logs", href: "/super-user/logs", id: "logs" },
     { icon: Upload, label: "Bulk Import", href: "/super-user/bulk-import", id: "bulk-import" },
@@ -86,6 +91,7 @@ export const defaultMenuItems = {
   ] as MenuItem[],
   parents: [
     { icon: LayoutGrid, label: "Dashboard", href: "/parent", id: "dashboard" },
+    { icon: Award, label: "CBT Exams", href: "/parent/exams", id: "exams" },
     { icon: Users, label: "My Children", href: "/parent/children", id: "children" },
     { icon: Clock, label: "Activity Log", href: "/parent/activity-log", id: "activity-log" },
     { icon: MessageSquare, label: "Communication", href: "/parent/communication", id: "communication" },
@@ -95,6 +101,7 @@ export const defaultMenuItems = {
   ] as MenuItem[],
   students: [
     { icon: LayoutGrid, label: "Dashboard", href: "/student", id: "dashboard" },
+    { icon: Award, label: "CBT Exams", href: "/student/exams", id: "exams" },
     { icon: Book, label: "Assignments", href: "/student/assignments", id: "assignments" },
     { icon: Award, label: "Grades", href: "/student/grades", id: "grades" },
     { icon: MessageSquare, label: "Communication", href: "/student/communication", id: "communication" },
@@ -122,6 +129,7 @@ export const defaultMenuItems = {
   ] as MenuItem[],
   teacher: [
     { icon: LayoutGrid, label: "Dashboard", href: "/teacher", id: "dashboard" },
+    { icon: Award, label: "CBT Exams", href: "/teacher/exams", id: "exams" },
     { icon: Users, label: "Classes", href: "/teacher/classes", id: "classes" },
     { icon: FileText, label: "Assignments", href: "/teacher/assignments", id: "assignments" },
     { icon: MessageSquare, label: "Communication", href: "/teacher/communication", id: "communication" },
@@ -201,6 +209,13 @@ export function Sidebar({
   menuItems,
   role = "admin",
 }: SidebarProps) {
+  const router = useRouter()
+
+  const handleLogout = () => {
+    logout()
+    router.push('/auth/logout')
+  }
+
   return (
     <>
       {/* Mobile backdrop: click to close */}
@@ -282,19 +297,14 @@ export function Sidebar({
         </nav>
 
         <div className="mt-auto p-3 border-t border-gray-200 dark:border-[#111827]">
-          <Link
-            href="/logout"
-            onClick={(e) => {
-              e.preventDefault()
-              onNavigate("/auth/logout")
-              if (isMobile) onToggle()
-            }}
+          <button
+            onClick={handleLogout}
             aria-label="Logout"
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-orange-50 transition-all dark:text-gray-200 dark:hover:bg-[rgba(234,88,12,0.06)]"
           >
             <LogOut size={20} />
             {open && <span className="text-sm font-medium">Logout</span>}
-          </Link>
+          </button>
         </div>
       </aside>
     </>

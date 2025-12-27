@@ -35,11 +35,14 @@ export default function WalletPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [showTopup, setShowTopup] = useState(false)
   const [topupData, setTopupData] = useState({ studentName: "", amount: "" })
+  const [topupLoading, setTopupLoading] = useState(false)
+  const [topupMessage, setTopupMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   // Modal state
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [selectedWallet, setSelectedWallet] = useState<Wallet | null>(null)
   const [modalTopupAmount, setModalTopupAmount] = useState("")
+  const [modalLoading, setModalLoading] = useState(false)
 
   const filteredWallets = wallets.filter((w) => w.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
@@ -71,36 +74,58 @@ export default function WalletPage() {
   function handleModalTopup() {
     if (!selectedWallet) return
     const amt = parseFloat(modalTopupAmount)
-    if (isNaN(amt) || amt <= 0) return
+    
+    // Validate amount
+    if (!modalTopupAmount.trim()) {
+      alert('Please enter an amount')
+      return
+    }
+    if (isNaN(amt)) {
+      alert('Please enter a valid number')
+      return
+    }
+    if (amt <= 0) {
+      alert('Amount must be greater than 0')
+      return
+    }
+    if (amt < 1000) {
+      alert('Minimum amount is ₦1,000')
+      return
+    }
 
-    setWallets((prev) =>
-      prev.map((w) =>
-        w.id === selectedWallet.id
+    setModalLoading(true)
+    // Simulate API call
+    setTimeout(() => {
+      setWallets((prev) =>
+        prev.map((w) =>
+          w.id === selectedWallet.id
+            ? {
+                ...w,
+                balance: w.balance + amt,
+                lastTransaction: `Top Up - ₦${amt.toLocaleString()}`,
+                date: new Date().toISOString().slice(0, 10),
+                status: computeStatus(w.balance + amt),
+              }
+            : w
+        )
+      )
+
+      setSelectedWallet((s) =>
+        s
           ? {
-              ...w,
-              balance: w.balance + amt,
+              ...s,
+              balance: s.balance + amt,
               lastTransaction: `Top Up - ₦${amt.toLocaleString()}`,
               date: new Date().toISOString().slice(0, 10),
-              status: computeStatus(w.balance + amt),
+              status: computeStatus(s.balance + amt),
             }
-          : w
+          : s
       )
-    )
 
-    // update selectedWallet in modal to reflect new balance
-    setSelectedWallet((s) =>
-      s
-        ? {
-            ...s,
-            balance: s.balance + amt,
-            lastTransaction: `Top Up - ₦${amt.toLocaleString()}`,
-            date: new Date().toISOString().slice(0, 10),
-            status: computeStatus(s.balance + amt),
-          }
-        : s
-    )
-
-    setModalTopupAmount("")
+      setModalLoading(false)
+      setModalTopupAmount("")
+      alert(`Top-up of ₦${amt.toLocaleString()} successful!`)
+    }, 800)
   }
 
   return (
@@ -149,55 +174,90 @@ export default function WalletPage() {
 
         {/* Top Up Form */}
         {showTopup && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Up Student Wallet</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Input
-                  placeholder="Student Name"
-                  value={topupData.studentName}
-                  onChange={(e) => setTopupData({ ...topupData, studentName: e.target.value })}
-                />
-                <Input
-                  type="number"
-                  placeholder="Amount (₦)"
-                  value={topupData.amount}
-                  onChange={(e) => setTopupData({ ...topupData, amount: e.target.value })}
-                />
-                <div className="flex gap-2">
-                  <Button
-                    className="flex-1 bg-accent hover:bg-accent/90"
-                    onClick={() => {
-                      // simple top-up by matching student name
-                      const amt = parseFloat(topupData.amount)
-                      if (!topupData.studentName || isNaN(amt) || amt <= 0) return
-                      setWallets((prev) =>
-                        prev.map((w) =>
-                          w.name.toLowerCase() === topupData.studentName.toLowerCase()
-                            ? {
-                                ...w,
-                                balance: w.balance + amt,
-                                lastTransaction: `Top Up - ₦${amt.toLocaleString()}`,
-                                date: new Date().toISOString().slice(0, 10),
-                                status: computeStatus(w.balance + amt),
-                              }
-                            : w
-                        )
-                      )
-                      setTopupData({ studentName: "", amount: "" })
-                    }}
-                  >
-                    Top Up
-                  </Button>
-                  <Button onClick={() => setShowTopup(false)} variant="outline" className="flex-1">
-                    Cancel
-                  </Button>
-                </div>
+          <>
+            {topupMessage && (
+              <div style={{ backgroundColor: topupMessage.type === 'success' ? '#10b98120' : '#ef444420', borderLeft: `4px solid ${topupMessage.type === 'success' ? '#10b981' : '#ef4444'}` }} className="rounded p-4 mb-6">
+                <p style={{ color: topupMessage.type === 'success' ? '#10b981' : '#ef4444' }} className="font-medium">{topupMessage.text}</p>
               </div>
-            </CardContent>
-          </Card>
+            )}
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Up Student Wallet</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input
+                    placeholder="Student Name"
+                    value={topupData.studentName}
+                    onChange={(e) => setTopupData({ ...topupData, studentName: e.target.value })}
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Amount (₦)"
+                    value={topupData.amount}
+                    onChange={(e) => setTopupData({ ...topupData, amount: e.target.value })}
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      className="flex-1 bg-accent hover:bg-accent/90"
+                      onClick={() => {
+                        if (!topupData.studentName.trim()) {
+                          alert('Please enter student name')
+                          return
+                        }
+                        const amt = parseFloat(topupData.amount)
+                        if (!topupData.amount.trim() || isNaN(amt)) {
+                          alert('Please enter a valid amount')
+                          return
+                        }
+                        if (amt <= 0) {
+                          alert('Amount must be greater than 0')
+                          return
+                        }
+                        if (amt < 1000) {
+                          alert('Minimum amount is ₦1,000')
+                          return
+                        }
+                        
+                        const found = wallets.find(w => w.name.toLowerCase() === topupData.studentName.toLowerCase())
+                        if (!found) {
+                          alert(`Student "${topupData.studentName}" not found`)
+                          return
+                        }
+                        
+                        setTopupLoading(true)
+                        setTimeout(() => {
+                          setWallets((prev) =>
+                            prev.map((w) =>
+                              w.name.toLowerCase() === topupData.studentName.toLowerCase()
+                                ? {
+                                    ...w,
+                                    balance: w.balance + amt,
+                                    lastTransaction: `Top Up - ₦${amt.toLocaleString()}`,
+                                    date: new Date().toISOString().slice(0, 10),
+                                    status: computeStatus(w.balance + amt),
+                                  }
+                                : w
+                            )
+                          )
+                          setTopupLoading(false)
+                          setTopupMessage({ type: 'success', text: `Top-up of ₦${amt.toLocaleString()} successful!` })
+                          setTopupData({ studentName: "", amount: "" })
+                          setTimeout(() => setTopupMessage(null), 3000)
+                        }, 800)
+                      }}
+                      disabled={topupLoading}
+                    >
+                      {topupLoading ? 'Processing...' : 'Top Up'}
+                    </Button>
+                    <Button onClick={() => setShowTopup(false)} variant="outline" className="flex-1">
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
         )}
 
         {/* Search */}
@@ -317,13 +377,9 @@ export default function WalletPage() {
               </div>
 
               <div className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={closeWalletModal}>Close</Button>
-                <Button
-                  onClick={() => {
-                    handleModalTopup()
-                  }}
-                >
-                  Apply Top Up
+                <Button variant="outline" onClick={closeWalletModal} disabled={modalLoading}>Close</Button>
+                <Button onClick={handleModalTopup} disabled={modalLoading}>
+                  {modalLoading ? 'Processing...' : 'Apply Top Up'}
                 </Button>
               </div>
             </div>

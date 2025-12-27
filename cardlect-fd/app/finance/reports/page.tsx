@@ -63,7 +63,7 @@ export default function ReportsPage() {
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Total Revenue</div>
               <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.warning.main }}>₦968.5M</div>
-              <div className="text-xs text-green-600 mt-2">↑ 8.5% vs last period</div>
+              <div className="text-xs mt-2" style={{ color: CARDLECT_COLORS.success.main }}>↑ 8.5% vs last period</div>
             </CardContent>
           </Card>
 
@@ -78,7 +78,7 @@ export default function ReportsPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Collection Rate</div>
-              <div className="text-2xl font-bold text-green-600">94.2%</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.success.main }}>94.2%</div>
               <div className="text-xs text-muted-foreground mt-2">↑ 2.1% improvement</div>
             </CardContent>
           </Card>
@@ -86,8 +86,8 @@ export default function ReportsPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Outstanding</div>
-              <div className="text-2xl font-bold text-yellow-600">₦57.3M</div>
-              <div className="text-xs text-yellow-600 mt-2">Requires follow-up</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.warning.main }}>₦57.3M</div>
+              <div className="text-xs mt-2" style={{ color: CARDLECT_COLORS.warning.main }}>Requires follow-up</div>
             </CardContent>
           </Card>
         </div>

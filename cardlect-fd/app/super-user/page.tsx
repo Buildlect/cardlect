@@ -35,7 +35,7 @@ export default function Dashboard() {
       value: 24,
       change: '+2',
       icon: Home,
-      color: CARDLECT_COLORS.primary.main,
+      color: CARDLECT_COLORS.primary.darker,
       data: [2, 3, 4, 5, 6, 7, 8],
       tooltip: 'The total number of schools registered in the system.',
     },
@@ -53,7 +53,7 @@ export default function Dashboard() {
       value: 8462,
       change: '+124',
       icon: BookOpen,
-      color: CARDLECT_COLORS.info.main,
+      color: CARDLECT_COLORS.primary.darker,
       data: [6000, 6200, 6400, 6600, 7000, 7800, 8462],
       tooltip: 'Total number of students enrolled across all schools.',
     },
@@ -62,7 +62,7 @@ export default function Dashboard() {
       value: 12500,
       change: '+15%',
       icon: Activity,
-      color: CARDLECT_COLORS.accent.main,
+      color: CARDLECT_COLORS.primary.darker,
       data: [6, 7, 9, 11, 12, 12.3, 12.5],
       tooltip: 'Total number of NFC card scans recorded today.',
     },
@@ -84,19 +84,19 @@ export default function Dashboard() {
     {
       text: 'Hardware offline',
       icon: Cpu,
-      color: '#d96126',
+      color: CARDLECT_COLORS.primary.darker,
       bg: '#1a1a1a',
     },
     {
       text: 'High fraud rate',
       icon: AlertTriangle,
-      color: '#d96126',
+      color: CARDLECT_COLORS.primary.darker,
       bg: '#262626',
     },
     {
       text: 'System update',
       icon: RefreshCw,
-      color: '#d96126',
+      color: CARDLECT_COLORS.primary.darker,
       bg: '#1a1a1a',
     },
   ])
@@ -229,7 +229,7 @@ export default function Dashboard() {
 
                 {/* --- Tooltip --- */}
                 <Tooltip
-                  cursor={{ stroke: '#d96126', strokeWidth: 1, opacity: 0.2 }}
+                  cursor={{ stroke: CARDLECT_COLORS.primary.darker, strokeWidth: 1, opacity: 0.2 }}
                   contentStyle={{
                     background: '#1a1a1a',
                     border: '1px solid #333',
@@ -242,8 +242,8 @@ export default function Dashboard() {
                 {/* --- Gradient Fill --- */}
                 <defs>
                   <linearGradient id="scanGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#d96126" stopOpacity={0.45} />
-                    <stop offset="100%" stopColor="#d96126" stopOpacity={0.05} />
+                    <stop offset="0%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.45} />
+                    <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.05} />
                   </linearGradient>
                 </defs>
 
@@ -251,7 +251,7 @@ export default function Dashboard() {
                 <Area
                   type="monotone"
                   dataKey="scans"
-                  stroke="#d96126"
+                  stroke={CARDLECT_COLORS.primary.darker}
                   strokeWidth={3}
                   fill="url(#scanGradient)"
                   isAnimationActive={true}

@@ -24,9 +24,11 @@ export interface AuthUser {
   name: string
   email: string
   role: UserRole
+  schoolId?: string
+  schoolName?: string
 }
 
-// Simple in-memory store (in production, use session/localStorage with encryption)
+// Simple in-memory store (in production, We'll use session/localStorage with encryption)
 let currentUser: AuthUser | null = null
 let authInitialized = false
 
@@ -68,6 +70,11 @@ export function isAuthInitialized(): boolean {
   return false
 }
 
+export function logout() {
+  setAuthUser(null)
+  // Navigation handled in the component
+}
+
 export function useAuth() {
   const router = useRouter()
   const user = getAuthUser()
@@ -76,12 +83,12 @@ export function useAuth() {
     setAuthUser(user)
   }
 
-  const logout = () => {
-    setAuthUser(null)
+  const handleLogout = () => {
+    logout()
     router.push('/')
   }
 
-  return { user, login, logout, isAuthenticated: !!user }
+  return { user, login, logout: handleLogout, isAuthenticated: !!user }
 }
 
 export function useProtectedRoute(requiredRole?: UserRole) {

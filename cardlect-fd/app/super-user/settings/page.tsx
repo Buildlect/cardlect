@@ -6,6 +6,7 @@ import DashboardLayout from "@/components/DashboardLayout/layout"
 import { useTheme } from '@/components/theme-provider'
 import Link from 'next/link'
 import { Lock, Bell, Globe, Shield, LogOut, Save, Sun, Moon } from 'lucide-react'
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 
 export default function SettingsPage() {
   const router = useRouter()
@@ -35,7 +36,7 @@ export default function SettingsPage() {
                   <h2 className="text-xl font-semibold text-foreground mb-2">Profile Information</h2>
                   <p className="text-sm text-muted-foreground">Update your account details</p>
                 </div>
-                <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center text-primary-foreground text-xl font-bold">
+                <div className="w-16 h-16 rounded-lg flex items-center justify-center text-white text-xl font-bold" style={{ backgroundColor: CARDLECT_COLORS.primary.darker }}>
                   SA
                 </div>
               </div>
@@ -85,14 +86,12 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => setTwoFaEnabled(!twoFaEnabled)}
-                    className={`w-12 h-7 rounded-full transition-all ${
-                      twoFaEnabled ? 'bg-primary' : 'bg-secondary'
-                    } relative`}
+                    className="w-12 h-7 rounded-full transition-all relative"
+                    style={{ backgroundColor: twoFaEnabled ? CARDLECT_COLORS.primary.darker : 'var(--secondary)' }}
                   >
                     <div
-                      className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
-                        twoFaEnabled ? 'left-6' : 'left-1'
-                      }`}
+                      className="w-5 h-5 bg-white rounded-full absolute top-1 transition-all"
+                      style={{ left: twoFaEnabled ? '1.5rem' : '0.25rem' }}
                     />
                   </button>
                 </div>
@@ -128,14 +127,12 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => setEmailNotifications(!emailNotifications)}
-                    className={`w-12 h-7 rounded-full transition-all ${
-                      emailNotifications ? 'bg-primary' : 'bg-secondary'
-                    } relative`}
+                    className="w-12 h-7 rounded-full transition-all relative"
+                    style={{ backgroundColor: emailNotifications ? CARDLECT_COLORS.primary.darker : 'var(--secondary)' }}
                   >
                     <div
-                      className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
-                        emailNotifications ? 'left-6' : 'left-1'
-                      }`}
+                      className="w-5 h-5 bg-white rounded-full absolute top-1 transition-all"
+                      style={{ left: emailNotifications ? '1.5rem' : '0.25rem' }}
                     />
                   </button>
                 </div>
@@ -147,14 +144,12 @@ export default function SettingsPage() {
                   </div>
                   <button
                     onClick={() => setSlackIntegration(!slackIntegration)}
-                    className={`w-12 h-7 rounded-full transition-all ${
-                      slackIntegration ? 'bg-primary' : 'bg-secondary'
-                    } relative`}
+                    className="w-12 h-7 rounded-full transition-all relative"
+                    style={{ backgroundColor: slackIntegration ? CARDLECT_COLORS.primary.darker : 'var(--secondary)' }}
                   >
                     <div
-                      className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
-                        slackIntegration ? 'left-6' : 'left-1'
-                      }`}
+                      className="w-5 h-5 bg-white rounded-full absolute top-1 transition-all"
+                      style={{ left: slackIntegration ? '1.5rem' : '0.25rem' }}
                     />
                   </button>
                 </div>
@@ -173,33 +168,24 @@ export default function SettingsPage() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => setTheme('light')}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
-                        theme === 'light'
-                          ? 'border-primary bg-primary/10 text-foreground'
-                          : 'border-border text-muted-foreground hover:text-foreground'
-                      }`}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all"
+                      style={theme === 'light' ? { borderColor: CARDLECT_COLORS.primary.darker, backgroundColor: `${CARDLECT_COLORS.primary.darker}19`, color: 'var(--foreground)' } : { borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
                     >
                       <Sun size={18} />
                       Light Mode
                     </button>
                     <button
                       onClick={() => setTheme('dark')}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
-                        theme === 'dark'
-                          ? 'border-primary bg-primary/10 text-foreground'
-                          : 'border-border text-muted-foreground hover:text-foreground'
-                      }`}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all"
+                      style={theme === 'dark' ? { borderColor: CARDLECT_COLORS.primary.darker, backgroundColor: `${CARDLECT_COLORS.primary.darker}19`, color: 'var(--foreground)' } : { borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
                     >
                       <Moon size={18} />
                       Dark Mode
                     </button>
                     <button
                       onClick={() => setTheme('auto')}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
-                        theme === 'auto'
-                          ? 'border-primary bg-primary/10 text-foreground'
-                          : 'border-border text-muted-foreground hover:text-foreground'
-                      }`}
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all"
+                      style={theme === 'auto' ? { borderColor: CARDLECT_COLORS.primary.darker, backgroundColor: `${CARDLECT_COLORS.primary.darker}19`, color: 'var(--foreground)' } : { borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
                     >
                       <Globe size={18} />
                       Auto

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Plus, Eye, Pause, Play, X, Users, UserCheck, BookOpen, Settings, Activity, TrendingUp, Edit2, Trash2, Check, Server, Zap, ChevronRight, ChevronLeft } from 'lucide-react'
 import { useCardlect, School } from '@/contexts/cardlect-context'
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 
 interface SchoolDetailsModal extends School {
   staffList: Array<{ id: string; name: string; role: string; email: string }>
@@ -194,10 +195,10 @@ export default function SchoolsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-primary/10 text-primary'
-      case 'disabled': return 'bg-destructive/10 text-destructive'
-      case 'pending': return 'bg-yellow-500/10 text-yellow-600'
-      default: return 'bg-secondary'
+      case 'active': return { backgroundColor: `${CARDLECT_COLORS.primary.darker}15`, color: CARDLECT_COLORS.primary.darker }
+      case 'disabled': return { backgroundColor: `${CARDLECT_COLORS.danger.main}15`, color: CARDLECT_COLORS.danger.main }
+      case 'pending': return { backgroundColor: `${CARDLECT_COLORS.warning.main}15`, color: CARDLECT_COLORS.warning.main }
+      default: return { backgroundColor: '#F3F4F6', color: '#6B7280' }
     }
   }
 
@@ -211,7 +212,7 @@ export default function SchoolsPage() {
                 <h1 className="text-3xl font-bold text-foreground">Schools Management</h1>
                 <p className="text-muted-foreground">Manage all schools in the Cardlect ecosystem</p>
               </div>
-              <button onClick={() => setShowAddForm(true)} className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-all">
+              <button onClick={() => setShowAddForm(true)} style={{ backgroundColor: CARDLECT_COLORS.primary.darker }} className="flex items-center gap-2 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-all">
                 <Plus size={18} />
                 Add School
               </button>
@@ -221,34 +222,34 @@ export default function SchoolsPage() {
               <div className="bg-card border border-border rounded-lg p-6">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-muted-foreground text-sm">Total Schools</p>
-                  <Activity size={20} className="text-primary" />
+                  <Activity size={20} style={{ color: CARDLECT_COLORS.primary.darker }} />
                 </div>
                 <p className="text-3xl font-bold text-foreground">{schools.length}</p>
-                <p className="text-primary text-xs mt-2">{schools.filter(s => s.status === 'active').length} active</p>
+                <p style={{ color: CARDLECT_COLORS.primary.darker }} className="text-xs mt-2">{schools.filter(s => s.status === 'active').length} active</p>
               </div>
               <div className="bg-card border border-border rounded-lg p-6">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-muted-foreground text-sm">Total Students</p>
-                  <Users size={20} className="text-primary" />
+                  <Users size={20} style={{ color: CARDLECT_COLORS.primary.darker }} />
                 </div>
                 <p className="text-3xl font-bold text-foreground">{schools.reduce((sum, s) => sum + s.students, 0).toLocaleString()}</p>
-                <p className="text-primary text-xs mt-2">Across all schools</p>
+                <p style={{ color: CARDLECT_COLORS.primary.darker }} className="text-xs mt-2">Across all schools</p>
               </div>
               <div className="bg-card border border-border rounded-lg p-6">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-muted-foreground text-sm">Avg Card Usage</p>
-                  <TrendingUp size={20} className="text-primary" />
+                  <TrendingUp size={20} style={{ color: CARDLECT_COLORS.primary.darker }} />
                 </div>
                 <p className="text-3xl font-bold text-foreground">{Math.round(schools.filter(s => s.status === 'active').reduce((sum, s) => sum + s.cardUsage, 0) / Math.max(schools.filter(s => s.status === 'active').length, 1))}%</p>
-                <p className="text-primary text-xs mt-2">System-wide average</p>
+                <p style={{ color: CARDLECT_COLORS.primary.darker }} className="text-xs mt-2">System-wide average</p>
               </div>
               <div className="bg-card border border-border rounded-lg p-6">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-muted-foreground text-sm">Transactions Today</p>
-                  <Activity size={20} className="text-primary" />
+                  <Activity size={20} style={{ color: CARDLECT_COLORS.primary.darker }} />
                 </div>
                 <p className="text-3xl font-bold text-foreground">{schools.reduce((sum, s) => sum + s.totalTransactions, 0).toLocaleString()}</p>
-                <p className="text-primary text-xs mt-2">All activity</p>
+                <p style={{ color: CARDLECT_COLORS.primary.darker }} className="text-xs mt-2">All activity</p>
               </div>
             </div>
 

@@ -25,11 +25,11 @@ const mockNotifications: Notification[] = [
 
 const getNotificationColor = (type: string) => {
   switch(type) {
-    case 'entry': return 'text-green-600 bg-green-50'
-    case 'purchase': return 'text-blue-600 bg-blue-50'
-    case 'alert': return 'text-red-600 bg-red-50'
-    case 'update': return 'text-purple-600 bg-purple-50'
-    default: return 'text-gray-600 bg-gray-50'
+    case 'entry': return { color: CARDLECT_COLORS.success.main, backgroundColor: CARDLECT_COLORS.success.main + '20' }
+    case 'purchase': return { color: CARDLECT_COLORS.info.main, backgroundColor: CARDLECT_COLORS.info.main + '20' }
+    case 'alert': return { color: CARDLECT_COLORS.danger.main, backgroundColor: CARDLECT_COLORS.danger.main + '20' }
+    case 'update': return { color: CARDLECT_COLORS.accent.main, backgroundColor: CARDLECT_COLORS.accent.main + '20' }
+    default: return { color: '#666666', backgroundColor: '#66666620' }
   }
 }
 
@@ -154,7 +154,10 @@ export default function NotificationsPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-muted-foreground">{notification.time}</span>
-                        <span className={`px-2 py-1 rounded text-xs font-semibold ${getNotificationColor(notification.type)}`}>
+                      <span 
+                        className="px-2 py-1 rounded text-xs font-semibold"
+                        style={getNotificationColor(notification.type)}
+                      >
                           {notification.type.charAt(0).toUpperCase() + notification.type.slice(1)}
                         </span>
                       </div>

@@ -6,6 +6,7 @@ import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search, Edit, Trash2, Users } from "lucide-react"
+import { CARDLECT_COLORS } from "@/lib/cardlect-colors"
 
 const mockClasses = [
   { id: 1, name: "JSS 1A", students: 35, teacher: "Mr. Okafor", capacity: 50 },
@@ -44,7 +45,7 @@ export default function ClassesPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h2 className="text-3xl font-bold">Classes Management</h2>
-          <Button onClick={() => setShowForm(true)} className="bg-primary hover:bg-accent/90 gap-2">
+          <Button onClick={() => setShowForm(true)} style={{ backgroundColor: CARDLECT_COLORS.primary.darker }} className="text-white hover:opacity-90 gap-2">
             <Plus size={18} /> Add Class
           </Button>
         </div>
@@ -83,7 +84,7 @@ export default function ClassesPage() {
                   />
                 </div>
                 <div className="flex gap-3 mt-4">
-                  <Button onClick={handleAddClass} className="bg-primary hover:bg-accent/90">
+                  <Button onClick={handleAddClass} style={{ backgroundColor: CARDLECT_COLORS.primary.darker }} className="text-white hover:opacity-90">
                     Create Class
                   </Button>
                   <Button onClick={() => setShowForm(false)} variant="outline">
@@ -132,8 +133,8 @@ export default function ClassesPage() {
                     </div>
                     <div className="w-full bg-muted rounded-full h-2">
                       <div
-                        className="bg-accent h-2 rounded-full"
-                        style={{ width: `${(cls.students / cls.capacity) * 100}%` }}
+                        className="h-2 rounded-full"
+                        style={{ width: `${(cls.students / cls.capacity) * 100}%`, backgroundColor: CARDLECT_COLORS.primary.darker }}
                       />
                     </div>
                     <div className="text-sm text-muted-foreground">

@@ -84,7 +84,7 @@ export default function ReportsPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Academic Average</div>
-              <div className="text-2xl font-bold text-blue-600">85%</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.info.main }}>85%</div>
               <div className="text-xs text-muted-foreground mt-2">Current term</div>
             </CardContent>
           </Card>
@@ -92,7 +92,7 @@ export default function ReportsPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Attendance Rate</div>
-              <div className="text-2xl font-bold text-green-600">91%</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.success.main }}>91%</div>
               <div className="text-xs text-muted-foreground mt-2">This month</div>
             </CardContent>
           </Card>
