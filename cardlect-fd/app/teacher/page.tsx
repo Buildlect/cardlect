@@ -357,7 +357,7 @@ export default function TeacherDashboard() {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-start gap-3 flex-1">
                   <div
-                    style={{ backgroundColor: CARDLECT_COLORS.primary.main }}
+                    style={{ backgroundColor: CARDLECT_COLORS.primary.darker }}
                     className="p-3 rounded-xl flex items-center justify-center text-white"
                   >
                     <BookOpen size={24} />
@@ -407,7 +407,7 @@ export default function TeacherDashboard() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Avg Score</p>
-                  <p className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.primary.main }}>
+                  <p className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.primary.darker }}>
                     {exam.avgScore > 0 ? `${exam.avgScore}%` : '-'}
                   </p>
                 </div>
@@ -423,7 +423,7 @@ export default function TeacherDashboard() {
                   View Results
                 </button>
                 <button
-                  style={{ borderColor: CARDLECT_COLORS.primary.main, color: CARDLECT_COLORS.primary.main }}
+                  style={{ borderColor: CARDLECT_COLORS.primary.darker, color: CARDLECT_COLORS.primary.darker }}
                   className="flex-1 border-2 font-semibold py-2.5 rounded-xl hover:bg-primary/10 transition-all flex items-center justify-center gap-2"
                 >
                   <BarChart3 size={18} />

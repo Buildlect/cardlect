@@ -69,7 +69,7 @@ export default function StoreDashboard() {
       color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Total sales revenue',
-      prefix: '$',
+      prefix: '₦',
     },
     {
       label: 'Items Sold',
@@ -97,7 +97,7 @@ export default function StoreDashboard() {
       color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Monthly revenue',
-      prefix: '$',
+      prefix: '₦',
     },
   ]
 

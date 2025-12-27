@@ -220,7 +220,7 @@ export function Header({ sidebarOpen, onMenuClick, role = "admin" }: HeaderProps
                       {roleInitials[role as keyof typeof roleInitials]}
                     </div>
                     <div>
-                      <p className="font-semibold text-foreground text-sm" style={{ color: CARDLECT_COLORS.primary.darker }}>{roleDisplayNames[role as keyof typeof roleDisplayNames]}</p>
+                      <p className="font-semibold text-foreground text-sm" style={{ color: CARDLECT_COLORS.primary.main }}>{roleDisplayNames[role as keyof typeof roleDisplayNames]}</p>
                       <p className="text-xs text-muted-foreground">user@cardlect.io</p>
                     </div>
                   </div>

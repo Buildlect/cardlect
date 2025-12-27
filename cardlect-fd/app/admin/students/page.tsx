@@ -53,7 +53,7 @@ export default function StudentsPage() {
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({ name: "", admission: "", class: "", email: "", phone: "" })
   const [editingId, setEditingId] = useState<number | null>(null)
-  const [editForm, setEditForm] = useState({ name: "", class: "", admission: "", cardStatus: "Issued" as const })
+  const [editForm, setEditForm] = useState({ name: "", class: "", admission: "", cardStatus: "Issued" })
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
   const [cardStatusModal, setCardStatusModal] = useState<{ id: number; currentStatus: string } | null>(null)
 

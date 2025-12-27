@@ -36,7 +36,7 @@ export default function SettingsPage() {
                   <h2 className="text-xl font-semibold text-foreground mb-2">Profile Information</h2>
                   <p className="text-sm text-muted-foreground">Update your account details</p>
                 </div>
-                <div className="w-16 h-16 rounded-lg flex items-center justify-center text-white text-xl font-bold" style={{ backgroundColor: CARDLECT_COLORS.primary.main }}>
+                <div className="w-16 h-16 rounded-lg flex items-center justify-center text-white text-xl font-bold" style={{ backgroundColor: CARDLECT_COLORS.primary.darker }}>
                   SA
                 </div>
               </div>
@@ -87,7 +87,7 @@ export default function SettingsPage() {
                   <button
                     onClick={() => setTwoFaEnabled(!twoFaEnabled)}
                     className="w-12 h-7 rounded-full transition-all relative"
-                    style={{ backgroundColor: twoFaEnabled ? CARDLECT_COLORS.primary.main : 'var(--secondary)' }}
+                    style={{ backgroundColor: twoFaEnabled ? CARDLECT_COLORS.primary.darker : 'var(--secondary)' }}
                   >
                     <div
                       className="w-5 h-5 bg-white rounded-full absolute top-1 transition-all"
@@ -128,7 +128,7 @@ export default function SettingsPage() {
                   <button
                     onClick={() => setEmailNotifications(!emailNotifications)}
                     className="w-12 h-7 rounded-full transition-all relative"
-                    style={{ backgroundColor: emailNotifications ? CARDLECT_COLORS.primary.main : 'var(--secondary)' }}
+                    style={{ backgroundColor: emailNotifications ? CARDLECT_COLORS.primary.darker : 'var(--secondary)' }}
                   >
                     <div
                       className="w-5 h-5 bg-white rounded-full absolute top-1 transition-all"
@@ -145,7 +145,7 @@ export default function SettingsPage() {
                   <button
                     onClick={() => setSlackIntegration(!slackIntegration)}
                     className="w-12 h-7 rounded-full transition-all relative"
-                    style={{ backgroundColor: slackIntegration ? CARDLECT_COLORS.primary.main : 'var(--secondary)' }}
+                    style={{ backgroundColor: slackIntegration ? CARDLECT_COLORS.primary.darker : 'var(--secondary)' }}
                   >
                     <div
                       className="w-5 h-5 bg-white rounded-full absolute top-1 transition-all"
@@ -169,7 +169,7 @@ export default function SettingsPage() {
                     <button
                       onClick={() => setTheme('light')}
                       className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all"
-                      style={theme === 'light' ? { borderColor: CARDLECT_COLORS.primary.main, backgroundColor: `${CARDLECT_COLORS.primary.main}19`, color: 'var(--foreground)' } : { borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+                      style={theme === 'light' ? { borderColor: CARDLECT_COLORS.primary.darker, backgroundColor: `${CARDLECT_COLORS.primary.darker}19`, color: 'var(--foreground)' } : { borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
                     >
                       <Sun size={18} />
                       Light Mode
@@ -177,7 +177,7 @@ export default function SettingsPage() {
                     <button
                       onClick={() => setTheme('dark')}
                       className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all"
-                      style={theme === 'dark' ? { borderColor: CARDLECT_COLORS.primary.main, backgroundColor: `${CARDLECT_COLORS.primary.main}19`, color: 'var(--foreground)' } : { borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+                      style={theme === 'dark' ? { borderColor: CARDLECT_COLORS.primary.darker, backgroundColor: `${CARDLECT_COLORS.primary.darker}19`, color: 'var(--foreground)' } : { borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
                     >
                       <Moon size={18} />
                       Dark Mode
@@ -185,7 +185,7 @@ export default function SettingsPage() {
                     <button
                       onClick={() => setTheme('auto')}
                       className="flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all"
-                      style={theme === 'auto' ? { borderColor: CARDLECT_COLORS.primary.main, backgroundColor: `${CARDLECT_COLORS.primary.main}19`, color: 'var(--foreground)' } : { borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+                      style={theme === 'auto' ? { borderColor: CARDLECT_COLORS.primary.darker, backgroundColor: `${CARDLECT_COLORS.primary.darker}19`, color: 'var(--foreground)' } : { borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
                     >
                       <Globe size={18} />
                       Auto
