@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Plus, Trash2, CheckCircle, AlertCircle, X } from 'lucide-react'
 import { useCardlect } from '@/contexts/cardlect-context'
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 
 export default function StaffManagementPage() {
   const router = useRouter()
@@ -63,7 +64,7 @@ export default function StaffManagementPage() {
                 <h1 className="text-3xl font-bold text-foreground">Staff Management</h1>
                 <p className="text-muted-foreground">Manage school staff and assign permissions</p>
               </div>
-              <button onClick={() => setShowAddForm(true)} className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-all">
+              <button onClick={() => setShowAddForm(true)} style={{ backgroundColor: CARDLECT_COLORS.primary.darker }} className="flex items-center gap-2 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-all">
                 <Plus size={18} />
                 Add Staff Member
               </button>
@@ -95,7 +96,7 @@ export default function StaffManagementPage() {
                   </div>
 
                   {!schoolId && (
-                    <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-700">
+                    <div style={{ backgroundColor: `${CARDLECT_COLORS.warning.main}15`, borderColor: CARDLECT_COLORS.warning.main, color: CARDLECT_COLORS.warning.main }} className="mb-4 p-4 border rounded text-sm">
                       Please select a school before adding a staff member.
                     </div>
                   )}
@@ -182,7 +183,18 @@ export default function StaffManagementPage() {
                           <td className="px-6 py-4 text-sm text-muted-foreground">{member.department}</td>
                           <td className="px-6 py-4 text-sm text-foreground">{member.email}</td>
                           <td className="px-6 py-4">
-                            <span className={`px-2 py-1 rounded text-xs font-medium flex items-center gap-1 w-fit ${member.status === 'active' ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'}`}>
+                            <span style={{
+                              backgroundColor: member.status === 'active' ? `${CARDLECT_COLORS.success.main}20` : `${CARDLECT_COLORS.danger.main}20`,
+                              color: member.status === 'active' ? CARDLECT_COLORS.success.main : CARDLECT_COLORS.danger.main,
+                              padding: '0.5rem',
+                              borderRadius: '0.375rem',
+                              fontSize: '0.75rem',
+                              fontWeight: '500',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.25rem',
+                              width: 'fit-content'
+                            }}>
                               {member.status === 'active' ? <CheckCircle size={14} /> : <AlertCircle size={14} />}
                               {member.status.charAt(0).toUpperCase() + member.status.slice(1)}
                             </span>

@@ -32,7 +32,7 @@ const statusData = [
   { name: 'Inactive', value: 0 },
 ]
 
-const COLORS = ['#4CAF50', '#FFC107', '#F44336']
+const COLORS = [CARDLECT_COLORS.success.main, CARDLECT_COLORS.warning.main, CARDLECT_COLORS.danger.main]
 
 export default function StudentsWalletPage() {
   const [students, setStudents] = useState(mockStudents)
@@ -53,10 +53,10 @@ export default function StudentsWalletPage() {
 
   const getStatusColor = (status: string) => {
     switch(status) {
-      case 'active': return 'text-green-600 bg-green-50'
-      case 'low-balance': return 'text-yellow-600 bg-yellow-50'
-      case 'inactive': return 'text-red-600 bg-red-50'
-      default: return 'text-gray-600 bg-gray-50'
+      case 'active': return { color: CARDLECT_COLORS.success.main, backgroundColor: `${CARDLECT_COLORS.success.main}20` }
+      case 'low-balance': return { color: CARDLECT_COLORS.warning.main, backgroundColor: `${CARDLECT_COLORS.warning.main}20` }
+      case 'inactive': return { color: CARDLECT_COLORS.danger.main, backgroundColor: `${CARDLECT_COLORS.danger.main}20` }
+      default: return { color: '#6B7280', backgroundColor: '#F3F4F6' }
     }
   }
 
@@ -97,8 +97,8 @@ export default function StudentsWalletPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Low Balance</div>
-              <div className="text-2xl font-bold text-yellow-600">{stats.lowBalance}</div>
-              <div className="text-xs text-yellow-600 mt-2 flex items-center gap-1">
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.warning.main }}>{stats.lowBalance}</div>
+              <div className="text-xs mt-2 flex items-center gap-1" style={{ color: CARDLECT_COLORS.warning.main }}>
                 <AlertCircle size={12} /> Needs alert
               </div>
             </CardContent>
@@ -193,7 +193,7 @@ export default function StudentsWalletPage() {
                       <td className="py-3 px-4 text-right font-semibold">₦{student.balance.toLocaleString()}</td>
                       <td className="py-3 px-4 text-center">{student.transactions}</td>
                       <td className="py-3 px-4 text-center">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(student.status)}`}>
+                        <span style={{ ...getStatusColor(student.status), padding: '0.75rem 1rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: '600' }}>
                           {student.status === 'low-balance' ? 'Low Balance' : student.status.charAt(0).toUpperCase() + student.status.slice(1)}
                         </span>
                       </td>

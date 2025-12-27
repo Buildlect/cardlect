@@ -74,7 +74,7 @@ export default function SecurityDashboard() {
       value: 1247,
       change: 'Enrolled this year',
       icon: <Users className="w-5 h-5" />,
-      borderColor: `border-l-[${CARDLECT_COLORS.info.main}]`,
+      borderColor: `border-l-[${CARDLECT_COLORS.primary.darker}]`,
       href: '/admin/students'
     },
     {
@@ -82,7 +82,7 @@ export default function SecurityDashboard() {
       value: 8,
       change: 'All operational',
       icon: <DoorOpen className="w-5 h-5" />,
-      borderColor: `border-l-[${SEMANTIC_COLORS.status.online}]`
+      borderColor: `border-l-[${CARDLECT_COLORS.success.main}]`
     },
     {
       title: 'TODAY\'S ALERTS',
@@ -97,7 +97,7 @@ export default function SecurityDashboard() {
       value: 234,
       change: 'Peak: 312',
       icon: <UserCheck className="w-5 h-5" />,
-      borderColor: `border-l-[${CARDLECT_COLORS.accent.main}]`
+      borderColor: `border-l-[${CARDLECT_COLORS.primary.darker}]`
     }
   ]
 
@@ -281,7 +281,7 @@ export default function SecurityDashboard() {
                     />
                     <YAxis hide />
                     <Tooltip
-                      cursor={{ stroke: '#06B6D4', strokeWidth: 1, opacity: 0.2 }}
+                      cursor={{ stroke: CARDLECT_COLORS.primary.darker, strokeWidth: 1, opacity: 0.2 }}
                       contentStyle={{
                         background: 'var(--card)',
                         border: '1px solid var(--border)',
@@ -292,14 +292,14 @@ export default function SecurityDashboard() {
                     />
                     <defs>
                       <linearGradient id="entriesGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#06B6D4" stopOpacity={0.3} />
-                        <stop offset="100%" stopColor="#06B6D4" stopOpacity={0} />
+                        <stop offset="0%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.3} />
+                        <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <Line
                       type="monotone"
                       dataKey="entries"
-                      stroke="#06B6D4"
+                      stroke={CARDLECT_COLORS.primary.darker}
                       strokeWidth={2}
                       dot={false}
                       name="Entries"
@@ -307,7 +307,7 @@ export default function SecurityDashboard() {
                     <Line
                       type="monotone"
                       dataKey="exits"
-                      stroke="#10B981"
+                      stroke={CARDLECT_COLORS.success.main}
                       strokeWidth={2}
                       dot={false}
                       name="Exits"
@@ -340,9 +340,9 @@ export default function SecurityDashboard() {
                         color: 'var(--foreground)'
                       }}
                     />
-                    <Bar dataKey="critical" stackId="a" fill="#EF4444" />
-                    <Bar dataKey="warning" stackId="a" fill="#F59E0B" />
-                    <Bar dataKey="info" stackId="a" fill="#3B82F6" />
+                    <Bar dataKey="critical" stackId="a" fill={CARDLECT_COLORS.danger.main} />
+                    <Bar dataKey="warning" stackId="a" fill={CARDLECT_COLORS.warning.main} />
+                    <Bar dataKey="info" stackId="a" fill={CARDLECT_COLORS.primary.darker} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

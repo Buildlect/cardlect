@@ -85,7 +85,7 @@ export default function AdminDashboard() {
       value: "1,248",
       change: "+12%",
       colorClass: "from-cyan-400 to-cyan-600",
-      colorHex: CARDLECT_COLORS.secondary.main,
+      colorHex: CARDLECT_COLORS.primary.darker,
       data: sampleSeries,
     },
     {
@@ -94,7 +94,7 @@ export default function AdminDashboard() {
       value: "45",
       change: "+2%",
       colorClass: "from-emerald-400 to-emerald-600",
-      colorHex: CARDLECT_COLORS.success.main,
+      colorHex: CARDLECT_COLORS.primary.darker,
       data: sampleSeries.map((d) => ({ ...d, value: Math.round(d.value / 4) })),
     },
     {
@@ -103,7 +103,7 @@ export default function AdminDashboard() {
       value: "24",
       change: "0%",
       colorClass: "from-orange-400 to-orange-600",
-      colorHex: CARDLECT_COLORS.primary.main,
+      colorHex: CARDLECT_COLORS.primary.darker,
       data: sampleSeries.map((d, i) => ({ ...d, value: 20 + (i % 3) * 2 })),
     },
     {
@@ -112,7 +112,7 @@ export default function AdminDashboard() {
       value: "1,180",
       change: "+8%",
       colorClass: "from-amber-400 to-amber-600",
-      colorHex: CARDLECT_COLORS.warning.main,
+      colorHex: CARDLECT_COLORS.primary.darker,
       data: sampleSeries.map((d) => ({ ...d, value: d.value + 20 })),
     },
     {
@@ -121,7 +121,7 @@ export default function AdminDashboard() {
       value: "92%",
       change: "+4%",
       colorClass: "from-emerald-400 to-emerald-600",
-      colorHex: SEMANTIC_COLORS.attendance.present,
+      colorHex: CARDLECT_COLORS.primary.darker,
       data: sampleSeries.map((d) => ({ ...d, value: Math.round((d.value / 100) * 92) })),
     },
     {
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
       value: "₦45,230",
       change: "+15%",
       colorClass: "from-blue-400 to-blue-600",
-      colorHex: CARDLECT_COLORS.info.main,
+      colorHex: CARDLECT_COLORS.primary.darker,
       data: sampleSeries.map((d, i) => ({ ...d, value: 300 + i * 20 })),
     },
   ]
@@ -234,14 +234,14 @@ export default function AdminDashboard() {
                 <AreaChart data={overviewData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
                   <defs>
                     <linearGradient id="gradStudents" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#2563eb" stopOpacity={0.28} />
-                      <stop offset="60%" stopColor="#2563eb" stopOpacity={0.08} />
-                      <stop offset="100%" stopColor="#2563eb" stopOpacity={0.02} />
+                      <stop offset="0%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.28} />
+                      <stop offset="60%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.08} />
+                      <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.02} />
                     </linearGradient>
                     <linearGradient id="gradCards" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#f97316" stopOpacity={0.26} />
-                      <stop offset="60%" stopColor="#f97316" stopOpacity={0.07} />
-                      <stop offset="100%" stopColor="#f97316" stopOpacity={0.02} />
+                      <stop offset="0%" stopColor={CARDLECT_COLORS.primary.main} stopOpacity={0.26} />
+                      <stop offset="60%" stopColor={CARDLECT_COLORS.primary.main} stopOpacity={0.07} />
+                      <stop offset="100%" stopColor={CARDLECT_COLORS.primary.main} stopOpacity={0.02} />
                     </linearGradient>
                   </defs>
 
@@ -258,7 +258,7 @@ export default function AdminDashboard() {
                     tickLine={false}
                     tickFormatter={(v) => numberFormatter(v as number)}
                   />
-                  <Tooltip content={<CustomTooltip color="#2563eb" />} />
+                  <Tooltip content={<CustomTooltip color={CARDLECT_COLORS.primary.darker} />} />
                   <Legend
                     verticalAlign="top"
                     align="right"
@@ -269,22 +269,22 @@ export default function AdminDashboard() {
                   <Area
                     type="monotone"
                     dataKey="students"
-                    stroke="#2563eb"
+                    stroke={CARDLECT_COLORS.primary.darker}
                     fill="url(#gradStudents)"
                     strokeWidth={2.5}
                     name="Students"
-                    activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff", fill: "#2563eb" }}
+                    activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff", fill: CARDLECT_COLORS.primary.darker }}
                     isAnimationActive
                     animationDuration={900}
                   />
                   <Area
                     type="monotone"
                     dataKey="cards"
-                    stroke="#f97316"
+                    stroke={CARDLECT_COLORS.primary.main}
                     fill="url(#gradCards)"
                     strokeWidth={2.5}
                     name="Active Cards"
-                    activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff", fill: "#f97316" }}
+                    activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff", fill: CARDLECT_COLORS.primary.main }}
                     isAnimationActive
                     animationDuration={900}
                     animationEasing="ease-in-out"
@@ -310,7 +310,7 @@ export default function AdminDashboard() {
                     <p className="font-semibold text-foreground">Manage Students</p>
                     <p className="text-xs text-muted-foreground">Add, edit, or view records</p>
                   </div>
-                  <Users size={18} className="text-primary" />
+                  <Users size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
                 </div>
               </button>
 
@@ -323,7 +323,7 @@ export default function AdminDashboard() {
                     <p className="font-semibold text-foreground">Manage Staff</p>
                     <p className="text-xs text-muted-foreground">Add or edit staff profiles</p>
                   </div>
-                  <UserPlus size={18} className="text-primary" />
+                  <UserPlus size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
                 </div>
               </button>
 
@@ -336,7 +336,7 @@ export default function AdminDashboard() {
                     <p className="font-semibold text-foreground">Manage Classes</p>
                     <p className="text-xs text-muted-foreground">Create or modify class schedules</p>
                   </div>
-                  <BookOpen size={18} className="text-primary" />
+                  <BookOpen size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
                 </div>
               </button>
 
@@ -349,7 +349,7 @@ export default function AdminDashboard() {
                     <p className="font-semibold text-foreground">View Attendance</p>
                     <p className="text-xs text-muted-foreground">Track daily attendance</p>
                   </div>
-                  <Clock size={18} className="text-primary" />
+                  <Clock size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
                 </div>
               </button>
 
@@ -362,7 +362,7 @@ export default function AdminDashboard() {
                     <p className="font-semibold text-foreground">View Reports</p>
                     <p className="text-xs text-muted-foreground">Export or view analytics</p>
                   </div>
-                  <FileText size={18} className="text-primary" />
+                  <FileText size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
                 </div>
               </button>
 
@@ -375,7 +375,7 @@ export default function AdminDashboard() {
                     <p className="font-semibold text-foreground">Manage Wallet</p>
                     <p className="text-xs text-muted-foreground">Balances & transactions (₦)</p>
                   </div>
-                  <Wallet size={18} className="text-primary" />
+                  <Wallet size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
                 </div>
               </button>
 
@@ -388,7 +388,7 @@ export default function AdminDashboard() {
                     <p className="font-semibold text-foreground">Manage Cards</p>
                     <p className="text-xs text-muted-foreground">View or lock cards</p>
                   </div>
-                  <CreditCard size={18} className="text-primary" />
+                  <CreditCard size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
                 </div>
               </button>
             </div>

@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from "@/components/DashboardLayout/layout"
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 import {
   CheckCircle,
   Lock,
@@ -153,11 +154,11 @@ export default function CardsPage() {
   // return combined classes for type badges (keeps usage simple)
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'student': return 'bg-primary/10 text-primary'
-      case 'parent': return 'bg-blue-500/10 text-blue-600'
-      case 'staff': return 'bg-green-500/10 text-green-600'
-      case 'visitor': return 'bg-yellow-500/10 text-yellow-600'
-      default: return 'bg-secondary/10 text-muted-foreground'
+      case 'student': return { backgroundColor: `${CARDLECT_COLORS.primary.main}20`, color: CARDLECT_COLORS.primary.main }
+      case 'parent': return { backgroundColor: `${CARDLECT_COLORS.info.main}20`, color: CARDLECT_COLORS.info.main }
+      case 'staff': return { backgroundColor: `${CARDLECT_COLORS.success.main}20`, color: CARDLECT_COLORS.success.main }
+      case 'visitor': return { backgroundColor: `${CARDLECT_COLORS.warning.main}20`, color: CARDLECT_COLORS.warning.main }
+      default: return { backgroundColor: 'var(--secondary)', color: 'var(--muted-foreground)' }
     }
   }
 
@@ -262,9 +263,9 @@ export default function CardsPage() {
                 label="Active"
                 value={metrics.active}
                 icon={BadgeCheck}
-                bgClass="bg-green-500/10"
-                textClass="text-green-600"
-                dotClass="bg-green-600"
+                bgClass={`bg-[${CARDLECT_COLORS.success.main}]/10`}
+                textClass={`text-[${CARDLECT_COLORS.success.main}]`}
+                dotClass={`bg-[${CARDLECT_COLORS.success.main}]`}
                 subtitle="Cards currently enabled and in use"
                 delta={5}
               />
@@ -272,9 +273,9 @@ export default function CardsPage() {
                 label="Inactive"
                 value={metrics.inactive}
                 icon={Activity}
-                bgClass="bg-blue-500/10"
-                textClass="text-blue-600"
-                dotClass="bg-blue-600"
+                bgClass={`bg-[${CARDLECT_COLORS.info.main}]/10`}
+                textClass={`text-[${CARDLECT_COLORS.info.main}]`}
+                dotClass={`bg-[${CARDLECT_COLORS.info.main}]`}
                 subtitle="Temporarily disabled cards"
                 delta={-2}
               />
@@ -282,9 +283,9 @@ export default function CardsPage() {
                 label="Blocked"
                 value={metrics.blocked}
                 icon={UserX}
-                bgClass="bg-red-500/10"
-                textClass="text-red-600"
-                dotClass="bg-red-600"
+                bgClass={`bg-[${CARDLECT_COLORS.danger.main}]/10`}
+                textClass={`text-[${CARDLECT_COLORS.danger.main}]`}
+                dotClass={`bg-[${CARDLECT_COLORS.danger.main}]`}
                 subtitle="Cards blocked for security or policy reasons"
                 delta={0}
               />
@@ -318,7 +319,7 @@ export default function CardsPage() {
                         <td className="px-6 py-4 text-sm text-muted-foreground font-mono">{card.cardNumber}</td>
 
                         <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${getTypeColor(card.type)}`}>
+                          <span className="px-2 py-1 rounded text-xs font-medium" style={getTypeColor(card.type)}>
                             {card.type.charAt(0).toUpperCase() + card.type.slice(1)}
                           </span>
                         </td>
@@ -549,7 +550,7 @@ export default function CardsPage() {
               <div>
                 <p className="text-xs uppercase tracking-wide text-muted-foreground mb-1">Type</p>
                 <div className="text-sm">
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${getTypeColor(selectedCard.type)}`}>
+                  <span className="px-2 py-1 rounded text-xs font-medium" style={getTypeColor(selectedCard.type)}>
                     {selectedCard.type.charAt(0).toUpperCase() + selectedCard.type.slice(1)}
                   </span>
                 </div>

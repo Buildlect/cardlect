@@ -5,6 +5,7 @@ import DashboardLayout from "@/components/DashboardLayout/layout"
 import { useRouter, useParams } from 'next/navigation'
 import { X, Edit2, Save, Users, UserCheck, BookOpen, Settings, Activity, TrendingUp, Wifi, HardDrive, Lock, Bell, Zap, BarChart3, MapPin, Mail, Phone, Calendar, Check, AlertCircle, Server, Shield, Trash2, Plus } from 'lucide-react'
 import { useCardlect, School } from '@/contexts/cardlect-context'
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 
 export default function SchoolDetailsPage() {
   const router = useRouter()
@@ -80,10 +81,10 @@ export default function SchoolDetailsPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-500/10 text-green-600 border-green-500/20'
-      case 'disabled': return 'bg-red-500/10 text-red-600 border-red-500/20'
-      case 'pending': return 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20'
-      default: return 'bg-secondary text-foreground'
+      case 'active': return { color: CARDLECT_COLORS.success.main, backgroundColor: `${CARDLECT_COLORS.success.main}20`, borderColor: `${CARDLECT_COLORS.success.main}40` }
+      case 'disabled': return { color: CARDLECT_COLORS.danger.main, backgroundColor: `${CARDLECT_COLORS.danger.main}20`, borderColor: `${CARDLECT_COLORS.danger.main}40` }
+      case 'pending': return { color: CARDLECT_COLORS.warning.main, backgroundColor: `${CARDLECT_COLORS.warning.main}20`, borderColor: `${CARDLECT_COLORS.warning.main}40` }
+      default: return { color: '#6B7280', backgroundColor: '#F3F4F6', borderColor: '#E5E7EB' }
     }
   }
 
@@ -107,7 +108,14 @@ export default function SchoolDetailsPage() {
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h1 className="text-3xl font-bold text-foreground">{school.name}</h1>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(school.status)}`}>
+                    <span style={{
+                      ...getStatusColor(school.status),
+                      padding: '0.75rem 1rem',
+                      borderRadius: '9999px',
+                      fontSize: '0.75rem',
+                      fontWeight: '600',
+                      border: `1px solid ${getStatusColor(school.status).borderColor}`
+                    }}>
                       {school.status.toUpperCase()}
                     </span>
                   </div>
@@ -133,7 +141,7 @@ export default function SchoolDetailsPage() {
                     </button>
                   ) : (
                     <>
-                      <button onClick={handleSave} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                      <button onClick={handleSave} className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:opacity-90" style={{ backgroundColor: CARDLECT_COLORS.success.main }}>
                         <Save size={18} />
                         Save
                       </button>
@@ -161,11 +169,11 @@ export default function SchoolDetailsPage() {
                 </div>
                 <div className="bg-card border border-border rounded-lg p-4">
                   <p className="text-xs text-muted-foreground mb-1">Attendance</p>
-                  <p className="text-2xl font-bold text-primary">{school.attendance}%</p>
+                  <p className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.primary.darker }}>{school.attendance}%</p>
                 </div>
                 <div className="bg-card border border-border rounded-lg p-4">
                   <p className="text-xs text-muted-foreground mb-1">Card Usage</p>
-                  <p className="text-2xl font-bold text-primary">{school.cardUsage}%</p>
+                  <p className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.primary.darker }}>{school.cardUsage}%</p>
                 </div>
                 <div className="bg-card border border-border rounded-lg p-4">
                   <p className="text-xs text-muted-foreground mb-1">Transactions</p>
@@ -255,19 +263,19 @@ export default function SchoolDetailsPage() {
                     <div>
                       <div className="flex justify-between mb-2">
                         <span className="text-sm font-medium text-foreground">Attendance Rate</span>
-                        <span className="text-sm font-semibold text-primary">{school.attendance}%</span>
+                        <span className="text-sm font-semibold" style={{ color: CARDLECT_COLORS.primary.darker }}>{school.attendance}%</span>
                       </div>
                       <div className="w-full bg-secondary rounded-full h-2">
-                        <div className="bg-primary h-2 rounded-full" style={{ width: `${school.attendance}%` }} />
+                        <div className="h-2 rounded-full" style={{ width: `${school.attendance}%`, backgroundColor: CARDLECT_COLORS.primary.darker }} />
                       </div>
                     </div>
                     <div>
                       <div className="flex justify-between mb-2">
                         <span className="text-sm font-medium text-foreground">Card Usage</span>
-                        <span className="text-sm font-semibold text-primary">{school.cardUsage}%</span>
+                        <span className="text-sm font-semibold" style={{ color: CARDLECT_COLORS.primary.darker }}>{school.cardUsage}%</span>
                       </div>
                       <div className="w-full bg-secondary rounded-full h-2">
-                        <div className="bg-primary h-2 rounded-full" style={{ width: `${school.cardUsage}%` }} />
+                        <div className="h-2 rounded-full" style={{ width: `${school.cardUsage}%`, backgroundColor: CARDLECT_COLORS.primary.darker }} />
                       </div>
                     </div>
                   </div>
@@ -299,7 +307,14 @@ export default function SchoolDetailsPage() {
                             <p className="font-medium text-foreground">{student.name}</p>
                             <p className="text-xs text-muted-foreground">Class {student.class} • {student.admissionNo}</p>
                           </div>
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${student.cardStatus === 'issued' ? 'bg-green-500/10 text-green-600' : 'bg-yellow-500/10 text-yellow-600'}`}>
+                          <span style={{
+                            color: student.cardStatus === 'issued' ? CARDLECT_COLORS.success.main : CARDLECT_COLORS.warning.main,
+                            backgroundColor: student.cardStatus === 'issued' ? `${CARDLECT_COLORS.success.main}20` : `${CARDLECT_COLORS.warning.main}20`,
+                            padding: '0.5rem 0.5rem',
+                            borderRadius: '0.375rem',
+                            fontSize: '0.75rem',
+                            fontWeight: '500'
+                          }}>
                             {student.cardStatus}
                           </span>
                         </div>
@@ -330,7 +345,14 @@ export default function SchoolDetailsPage() {
                             <p className="font-medium text-foreground">{member.name}</p>
                             <p className="text-xs text-muted-foreground">{member.role} • {member.department}</p>
                           </div>
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${member.status === 'active' ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'}`}>
+                          <span style={{
+                            color: member.status === 'active' ? CARDLECT_COLORS.success.main : CARDLECT_COLORS.danger.main,
+                            backgroundColor: member.status === 'active' ? `${CARDLECT_COLORS.success.main}20` : `${CARDLECT_COLORS.danger.main}20`,
+                            padding: '0.5rem 0.5rem',
+                            borderRadius: '0.375rem',
+                            fontSize: '0.75rem',
+                            fontWeight: '500'
+                          }}>
                             {member.status}
                           </span>
                         </div>
@@ -440,9 +462,14 @@ export default function SchoolDetailsPage() {
                               <p className="font-medium text-foreground">{device.name}</p>
                               <p className="text-xs text-muted-foreground">{device.type}</p>
                             </div>
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              device.status === 'active' ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'
-                            }`}>
+                            <span style={{
+                              color: device.status === 'active' ? CARDLECT_COLORS.success.main : CARDLECT_COLORS.danger.main,
+                              backgroundColor: device.status === 'active' ? `${CARDLECT_COLORS.success.main}20` : `${CARDLECT_COLORS.danger.main}20`,
+                              padding: '0.5rem 0.5rem',
+                              borderRadius: '0.375rem',
+                              fontSize: '0.75rem',
+                              fontWeight: '500'
+                            }}>
                               {device.status}
                             </span>
                           </div>
@@ -467,7 +494,20 @@ export default function SchoolDetailsPage() {
                               const updated = { ...school, hardware: school.hardware?.filter((d: any) => d.id !== device.id) }
                               updateSchool(schoolId, updated)
                             }}
-                            className="w-full px-2 py-2 text-xs bg-red-500/10 text-red-600 rounded hover:bg-red-500/20 transition-all font-medium"
+                            style={{
+                              width: '100%',
+                              padding: '0.5rem 0.5rem',
+                              fontSize: '0.75rem',
+                              backgroundColor: `${CARDLECT_COLORS.danger.main}20`,
+                              color: CARDLECT_COLORS.danger.main,
+                              borderRadius: '0.375rem',
+                              cursor: 'pointer',
+                              border: 'none',
+                              fontWeight: '500',
+                              transition: 'background-color 0.2s'
+                            }}
+                            onMouseEnter={(e) => {e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.danger.main}30`}}
+                            onMouseLeave={(e) => {e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.danger.main}20`}}
                           >
                             Remove Device
                           </button>
@@ -500,7 +540,19 @@ export default function SchoolDetailsPage() {
                           updateSchool(schoolId, { features: updatedFeatures })
                         }
                       }}
-                      className="px-4 py-2 bg-green-600/10 text-green-600 border border-green-600/20 rounded-lg hover:bg-green-600/20 transition-all text-sm font-medium"
+                      style={{
+                        backgroundColor: `${CARDLECT_COLORS.success.main}20`,
+                        color: CARDLECT_COLORS.success.main,
+                        borderColor: `${CARDLECT_COLORS.success.main}40`,
+                        padding: '0.5rem 1rem',
+                        borderRadius: '0.5rem',
+                        cursor: 'pointer',
+                        border: `1px solid`,
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.success.main}30`}}
+                      onMouseLeave={(e) => {e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.success.main}20`}}
+                      className="text-sm font-medium"
                     >
                       Enable All
                     </button>
@@ -512,7 +564,19 @@ export default function SchoolDetailsPage() {
                           updateSchool(schoolId, { features: updatedFeatures })
                         }
                       }}
-                      className="px-4 py-2 bg-red-600/10 text-red-600 border border-red-600/20 rounded-lg hover:bg-red-600/20 transition-all text-sm font-medium"
+                      style={{
+                        backgroundColor: `${CARDLECT_COLORS.danger.main}20`,
+                        color: CARDLECT_COLORS.danger.main,
+                        borderColor: `${CARDLECT_COLORS.danger.main}40`,
+                        padding: '0.5rem 1rem',
+                        borderRadius: '0.5rem',
+                        cursor: 'pointer',
+                        border: `1px solid`,
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={(e) => {e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.danger.main}30`}}
+                      onMouseLeave={(e) => {e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.danger.main}20`}}
+                      className="text-sm font-medium"
                     >
                       Disable All
                     </button>
@@ -520,18 +584,20 @@ export default function SchoolDetailsPage() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {allFeatures.map(feature => (
-                      <div key={feature.key} className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
-                        feature.enabled 
-                          ? 'bg-green-500/10 border-green-500/20' 
-                          : 'bg-secondary/30 border-border'
-                      }`}>
+                      <div key={feature.key} className={`flex items-center justify-between p-4 rounded-lg border transition-all`} style={{
+                        backgroundColor: feature.enabled ? `${CARDLECT_COLORS.success.main}20` : '#F3F4F6',
+                        borderColor: feature.enabled ? `${CARDLECT_COLORS.success.main}40` : '#E5E7EB'
+                      }}>
                         <div className="flex items-center gap-3">
                           {feature.enabled ? (
-                            <Check size={18} className="text-green-600" />
+                            <Check size={18} style={{ color: CARDLECT_COLORS.success.main }} />
                           ) : (
                             <AlertCircle size={18} className="text-muted-foreground" />
                           )}
-                          <span className={`font-medium ${feature.enabled ? 'text-foreground' : 'text-muted-foreground'}`}>
+                          <span style={{
+                            fontWeight: '500',
+                            color: feature.enabled ? '#1F2937' : '#6B7280'
+                          }}>
                             {feature.name}
                           </span>
                         </div>
@@ -540,11 +606,23 @@ export default function SchoolDetailsPage() {
                             const updatedFeatures = { ...school.features, [feature.key]: !feature.enabled }
                             updateSchool(schoolId, { features: updatedFeatures })
                           }}
-                          className={`px-3 py-1 rounded text-xs font-semibold transition-all ${
-                            feature.enabled
-                              ? 'bg-green-600 text-white hover:bg-green-700'
-                              : 'bg-gray-600 text-white hover:bg-gray-700'
-                          }`}
+                          style={{
+                            backgroundColor: feature.enabled ? CARDLECT_COLORS.success.main : '#4B5563',
+                            color: 'white',
+                            padding: '0.75rem 0.75rem',
+                            borderRadius: '0.375rem',
+                            fontSize: '0.75rem',
+                            fontWeight: '600',
+                            cursor: 'pointer',
+                            border: 'none',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.opacity = '0.8'
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.opacity = '1'
+                          }}
                         >
                           {feature.enabled ? 'Enabled' : 'Disabled'}
                         </button>
@@ -555,13 +633,25 @@ export default function SchoolDetailsPage() {
 
                 {/* Feature Summary */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-6">
-                    <h4 className="text-sm font-semibold text-green-600 mb-2">Enabled</h4>
-                    <p className="text-2xl font-bold text-foreground">{enabledFeatures.length}/{allFeatures.length}</p>
+                  <div style={{
+                    backgroundColor: `${CARDLECT_COLORS.success.main}20`,
+                    borderColor: `${CARDLECT_COLORS.success.main}40`,
+                    borderRadius: '0.5rem',
+                    padding: '1.5rem',
+                    border: '1px solid'
+                  }}>
+                    <h4 style={{ fontSize: '0.875rem', fontWeight: '600', color: CARDLECT_COLORS.success.main, marginBottom: '0.5rem' }}>Enabled</h4>
+                    <p style={{ fontSize: '1.875rem', fontWeight: 'bold', color: '#1F2937' }}>{enabledFeatures.length}/{allFeatures.length}</p>
                   </div>
-                  <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-6">
-                    <h4 className="text-sm font-semibold text-yellow-600 mb-2">Disabled</h4>
-                    <p className="text-2xl font-bold text-foreground">{disabledFeatures.length}/{allFeatures.length}</p>
+                  <div style={{
+                    backgroundColor: `${CARDLECT_COLORS.warning.main}20`,
+                    borderColor: `${CARDLECT_COLORS.warning.main}40`,
+                    borderRadius: '0.5rem',
+                    padding: '1.5rem',
+                    border: '1px solid'
+                  }}>
+                    <h4 style={{ fontSize: '0.875rem', fontWeight: '600', color: CARDLECT_COLORS.warning.main, marginBottom: '0.5rem' }}>Disabled</h4>
+                    <p style={{ fontSize: '1.875rem', fontWeight: 'bold', color: '#1F2937' }}>{disabledFeatures.length}/{allFeatures.length}</p>
                   </div>
                 </div>
               </div>
@@ -654,10 +744,30 @@ export default function SchoolDetailsPage() {
                       </div>
                     </div>
 
-                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-6">
-                      <h3 className="text-lg font-semibold text-red-600 mb-4">Danger Zone</h3>
-                      <p className="text-sm text-red-600/80 mb-4">Deleting a school will remove all associated data permanently.</p>
-                      <button className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all">
+                    <div style={{
+                      backgroundColor: `${CARDLECT_COLORS.danger.main}20`,
+                      borderColor: `${CARDLECT_COLORS.danger.main}40`,
+                      borderRadius: '0.5rem',
+                      padding: '1.5rem',
+                      border: `1px solid`
+                    }}>
+                      <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: CARDLECT_COLORS.danger.main, marginBottom: '1rem' }}>Danger Zone</h3>
+                      <p style={{ fontSize: '0.875rem', color: `${CARDLECT_COLORS.danger.main}80`, marginBottom: '1rem' }}>Deleting a school will remove all associated data permanently.</p>
+                      <button style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        padding: '0.5rem 1rem',
+                        backgroundColor: CARDLECT_COLORS.danger.main,
+                        color: 'white',
+                        borderRadius: '0.5rem',
+                        cursor: 'pointer',
+                        border: 'none',
+                        transition: 'opacity 0.2s'
+                      }}
+                        onMouseEnter={(e) => {e.currentTarget.style.opacity = '0.8'}}
+                        onMouseLeave={(e) => {e.currentTarget.style.opacity = '1'}}
+                      >
                         <Trash2 size={18} />
                         Delete School
                       </button>

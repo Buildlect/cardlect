@@ -28,13 +28,13 @@ const mockActivities: Activity[] = [
 const getActivityIcon = (type: string) => {
   switch(type) {
     case 'entry':
-      return <MapPin className="text-green-600" size={16} />
+      return <MapPin style={{ color: CARDLECT_COLORS.success.main }} size={16} />
     case 'exit':
-      return <MapPin className="text-red-600" size={16} />
+      return <MapPin style={{ color: CARDLECT_COLORS.danger.main }} size={16} />
     case 'purchase':
-      return <User className="text-blue-600" size={16} />
+      return <User style={{ color: CARDLECT_COLORS.info.main }} size={16} />
     case 'attendance':
-      return <Clock className="text-purple-600" size={16} />
+      return <Clock style={{ color: CARDLECT_COLORS.accent.main }} size={16} />
     default:
       return null
   }
@@ -42,11 +42,11 @@ const getActivityIcon = (type: string) => {
 
 const getActivityColor = (type: string) => {
   switch(type) {
-    case 'entry': return 'text-green-600 bg-green-50'
-    case 'exit': return 'text-red-600 bg-red-50'
-    case 'purchase': return 'text-blue-600 bg-blue-50'
-    case 'attendance': return 'text-purple-600 bg-purple-50'
-    default: return 'text-gray-600 bg-gray-50'
+    case 'entry': return { color: CARDLECT_COLORS.success.main, backgroundColor: CARDLECT_COLORS.success.main + '20' }
+    case 'exit': return { color: CARDLECT_COLORS.danger.main, backgroundColor: CARDLECT_COLORS.danger.main + '20' }
+    case 'purchase': return { color: CARDLECT_COLORS.info.main, backgroundColor: CARDLECT_COLORS.info.main + '20' }
+    case 'attendance': return { color: CARDLECT_COLORS.accent.main, backgroundColor: CARDLECT_COLORS.accent.main + '20' }
+    default: return { color: '#666666', backgroundColor: '#66666620' }
   }
 }
 
@@ -73,7 +73,7 @@ export default function ActivityLogPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Today's Entries</div>
-              <div className="text-2xl font-bold text-green-600">3</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.success.main }}>3</div>
               <div className="text-xs text-muted-foreground mt-2">School entries</div>
             </CardContent>
           </Card>
@@ -81,7 +81,7 @@ export default function ActivityLogPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Transactions</div>
-              <div className="text-2xl font-bold text-blue-600">2</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.info.main }}>2</div>
               <div className="text-xs text-muted-foreground mt-2">Store purchases</div>
             </CardContent>
           </Card>
@@ -97,7 +97,7 @@ export default function ActivityLogPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Attendance</div>
-              <div className="text-2xl font-bold text-purple-600">1</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.accent.main }}>1</div>
               <div className="text-xs text-muted-foreground mt-2">All present</div>
             </CardContent>
           </Card>

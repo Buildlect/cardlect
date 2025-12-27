@@ -4,6 +4,7 @@ import { useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 import {
   LogIn,
   LogOut,
@@ -75,28 +76,28 @@ export default function GateLogs() {
       value: 156,
       change: '+23% from yesterday',
       icon: <LogIn className="w-5 h-5" />,
-      borderColor: 'border-l-green-500'
+      borderColor: CARDLECT_COLORS.success.main
     },
     {
       title: 'TOTAL EXITS TODAY',
       value: 142,
       change: '98% completion rate',
       icon: <LogOut className="w-5 h-5" />,
-      borderColor: 'border-l-blue-500'
+      borderColor: CARDLECT_COLORS.info.main
     },
     {
       title: 'ACCESS DENIED',
       value: 3,
       change: 'This week',
       icon: <Shield className="w-5 h-5" />,
-      borderColor: 'border-l-red-500'
+      borderColor: CARDLECT_COLORS.danger.main
     },
     {
       title: 'ACTIVE USERS',
       value: 28,
       change: 'Currently on premises',
       icon: <Users className="w-5 h-5" />,
-      borderColor: 'border-l-purple-500'
+      borderColor: CARDLECT_COLORS.secondary.main
     }
   ]
 
@@ -160,26 +161,13 @@ export default function GateLogs() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'granted':
-        return 'text-green-500'
+        return { color: CARDLECT_COLORS.success.main, backgroundColor: CARDLECT_COLORS.success.main + '20' }
       case 'denied':
-        return 'text-red-500'
+        return { color: CARDLECT_COLORS.danger.main, backgroundColor: CARDLECT_COLORS.danger.main + '20' }
       case 'pending':
-        return 'text-yellow-500'
+        return { color: CARDLECT_COLORS.warning.main, backgroundColor: CARDLECT_COLORS.warning.main + '20' }
       default:
-        return 'text-gray-500'
-    }
-  }
-
-  const getStatusBg = (status: string) => {
-    switch (status) {
-      case 'granted':
-        return 'bg-green-500/10'
-      case 'denied':
-        return 'bg-red-500/10'
-      case 'pending':
-        return 'bg-yellow-500/10'
-      default:
-        return 'bg-gray-500/10'
+        return { color: '#9E9E9E', backgroundColor: '#9E9E9E20' }
     }
   }
 
@@ -232,7 +220,8 @@ export default function GateLogs() {
             {stats.map((stat, idx) => (
               <div
                 key={idx}
-                className={`bg-card border-l-4 ${stat.borderColor} border border-border rounded-lg p-6 hover:bg-secondary/40 transition-colors`}
+                className="bg-card border border-border rounded-lg p-6 hover:bg-secondary/40 transition-colors"
+                style={{ borderLeftColor: stat.borderColor, borderLeftWidth: '4px' }}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="text-muted-foreground text-xs font-medium tracking-wide">
@@ -337,9 +326,22 @@ export default function GateLogs() {
 
                   {/* Status */}
                   <div className="col-span-3">
-                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${getStatusBg(log.status)} ${getStatusColor(log.status)}`}>
-                      <div className={`w-1.5 h-1.5 rounded-full ${log.status === 'granted' ? 'bg-green-500' : log.status === 'denied' ? 'bg-destructive' : 'bg-yellow-500'
-                        }`} />
+                    <div style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      padding: '0.25rem 0.75rem',
+                      borderRadius: '9999px',
+                      fontSize: '0.75rem',
+                      fontWeight: '500',
+                      ...getStatusColor(log.status)
+                    }}>
+                      <div style={{
+                        width: '0.375rem',
+                        height: '0.375rem',
+                        borderRadius: '9999px',
+                        backgroundColor: log.status === 'granted' ? CARDLECT_COLORS.success.main : log.status === 'denied' ? CARDLECT_COLORS.danger.main : CARDLECT_COLORS.warning.main
+                      }} />
                       {formatStatus(log.status)}
                     </div>
                   </div>

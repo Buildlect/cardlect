@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Plus, Upload, Camera, LinkIcon, Tag, Trash2, Edit2 } from 'lucide-react'
 import { useCardlect } from '@/contexts/cardlect-context'
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 
 export default function StudentRegistrationPage() {
   const router = useRouter()
@@ -124,10 +125,10 @@ export default function StudentRegistrationPage() {
 
   const getCardStatusColor = (status: string) => {
     switch (status) {
-      case 'issued': return 'bg-green-500/10 text-green-600'
-      case 'pending': return 'bg-yellow-500/10 text-yellow-600'
-      case 'inactive': return 'bg-red-500/10 text-red-600'
-      default: return 'bg-secondary'
+      case 'issued': return { backgroundColor: `${CARDLECT_COLORS.success.main}15`, color: CARDLECT_COLORS.success.main }
+      case 'pending': return { backgroundColor: `${CARDLECT_COLORS.warning.main}15`, color: CARDLECT_COLORS.warning.main }
+      case 'inactive': return { backgroundColor: `${CARDLECT_COLORS.danger.main}15`, color: CARDLECT_COLORS.danger.main }
+      default: return { backgroundColor: 'var(--secondary)', color: 'inherit' }
     }
   }
 
@@ -142,7 +143,7 @@ export default function StudentRegistrationPage() {
                 <h1 className="text-3xl font-bold text-foreground">Student Registration</h1>
                 <p className="text-muted-foreground">Register students and issue cards with parent linking</p>
               </div>
-              <button onClick={() => setShowAddForm(true)} className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-all">
+              <button onClick={() => setShowAddForm(true)} style={{ backgroundColor: CARDLECT_COLORS.primary.darker }} className="flex items-center gap-2 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-all">
                 <Plus size={18} />
                 Add Student
               </button>
@@ -193,12 +194,19 @@ export default function StudentRegistrationPage() {
                           <td className="px-6 py-4 text-sm text-foreground">{student.class}</td>
                           <td className="px-6 py-4 text-sm text-foreground">{student.email}</td>
                           <td className="px-6 py-4">
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${getCardStatusColor(student.cardStatus)}`}>
+                            <span style={{ ...getCardStatusColor(student.cardStatus), padding: '0.5rem', borderRadius: '0.375rem', fontSize: '0.75rem', fontWeight: '500' }}>
                               {student.cardStatus.charAt(0).toUpperCase() + student.cardStatus.slice(1)}
                             </span>
                           </td>
                           <td className="px-6 py-4 text-sm">
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${student.imageVerified ? 'bg-green-500/10 text-green-600' : 'bg-yellow-500/10 text-yellow-600'}`}>
+                            <span style={{
+                              backgroundColor: student.imageVerified ? `${CARDLECT_COLORS.success.main}15` : `${CARDLECT_COLORS.warning.main}15`,
+                              color: student.imageVerified ? CARDLECT_COLORS.success.main : CARDLECT_COLORS.warning.main,
+                              padding: '0.5rem',
+                              borderRadius: '0.375rem',
+                              fontSize: '0.75rem',
+                              fontWeight: '500'
+                            }}>
                               {student.imageVerified ? 'Verified' : 'Pending'}
                             </span>
                           </td>

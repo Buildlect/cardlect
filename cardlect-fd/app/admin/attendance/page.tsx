@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { CARDLECT_COLORS } from "@/lib/cardlect-colors"
 
 const attendanceData = [
   { date: "2024-01-15", present: 1100, absent: 50, late: 97 },
@@ -47,7 +48,7 @@ export default function AttendancePage() {
             <CardTitle className="text-sm">Absent</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">35</div>
+            <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.danger.main }}>35</div>
             <p className="text-xs text-muted-foreground">Students</p>
           </CardContent>
         </Card>
@@ -56,7 +57,7 @@ export default function AttendancePage() {
             <CardTitle className="text-sm">Late Arrivals</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">32</div>
+            <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.warning.main }}>32</div>
             <p className="text-xs text-muted-foreground">Students</p>
           </CardContent>
         </Card>
@@ -84,9 +85,9 @@ export default function AttendancePage() {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Bar dataKey="present" fill="#ff5c1c" />
-              <Bar dataKey="absent" fill="#e74c3c" />
-              <Bar dataKey="late" fill="#f39c12" />
+              <Bar dataKey="present" fill={CARDLECT_COLORS.primary.darker} />
+              <Bar dataKey="absent" fill={CARDLECT_COLORS.danger.main} />
+              <Bar dataKey="late" fill={CARDLECT_COLORS.warning.main} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -117,10 +118,13 @@ export default function AttendancePage() {
                   {classAttendance.map((c, idx) => (
                     <tr key={idx} className="border-b hover:bg-muted/50">
                       <td className="py-2 px-4 font-medium">{c.class}</td>
-                      <td className="py-2 px-4 text-green-600 font-semibold">{c.present}</td>
-                      <td className="py-2 px-4 text-red-600">{c.absent}</td>
+                      <td className="py-2 px-4 font-semibold" style={{ color: CARDLECT_COLORS.success.main }}>{c.present}</td>
+                      <td className="py-2 px-4" style={{ color: CARDLECT_COLORS.danger.main }}>{c.absent}</td>
                       <td className="py-2 px-4">
-                        <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200">
+                        <span style={{
+                          backgroundColor: `${CARDLECT_COLORS.success.main}20`,
+                          color: CARDLECT_COLORS.success.main
+                        }} className="px-2 py-1 rounded text-xs font-medium">
                           {c.rate}
                         </span>
                       </td>

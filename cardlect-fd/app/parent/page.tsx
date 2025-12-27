@@ -4,6 +4,7 @@ import { useProtectedRoute } from '@/contexts/auth-context'
 import { useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Users, Clock, AlertTriangle, MapPin, Bell, CheckCircle, TrendingUp, Calendar, ChevronDown } from 'lucide-react'
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 import {
   LineChart,
   Line,
@@ -14,7 +15,6 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
-import { SEMANTIC_COLORS } from '@/lib/cardlect-colors'
 
 interface Child {
   id: string
@@ -65,19 +65,19 @@ export default function ParentsDashboard() {
     {
       text: `${selectedChild.name} left school at 3:45 PM`,
       icon: Clock,
-      color: SEMANTIC_COLORS.status.online,
+      color: CARDLECT_COLORS.success.main,
       bg: '#1a1a1a',
     },
     {
       text: 'New message from teacher',
       icon: Bell,
-      color: '#F59E0B',
+      color: CARDLECT_COLORS.warning.main,
       bg: '#262626',
     },
     {
       text: `Attendance: ${selectedChild.attendance}% this term`,
       icon: CheckCircle,
-      color: SEMANTIC_COLORS.attendance.present,
+      color: CARDLECT_COLORS.success.main,
       bg: '#1a1a1a',
     },
   ])
@@ -108,7 +108,7 @@ export default function ParentsDashboard() {
       value: selectedChild.status === 'in-school' ? 'In School' : 'At Home',
       change: `Since ${selectedChild.lastUpdate}`,
       icon: MapPin,
-      color: selectedChild.status === 'in-school' ? SEMANTIC_COLORS.status.online : SEMANTIC_COLORS.status.offline,
+      color: selectedChild.status === 'in-school' ? CARDLECT_COLORS.success.main : CARDLECT_COLORS.warning.main,
       data: sampleData,
       tooltip: 'Real-time status of your child',
     },
@@ -117,7 +117,7 @@ export default function ParentsDashboard() {
       value: 5,
       change: '+0 pending',
       icon: Calendar,
-      color: SEMANTIC_COLORS.status.online,
+      color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Authorized pickups this week',
     },
@@ -126,7 +126,7 @@ export default function ParentsDashboard() {
       value: `${selectedChild.attendance}%`,
       change: `+${selectedChild.attendance > 90 ? 2 : 0}% from last month`,
       icon: TrendingUp,
-      color: selectedChild.attendance > 90 ? SEMANTIC_COLORS.status.online : '#F59E0B',
+      color: selectedChild.attendance > 90 ? CARDLECT_COLORS.success.main : CARDLECT_COLORS.warning.main,
       data: sampleData,
       tooltip: 'Current attendance percentage',
     },
@@ -135,7 +135,7 @@ export default function ParentsDashboard() {
       value: 2,
       change: '1 payment due',
       icon: AlertTriangle,
-      color: SEMANTIC_COLORS.action.negative,
+      color: CARDLECT_COLORS.danger.main,
       data: sampleData,
       tooltip: 'Actions requiring attention',
     },
@@ -340,8 +340,8 @@ export default function ParentsDashboard() {
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="grad-activity" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#EC407A" stopOpacity={0.2} />
-                    <stop offset="100%" stopColor="#EC407A" stopOpacity={0} />
+                    <stop offset="0%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.2} />
+                    <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0} />
                   </linearGradient>
                 </defs>
 
@@ -362,13 +362,13 @@ export default function ParentsDashboard() {
                       </div>
                     )
                   }}
-                  cursor={{ stroke: '#EC407A', strokeWidth: 2, opacity: 0.1 }}
+                  cursor={{ stroke: CARDLECT_COLORS.primary.darker, strokeWidth: 2, opacity: 0.1 }}
                 />
 
                 <Area
                   type="monotone"
                   dataKey="entries"
-                  stroke="#EC407A"
+                  stroke={CARDLECT_COLORS.primary.darker}
                   strokeWidth={2}
                   fill="url(#grad-activity)"
                   isAnimationActive={true}

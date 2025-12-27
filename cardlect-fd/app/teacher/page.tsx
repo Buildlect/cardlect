@@ -26,19 +26,19 @@ export default function TeacherDashboard() {
     {
       text: 'Class 5A - Assignment due date tomorrow',
       icon: Clock,
-      color: '#F59E0B',
+      color: CARDLECT_COLORS.warning.main,
       bg: '#1a1a1a',
     },
     {
       text: 'Exam papers ready for review',
       icon: FileText,
-      color: '#3B82F6',
+      color: CARDLECT_COLORS.primary.darker,
       bg: '#262626',
     },
     {
       text: 'Parent-teacher meeting scheduled',
       icon: Users,
-      color: '#10B981',
+      color: CARDLECT_COLORS.success.main,
       bg: '#1a1a1a',
     },
   ])
@@ -128,7 +128,7 @@ export default function TeacherDashboard() {
       value: 142,
       change: 'Across all classes',
       icon: Users,
-      color: '#3B82F6',
+      color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Total students taught',
     },
@@ -137,7 +137,7 @@ export default function TeacherDashboard() {
       value: 137,
       change: '96.5% present',
       icon: CheckCircle,
-      color: '#10B981',
+      color: CARDLECT_COLORS.success.main,
       data: sampleData,
       tooltip: 'Students present today',
     },
@@ -146,7 +146,7 @@ export default function TeacherDashboard() {
       value: 28,
       change: '+5 pending review',
       icon: FileText,
-      color: '#F59E0B',
+      color: CARDLECT_COLORS.warning.main,
       data: sampleData,
       tooltip: 'Total assignments given',
     },
@@ -155,7 +155,7 @@ export default function TeacherDashboard() {
       value: '82%',
       change: '+3% this term',
       icon: TrendingUp,
-      color: '#8B5CF6',
+      color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Average class performance',
     },
@@ -263,8 +263,8 @@ export default function TeacherDashboard() {
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="grad-attendance" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10B981" stopOpacity={0.2} />
-                    <stop offset="100%" stopColor="#10B981" stopOpacity={0} />
+                    <stop offset="0%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.2} />
+                    <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0} />
                   </linearGradient>
                 </defs>
 
@@ -285,13 +285,13 @@ export default function TeacherDashboard() {
                       </div>
                     )
                   }}
-                  cursor={{ stroke: '#10B981', strokeWidth: 2, opacity: 0.1 }}
+                  cursor={{ stroke: CARDLECT_COLORS.primary.darker, strokeWidth: 2, opacity: 0.1 }}
                 />
 
                 <Area
                   type="monotone"
                   dataKey="present"
-                  stroke="#10B981"
+                  stroke={CARDLECT_COLORS.primary.darker}
                   strokeWidth={2}
                   fill="url(#grad-attendance)"
                   isAnimationActive={true}

@@ -49,10 +49,10 @@ export default function AttendancePage() {
   }
 
   const getAttendanceColor = (percentage: number) => {
-    if (percentage >= 95) return 'text-green-600 bg-green-50'
-    if (percentage >= 85) return 'text-blue-600 bg-blue-50'
-    if (percentage >= 75) return 'text-yellow-600 bg-yellow-50'
-    return 'text-red-600 bg-red-50'
+    if (percentage >= 95) return { color: CARDLECT_COLORS.success.main, backgroundColor: `${CARDLECT_COLORS.success.main}20` }
+    if (percentage >= 85) return { color: CARDLECT_COLORS.primary.darker, backgroundColor: `${CARDLECT_COLORS.primary.darker}20` }
+    if (percentage >= 75) return { color: CARDLECT_COLORS.warning.main, backgroundColor: `${CARDLECT_COLORS.warning.main}20` }
+    return { color: CARDLECT_COLORS.danger.main, backgroundColor: `${CARDLECT_COLORS.danger.main}20` }
   }
 
   return (
@@ -94,7 +94,7 @@ export default function AttendancePage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Perfect Attendance</div>
-              <div className="text-2xl font-bold text-green-600">{stats.perfect}</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.success.main }}>{stats.perfect}</div>
               <div className="text-xs text-muted-foreground mt-2">100% present</div>
             </CardContent>
           </Card>
@@ -110,7 +110,7 @@ export default function AttendancePage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Total Absent</div>
-              <div className="text-2xl font-bold text-yellow-600">{stats.absent}</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.warning.main }}>{stats.absent}</div>
               <div className="text-xs text-muted-foreground mt-2">This period</div>
             </CardContent>
           </Card>
@@ -163,10 +163,10 @@ export default function AttendancePage() {
                     <tr key={record.id} className="border-b hover:bg-muted/50">
                       <td className="py-3 px-4 font-medium">{record.studentName}</td>
                       <td className="py-3 px-4 text-center text-sm text-muted-foreground">{record.studentId}</td>
-                      <td className="py-3 px-4 text-center text-green-600 font-semibold">{record.present}</td>
-                      <td className="py-3 px-4 text-center text-yellow-600 font-semibold">{record.absent}</td>
+                      <td className="py-3 px-4 text-center font-semibold" style={{ color: CARDLECT_COLORS.success.main }}>{record.present}</td>
+                      <td className="py-3 px-4 text-center font-semibold" style={{ color: CARDLECT_COLORS.warning.main }}>{record.absent}</td>
                       <td className="py-3 px-4 text-center">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getAttendanceColor(record.percentage)}`}>
+                        <span style={{ ...getAttendanceColor(record.percentage), padding: '0.75rem 1rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: '600' }}>
                           {record.percentage}%
                         </span>
                       </td>

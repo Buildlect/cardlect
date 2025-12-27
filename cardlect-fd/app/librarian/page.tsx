@@ -90,7 +90,7 @@ export default function LibrarianDashboard() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Total Copies</div>
-              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.info.main }}>{stats.totalCopies}</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.primary.darker }}>{stats.totalCopies}</div>
               <div className="text-xs text-muted-foreground mt-2">Physical copies</div>
             </CardContent>
           </Card>
@@ -114,7 +114,7 @@ export default function LibrarianDashboard() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Utilization Rate</div>
-              <div className="text-2xl font-bold text-purple-600">{stats.avgUtilization}%</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.primary.darker }}>{stats.avgUtilization}%</div>
               <div className="text-xs text-muted-foreground mt-2">Books in use</div>
             </CardContent>
           </Card>
@@ -133,7 +133,7 @@ export default function LibrarianDashboard() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="borrowed" stroke={CARDLECT_COLORS.warning.main} strokeWidth={2} />
+                <Line type="monotone" dataKey="borrowed" stroke={CARDLECT_COLORS.primary.darker} strokeWidth={2} />
                 <Line type="monotone" dataKey="returned" stroke={CARDLECT_COLORS.success.main} strokeWidth={2} />
                 <Line type="monotone" dataKey="overdue" stroke={CARDLECT_COLORS.danger.main} strokeWidth={2} />
               </LineChart>

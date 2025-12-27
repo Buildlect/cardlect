@@ -4,6 +4,7 @@ import { useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 import {
   ShieldAlert,
   UserX,
@@ -44,75 +45,13 @@ interface StatCard {
   change: string
   icon: React.ReactNode
   borderColor: string
+  style?: any
 }
 
 export default function AlertsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('Unresolved')
-
-  const handleExportLogs = () => {
-    const csvContent = generateCSVContent()
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
-    link.href = url
-    link.download = `security-alerts-${timestamp}.csv`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
-
-  const generateCSVContent = () => {
-    const headers = ['Time', 'Severity', 'Alert Type', 'Description', 'Subject Name', 'Subject ID', 'Source']
-    const rows = [
-      headers.join(','),
-      ...alerts.map(alert => [
-        `"${alert.time}"`,
-        `"${alert.severity.toUpperCase()}"`,
-        `"${alert.alertType}"`,
-        `"${alert.description.replace(/"/g, '""')}"`,
-        `"${alert.subject?.name || 'N/A'}"`,
-        `"${alert.subject?.id || 'N/A'}"`,
-        `"${alert.source}"`
-      ].join(','))
-    ]
-    return rows.join('\n')
-  }
-
-  const stats: StatCard[] = [
-    {
-      title: 'CRITICAL BREACHES',
-      value: 2,
-      change: '+1 since 9am',
-      icon: <ShieldAlert className="w-5 h-5" />,
-      borderColor: 'border-l-red-500'
-    },
-    {
-      title: 'UNAUTHORIZED PICKUPS',
-      value: 1,
-      change: 'No change',
-      icon: <UserX className="w-5 h-5" />,
-      borderColor: 'border-l-orange-500'
-    },
-    {
-      title: 'SYSTEM WARNINGS',
-      value: 5,
-      change: '+2 new',
-      icon: <AlertTriangle className="w-5 h-5" />,
-      borderColor: 'border-l-yellow-500'
-    },
-    {
-      title: 'RESOLVED TODAY',
-      value: 14,
-      change: '94% Resolution Rate',
-      icon: <CheckCircle className="w-5 h-5" />,
-      borderColor: 'border-l-emerald-500'
-    }
-  ]
-
-  const alerts: Alert[] = [
+  const [alerts, setAlerts] = useState<Alert[]>([
     {
       id: '1',
       severity: 'critical',
@@ -175,35 +114,99 @@ export default function AlertsPage() {
       source: 'Main Library',
       icon: <Book className="w-4 h-4" />
     }
-  ]
+  ])
+  const [resolveConfirm, setResolveConfirm] = useState<string | null>(null)
+  const [selectedAlertDetail, setSelectedAlertDetail] = useState<string | null>(null)
 
   const getSeverityColor = (severity: AlertSeverity) => {
     switch (severity) {
       case 'critical':
-        return 'text-red-500'
+        return { color: CARDLECT_COLORS.danger.main, backgroundColor: CARDLECT_COLORS.danger.main + '20' }
       case 'warning':
-        return 'text-orange-500'
+        return { color: CARDLECT_COLORS.warning.main, backgroundColor: CARDLECT_COLORS.warning.main + '20' }
       case 'system':
-        return 'text-yellow-500'
+        return { color: CARDLECT_COLORS.warning.main, backgroundColor: CARDLECT_COLORS.warning.main + '20' }
       case 'info':
-        return 'text-blue-500'
+        return { color: CARDLECT_COLORS.info.main, backgroundColor: CARDLECT_COLORS.info.main + '20' }
       default:
-        return 'text-gray-500'
+        return { color: '#9E9E9E', backgroundColor: '#9E9E9E20' }
     }
   }
+
+  const handleExportLogs = () => {
+    const csvContent = generateCSVContent()
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
+    link.href = url
+    link.download = `security-alerts-${timestamp}.csv`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  const generateCSVContent = () => {
+    const headers = ['Time', 'Severity', 'Alert Type', 'Description', 'Subject Name', 'Subject ID', 'Source']
+    const rows = [
+      headers.join(','),
+      ...alerts.map(alert => [
+        `"${alert.time}"`,
+        `"${alert.severity.toUpperCase()}"`,
+        `"${alert.alertType}"`,
+        `"${alert.description.replace(/"/g, '""')}"`,
+        `"${alert.subject?.name || 'N/A'}"`,
+        `"${alert.subject?.id || 'N/A'}"`,
+        `"${alert.source}"`
+      ].join(','))
+    ]
+    return rows.join('\n')
+  }
+
+  const stats: StatCard[] = [
+    {
+      title: 'CRITICAL BREACHES',
+      value: 2,
+      change: '+1 since 9am',
+      icon: <ShieldAlert className="w-5 h-5" />,
+      borderColor: CARDLECT_COLORS.danger.main
+    },
+    {
+      title: 'UNAUTHORIZED PICKUPS',
+      value: 1,
+      change: 'No change',
+      icon: <UserX className="w-5 h-5" />,
+      borderColor: CARDLECT_COLORS.warning.main
+    },
+    {
+      title: 'SYSTEM WARNINGS',
+      value: 5,
+      change: '+2 new',
+      icon: <AlertTriangle className="w-5 h-5" />,
+      borderColor: CARDLECT_COLORS.warning.main
+    },
+    {
+      title: 'RESOLVED TODAY',
+      value: 14,
+      change: '94% Resolution Rate',
+      icon: <CheckCircle className="w-5 h-5" />,
+      borderColor: CARDLECT_COLORS.success.main
+    }
+  ]
 
   const getSeverityBg = (severity: AlertSeverity) => {
     switch (severity) {
       case 'critical':
-        return 'bg-red-500/10'
+        return { backgroundColor: CARDLECT_COLORS.danger.main + '20' }
       case 'warning':
-        return 'bg-orange-500/10'
+        return { backgroundColor: CARDLECT_COLORS.warning.main + '20' }
       case 'system':
-        return 'bg-yellow-500/10'
+        return { backgroundColor: CARDLECT_COLORS.warning.main + '20' }
       case 'info':
-        return 'bg-blue-500/10'
+        return { backgroundColor: CARDLECT_COLORS.info.main + '20' }
       default:
-        return 'bg-gray-500/10'
+        return { backgroundColor: '#9E9E9E20' }
     }
   }
 
@@ -247,7 +250,8 @@ export default function AlertsPage() {
             {stats.map((stat, idx) => (
               <div
                 key={idx}
-                className={`bg-card border-l-4 ${stat.borderColor} border border-border rounded-lg p-6 hover:bg-secondary/40 transition-colors`}
+                className="bg-card border border-border rounded-lg p-6 hover:bg-secondary/40 transition-colors"
+                style={{ borderLeftColor: stat.borderColor, borderLeftWidth: '4px' }}
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="text-muted-foreground text-xs font-medium tracking-wide">
@@ -323,8 +327,13 @@ export default function AlertsPage() {
                 >
                   {/* Severity */}
                   <div className="col-span-2">
-                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${getSeverityBg(alert.severity)} ${getSeverityColor(alert.severity)}`}>
-                      <div className={`w-1.5 h-1.5 rounded-full ${alert.severity === 'critical' ? 'bg-destructive' : alert.severity === 'warning' ? 'bg-orange-500' : alert.severity === 'system' ? 'bg-yellow-500' : 'bg-blue-500'}`} />
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium" style={getSeverityColor(alert.severity)}>
+                      <div className="w-1.5 h-1.5 rounded-full" style={{ 
+                        backgroundColor: alert.severity === 'critical' ? CARDLECT_COLORS.danger.main : 
+                                       alert.severity === 'warning' ? CARDLECT_COLORS.warning.main : 
+                                       alert.severity === 'system' ? CARDLECT_COLORS.warning.main : 
+                                       CARDLECT_COLORS.info.main 
+                      }} />
                       {alert.severity.toUpperCase()}
                     </div>
                   </div>
@@ -338,7 +347,7 @@ export default function AlertsPage() {
                   {/* Alert Type */}
                   <div className="col-span-3">
                     <div className="flex items-start gap-2">
-                      <div className={`mt-0.5 ${getSeverityColor(alert.severity)}`}>
+                      <div className="mt-0.5" style={{ color: alert.severity === 'critical' ? CARDLECT_COLORS.danger.main : alert.severity === 'warning' ? CARDLECT_COLORS.warning.main : alert.severity === 'system' ? CARDLECT_COLORS.warning.main : CARDLECT_COLORS.info.main }}>
                         {alert.icon}
                       </div>
                       <div>
@@ -352,7 +361,7 @@ export default function AlertsPage() {
                   <div className="col-span-2">
                     {alert.subject ? (
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full border-2 border-primary bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                        <div className="w-8 h-8 rounded-full border-2 font-bold text-sm flex items-center justify-center" style={{ borderColor: CARDLECT_COLORS.primary.darker, backgroundColor: CARDLECT_COLORS.primary.darker + '20', color: CARDLECT_COLORS.primary.darker }}>
                           {getInitials(alert.subject.name)}
                         </div>
                         <div>

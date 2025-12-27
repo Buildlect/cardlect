@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Download, TrendingUp, Users, DollarSign, Calendar, Clock, Plus } from 'lucide-react'
+import { CARDLECT_COLORS, SEMANTIC_COLORS } from '@/lib/cardlect-colors'
 import {
   LineChart,
   Line,
@@ -212,44 +213,44 @@ export default function AnalyticsPage() {
     {
       title: 'Avg Attendance',
       value: `${avgAttendance.toFixed(1)}%`,
-      icon: <TrendingUp size={24} className="text-primary" />,
-      bg: 'bg-primary/10 text-primary'
+      icon: <TrendingUp size={24} style={{ color: CARDLECT_COLORS.primary.main }} />,
+      bg: `bg-[${CARDLECT_COLORS.primary.main}]/10 text-[${CARDLECT_COLORS.primary.main}]`
     },
     {
       title: 'Total Transactions',
       value: totalTransactions.toLocaleString(),
-      icon: <DollarSign size={24} className="text-green-600" />,
-      bg: 'bg-green-600/10 text-green-600'
+      icon: <DollarSign size={24} style={{ color: CARDLECT_COLORS.success.main }} />,
+      bg: `bg-[${CARDLECT_COLORS.success.main}]/10 text-[${CARDLECT_COLORS.success.main}]`
     },
     {
       title: 'Active Users',
       value: activeUsers.toLocaleString(),
-      icon: <Users size={24} className="text-blue-600" />,
-      bg: 'bg-blue-600/10 text-blue-600'
+      icon: <Users size={24} style={{ color: CARDLECT_COLORS.info.main }} />,
+      bg: `bg-[${CARDLECT_COLORS.info.main}]/10 text-[${CARDLECT_COLORS.info.main}]`
     },
     {
       title: 'Period',
       value: `${period} months`,
-      icon: <Calendar size={24} className="text-purple-600" />,
-      bg: 'bg-purple-600/10 text-purple-600'
+      icon: <Calendar size={24} style={{ color: CARDLECT_COLORS.secondary.main }} />,
+      bg: `bg-[${CARDLECT_COLORS.secondary.main}]/10 text-[${CARDLECT_COLORS.secondary.main}]`
     },
     {
       title: 'Avg Lateness',
       value: `${avgLateness}%`,
-      icon: <Clock size={20} className="text-amber-600" />,
-      bg: 'bg-amber-600/10 text-amber-600'
+      icon: <Clock size={20} style={{ color: CARDLECT_COLORS.warning.main }} />,
+      bg: `bg-[${CARDLECT_COLORS.warning.main}]/10 text-[${CARDLECT_COLORS.warning.main}]`
     },
     {
       title: 'New Registrations',
       value: newRegistrations.toLocaleString(),
-      icon: <Plus size={20} className="text-emerald-600" />,
-      bg: 'bg-emerald-600/10 text-emerald-600'
+      icon: <Plus size={20} style={{ color: CARDLECT_COLORS.success.darker }} />,
+      bg: `bg-[${CARDLECT_COLORS.success.darker}]/10 text-[${CARDLECT_COLORS.success.darker}]`
     },
     {
       title: 'Monthly Revenue',
       value: `N${Number(monthlyRevenue).toLocaleString()}`,
-      icon: <DollarSign size={20} className="text-pink-600" />,
-      bg: 'bg-pink-600/10 text-pink-600'
+      icon: <DollarSign size={20} style={{ color: CARDLECT_COLORS.danger.main }} />,
+      bg: `bg-[${CARDLECT_COLORS.danger.main}]/10 text-[${CARDLECT_COLORS.danger.main}]`
     }
   ].filter((_, i) => {
     if (!showOnlyActive) return true
@@ -339,7 +340,7 @@ export default function AnalyticsPage() {
                       <YAxis stroke="var(--color-muted-foreground)" />
                       <Tooltip contentStyle={{ backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)' }} />
                       <Legend />
-                      <Line type="monotone" dataKey="present" stroke="#ff5c1c" strokeWidth={3} />
+                      <Line type="monotone" dataKey="present" stroke={CARDLECT_COLORS.success.main} strokeWidth={3} />
                       <Line type="monotone" dataKey="absent" stroke="#999" strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
@@ -382,7 +383,7 @@ export default function AnalyticsPage() {
                     <YAxis stroke="var(--color-muted-foreground)" />
                     <Tooltip contentStyle={{ backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)' }} />
                     <Legend />
-                    <Bar dataKey="transactions" fill="#ff5c1c" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="transactions" fill={CARDLECT_COLORS.primary.darker} radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>

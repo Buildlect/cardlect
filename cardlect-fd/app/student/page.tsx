@@ -14,7 +14,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
-import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
+import { CARDLECT_COLORS, SEMANTIC_COLORS } from '@/lib/cardlect-colors'
 
 export default function StudentsDashboard() {
   const [alerts] = useState([
@@ -38,60 +38,7 @@ export default function StudentsDashboard() {
     },
   ])
 
-  const [cbtExams] = useState([
-    {
-      id: '1',
-      title: 'WAEC Mathematics CBT',
-      subject: 'Mathematics',
-      date: '2024-02-15',
-      time: '10:00 AM - 12:30 PM',
-      duration: '150 minutes',
-      status: 'available', // available, in-progress, completed
-      score: null,
-      totalQuestions: 60,
-      passScore: 40,
-      description: 'WAEC Mathematics Computer-Based Test',
-    },
-    {
-      id: '2',
-      title: 'NECO English CBT',
-      subject: 'English Language',
-      date: '2024-02-18',
-      time: '2:00 PM - 4:30 PM',
-      duration: '150 minutes',
-      status: 'available',
-      score: null,
-      totalQuestions: 50,
-      passScore: 35,
-      description: 'NECO English Language Computer-Based Test',
-    },
-    {
-      id: '3',
-      title: 'Mock Biology CBT',
-      subject: 'Biology',
-      date: '2024-02-10',
-      time: '9:00 AM - 10:30 AM',
-      duration: '90 minutes',
-      status: 'completed',
-      score: 78,
-      totalQuestions: 40,
-      passScore: 24,
-      description: 'Practice Biology examination',
-    },
-    {
-      id: '4',
-      title: 'Chemistry Practice CBT',
-      subject: 'Chemistry',
-      date: '2024-02-12',
-      time: '1:00 PM - 2:30 PM',
-      duration: '90 minutes',
-      status: 'completed',
-      score: 82,
-      totalQuestions: 40,
-      passScore: 24,
-      description: 'Chemistry practice test',
-    },
-  ])
+  // CBT Exams moved to /student/exams page
 
   const sampleData = [
     { name: 'Mon', value: 95 },
@@ -119,7 +66,7 @@ export default function StudentsDashboard() {
       value: '3.8',
       change: '+0.2 this term',
       icon: Award,
-      color: '#F59E0B',
+      color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Your current Grade Point Average',
     },
@@ -128,7 +75,7 @@ export default function StudentsDashboard() {
       value: '98%',
       change: '+1% this week',
       icon: Clock,
-      color: '#10B981',
+      color: SEMANTIC_COLORS.status.online,
       data: sampleData,
       tooltip: 'Attendance rate this term',
     },
@@ -137,7 +84,7 @@ export default function StudentsDashboard() {
       value: 12,
       change: '+2 completed',
       icon: BookOpen,
-      color: '#3B82F6',
+      color: CARDLECT_COLORS.info.main,
       data: sampleData,
       tooltip: 'Total assignments this term',
     },
@@ -146,7 +93,7 @@ export default function StudentsDashboard() {
       value: 5,
       change: 'Math, Science, English...',
       icon: Users,
-      color: '#8B5CF6',
+      color: CARDLECT_COLORS.primary.main,
       data: sampleData,
       tooltip: 'Active study groups',
     },
@@ -254,8 +201,8 @@ export default function StudentsDashboard() {
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="grad-performance" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.2} />
-                    <stop offset="100%" stopColor="#F59E0B" stopOpacity={0} />
+                    <stop offset="0%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.2} />
+                    <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0} />
                   </linearGradient>
                 </defs>
 
@@ -276,13 +223,13 @@ export default function StudentsDashboard() {
                       </div>
                     )
                   }}
-                  cursor={{ stroke: '#F59E0B', strokeWidth: 2, opacity: 0.1 }}
+                  cursor={{ stroke: CARDLECT_COLORS.primary.darker, strokeWidth: 2, opacity: 0.1 }}
                 />
 
                 <Area
                   type="monotone"
                   dataKey="grade"
-                  stroke="#F59E0B"
+                  stroke={CARDLECT_COLORS.primary.darker}
                   strokeWidth={2}
                   fill="url(#grad-performance)"
                   isAnimationActive={true}
@@ -323,113 +270,6 @@ export default function StudentsDashboard() {
               )
             })}
           </div>
-        </div>
-      </div>
-
-      {/* CBT Exams Section */}
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold text-foreground mb-6">CBT Exams</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {cbtExams.map((exam) => (
-            <div
-              key={exam.id}
-              className="bg-card border border-border rounded-3xl p-6 hover:shadow-xl transition-all hover:scale-[1.02] cursor-pointer group"
-            >
-              {/* Header with status badge */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-start gap-3 flex-1">
-                  <div
-                    style={{ backgroundColor: CARDLECT_COLORS.primary.main }}
-                    className="p-3 rounded-xl flex items-center justify-center text-white"
-                  >
-                    <BookOpen size={24} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-foreground">{exam.title}</h3>
-                    <p className="text-sm text-muted-foreground">{exam.subject}</p>
-                  </div>
-                </div>
-
-                {/* Status Badge */}
-                <div
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                    exam.status === 'completed'
-                      ? 'bg-green-500/20 text-green-400'
-                      : exam.status === 'in-progress'
-                      ? 'bg-blue-500/20 text-blue-400'
-                      : 'bg-orange-500/20 text-orange-400'
-                  }`}
-                >
-                  {exam.status === 'completed'
-                    ? 'Completed'
-                    : exam.status === 'in-progress'
-                    ? 'In Progress'
-                    : 'Available'}
-                </div>
-              </div>
-
-              {/* Exam Details */}
-              <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar size={16} style={{ color: CARDLECT_COLORS.primary.main }} />
-                  <span>{exam.date} · {exam.time}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock size={16} style={{ color: CARDLECT_COLORS.primary.main }} />
-                  <span>Duration: {exam.duration}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <FileText size={16} style={{ color: CARDLECT_COLORS.primary.main }} />
-                  <span>Questions: {exam.totalQuestions}</span>
-                </div>
-              </div>
-
-              {/* Score or Action */}
-              {exam.status === 'completed' && exam.score !== null ? (
-                <div className="bg-background/50 rounded-xl p-4 mb-4">
-                  <p className="text-xs text-muted-foreground mb-2">Your Score</p>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-3xl font-bold text-foreground">{exam.score}</span>
-                    <span className="text-sm text-muted-foreground">
-                      / {exam.totalQuestions}
-                      {exam.score >= exam.passScore ? (
-                        <span className="ml-2 text-green-400">✓ Passed</span>
-                      ) : (
-                        <span className="ml-2 text-red-400">✗ Failed</span>
-                      )}
-                    </span>
-                  </div>
-                </div>
-              ) : (
-                <div className="bg-background/50 rounded-xl p-3 mb-4 text-sm text-muted-foreground">
-                  Pass score: {exam.passScore}/{exam.totalQuestions}
-                </div>
-              )}
-
-              {/* Action Button */}
-              <button
-                style={{ backgroundColor: CARDLECT_COLORS.primary.darker }}
-                className="w-full text-white font-semibold py-2.5 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 group"
-              >
-                {exam.status === 'completed' ? (
-                  <>
-                    <CheckCircle size={18} />
-                    View Results
-                  </>
-                ) : exam.status === 'in-progress' ? (
-                  <>
-                    <AlertCircle size={18} />
-                    Continue Exam
-                  </>
-                ) : (
-                  <>
-                    <FileText size={18} />
-                    Start Exam
-                  </>
-                )}
-              </button>
-            </div>
-          ))}
         </div>
       </div>
     </DashboardLayout>

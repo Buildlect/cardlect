@@ -6,6 +6,7 @@ import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search, Edit, Trash2, Lock } from "lucide-react"
+import { CARDLECT_COLORS } from "@/lib/cardlect-colors"
 
 const mockStudents = [
   {
@@ -51,6 +52,10 @@ export default function StudentsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({ name: "", admission: "", class: "", email: "", phone: "" })
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editForm, setEditForm] = useState({ name: "", class: "", admission: "", cardStatus: "Issued" as const })
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
+  const [cardStatusModal, setCardStatusModal] = useState<{ id: number; currentStatus: string } | null>(null)
 
   const filteredStudents = students.filter(
     (s) =>
@@ -73,6 +78,31 @@ export default function StudentsPage() {
 
   const handleDeleteStudent = (id: number) => {
     setStudents(students.filter((s) => s.id !== id))
+    setDeleteConfirm(null)
+  }
+
+  const handleEditStudent = (student: any) => {
+    setEditingId(student.id)
+    setEditForm({ name: student.name, class: student.class, admission: student.admission, cardStatus: student.cardStatus })
+  }
+
+  const handleSaveEdit = () => {
+    if (!editForm.name.trim() || !editForm.admission.trim() || !editForm.class.trim()) {
+      alert('All fields are required')
+      return
+    }
+    setStudents(students.map((s) => s.id === editingId ? { ...s, name: editForm.name, class: editForm.class, admission: editForm.admission, cardStatus: editForm.cardStatus } : s))
+    setEditingId(null)
+    alert('Student updated successfully!')
+  }
+
+  const handleCardStatusToggle = (id: number, currentStatus: string) => {
+    const statuses = ['Issued', 'Blocked', 'Suspended']
+    const currentIndex = statuses.indexOf(currentStatus)
+    const nextStatus = statuses[(currentIndex + 1) % statuses.length]
+    setStudents(students.map((s) => s.id === id ? { ...s, cardStatus: nextStatus } : s))
+    setCardStatusModal(null)
+    alert(`Card status changed to ${nextStatus}`)
   }
 
   return (
@@ -80,7 +110,7 @@ export default function StudentsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold">Student Management</h2>
-        <Button onClick={() => setShowForm(!showForm)} className="bg-primary hover:bg-primary/90 gap-2">
+        <Button onClick={() => setShowForm(!showForm)} style={{ backgroundColor: CARDLECT_COLORS.primary.darker }} className="text-white hover:opacity-90 gap-2">
           <Plus size={18} /> Add Student
         </Button>
       </div>
@@ -119,7 +149,7 @@ export default function StudentsPage() {
               />
             </div>
             <div className="flex gap-3 mt-4">
-              <Button onClick={handleAddStudent} className="bg-primary hover:bg-primary/90">
+              <Button onClick={handleAddStudent} style={{ backgroundColor: CARDLECT_COLORS.primary.darker }} className="text-white hover:opacity-90">
                 Save Student
               </Button>
               <Button onClick={() => setShowForm(false)} variant="outline">
@@ -175,25 +205,30 @@ export default function StudentsPage() {
                       <td className="py-2 px-4">{student.email}</td>
                       <td className="py-2 px-4">
                         <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${
-                            student.cardStatus === "Issued"
-                              ? "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-200"
-                              : "bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200"
-                          }`}
+                          style={{
+                            backgroundColor: student.cardStatus === "Issued" 
+                              ? `${CARDLECT_COLORS.success.main}20` 
+                              : `${CARDLECT_COLORS.warning.main}20`,
+                            color: student.cardStatus === "Issued" 
+                              ? CARDLECT_COLORS.success.main 
+                              : CARDLECT_COLORS.warning.main
+                          }}
+                          className="px-2 py-1 rounded text-xs font-medium"
                         >
                           {student.cardStatus}
                         </span>
                       </td>
                       <td className="py-2 px-4 flex gap-2">
-                        <button className="p-1 hover:bg-muted rounded">
+                        <button onClick={() => handleEditStudent(student)} className="p-1 hover:bg-muted rounded" title="Edit student">
                           <Edit size={16} />
                         </button>
-                        <button className="p-1 hover:bg-muted rounded">
+                        <button onClick={() => setCardStatusModal({ id: student.id, currentStatus: student.cardStatus })} className="p-1 hover:bg-muted rounded" title="Toggle card status">
                           <Lock size={16} />
                         </button>
                         <button
-                          onClick={() => handleDeleteStudent(student.id)}
+                          onClick={() => setDeleteConfirm(student.id)}
                           className="p-1 hover:bg-muted rounded text-red-500"
+                          title="Delete student"
                         >
                           <Trash2 size={16} />
                         </button>
@@ -206,6 +241,73 @@ export default function StudentsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Modal */}
+      {editingId !== null && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center" onClick={() => setEditingId(null)}>
+          <div className="bg-white dark:bg-card rounded-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold mb-4">Edit Student</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm mb-1 font-medium">Name</label>
+                <input type="text" value={editForm.name} onChange={(e) => setEditForm({...editForm, name: e.target.value})} className="w-full border rounded px-3 py-2 text-foreground bg-background" />
+              </div>
+              <div>
+                <label className="block text-sm mb-1 font-medium">Admission Number</label>
+                <input type="text" value={editForm.admission} onChange={(e) => setEditForm({...editForm, admission: e.target.value})} className="w-full border rounded px-3 py-2 text-foreground bg-background" />
+              </div>
+              <div>
+                <label className="block text-sm mb-1 font-medium">Class</label>
+                <input type="text" value={editForm.class} onChange={(e) => setEditForm({...editForm, class: e.target.value})} className="w-full border rounded px-3 py-2 text-foreground bg-background" />
+              </div>
+              <div>
+                <label className="block text-sm mb-1 font-medium">Card Status</label>
+                <select value={editForm.cardStatus} onChange={(e) => setEditForm({...editForm, cardStatus: e.target.value})} className="w-full border rounded px-3 py-2 text-foreground bg-background">
+                  <option>Issued</option>
+                  <option>Blocked</option>
+                  <option>Suspended</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-2 mt-6">
+              <button onClick={handleSaveEdit} style={{ backgroundColor: CARDLECT_COLORS.primary.darker }} className="flex-1 text-white py-2 rounded hover:opacity-90">Save</button>
+              <button onClick={() => setEditingId(null)} className="flex-1 border rounded py-2 hover:bg-muted">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation */}
+      {deleteConfirm !== null && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center" onClick={() => setDeleteConfirm(null)}>
+          <div className="bg-white dark:bg-card rounded-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold mb-2">Delete Student?</h3>
+            <p className="text-muted-foreground mb-6">This action cannot be undone.</p>
+            <div className="flex gap-2">
+              <button onClick={() => handleDeleteStudent(deleteConfirm)} style={{ backgroundColor: CARDLECT_COLORS.danger.main }} className="flex-1 text-white py-2 rounded hover:opacity-90">Delete</button>
+              <button onClick={() => setDeleteConfirm(null)} className="flex-1 border rounded py-2 hover:bg-muted">Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Card Status Toggle */}
+      {cardStatusModal && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center" onClick={() => setCardStatusModal(null)}>
+          <div className="bg-white dark:bg-card rounded-lg p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold mb-4">Change Card Status</h3>
+            <p className="text-muted-foreground mb-6">Current status: <span className="font-semibold text-foreground">{cardStatusModal.currentStatus}</span></p>
+            <div className="space-y-2 mb-6">
+              {['Issued', 'Blocked', 'Suspended'].map((status) => (
+                <button key={status} onClick={() => handleCardStatusToggle(cardStatusModal.id, cardStatusModal.currentStatus)} className="w-full p-3 border rounded text-left hover:bg-secondary transition-colors">
+                  {status}
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setCardStatusModal(null)} className="w-full border rounded py-2 hover:bg-muted">Cancel</button>
+          </div>
+        </div>
+      )}
     </div>
     </DashboardLayout>
   )

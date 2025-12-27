@@ -81,8 +81,8 @@ export default function ExamOfficerDashboard() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Active Exams</div>
-              <div className="text-2xl font-bold text-blue-600">{stats.activeExams}</div>
-              <div className="text-xs text-blue-600 mt-2">In progress</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.primary.darker }}>{stats.activeExams}</div>
+              <div className="text-xs mt-2" style={{ color: CARDLECT_COLORS.primary.darker }}>In progress</div>
             </CardContent>
           </Card>
 
@@ -97,7 +97,7 @@ export default function ExamOfficerDashboard() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Students Examined</div>
-              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.info.main }}>{stats.totalStudents}</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.primary.darker }}>{stats.totalStudents}</div>
               <div className="text-xs text-muted-foreground mt-2">Total entries</div>
             </CardContent>
           </Card>
@@ -105,7 +105,7 @@ export default function ExamOfficerDashboard() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Average Score</div>
-              <div className="text-2xl font-bold text-purple-600">{stats.avgScore}%</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.primary.darker }}>{stats.avgScore}%</div>
               <div className="text-xs text-muted-foreground mt-2">Across all exams</div>
             </CardContent>
           </Card>
@@ -125,7 +125,7 @@ export default function ExamOfficerDashboard() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="exams" fill={CARDLECT_COLORS.warning.main} />
+                  <Bar dataKey="exams" fill={CARDLECT_COLORS.primary.darker} />
                   <Bar dataKey="completed" fill={CARDLECT_COLORS.success.main} />
                 </BarChart>
               </ResponsiveContainer>

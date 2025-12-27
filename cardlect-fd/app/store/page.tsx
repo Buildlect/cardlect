@@ -4,6 +4,7 @@ import { useProtectedRoute } from '@/contexts/auth-context'
 import { useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { ShoppingCart, TrendingUp, AlertTriangle, Package, DollarSign, Barcode, Bell, Clock } from 'lucide-react'
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 import {
   LineChart,
   Line,
@@ -65,7 +66,7 @@ export default function StoreDashboard() {
       value: 19300,
       change: '+22% this week',
       icon: TrendingUp,
-      color: '#10B981',
+      color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Total sales revenue',
       prefix: '$',
@@ -75,7 +76,7 @@ export default function StoreDashboard() {
       value: 342,
       change: '+15% from last week',
       icon: ShoppingCart,
-      color: '#3B82F6',
+      color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Total items sold',
     },
@@ -84,7 +85,7 @@ export default function StoreDashboard() {
       value: 258,
       change: '12 items low in stock',
       icon: Package,
-      color: '#F59E0B',
+      color: CARDLECT_COLORS.warning.main,
       data: sampleData,
       tooltip: 'Current inventory count',
     },
@@ -93,7 +94,7 @@ export default function StoreDashboard() {
       value: 68000,
       change: '+8% this month',
       icon: DollarSign,
-      color: '#8B5CF6',
+      color: CARDLECT_COLORS.primary.darker,
       data: sampleData,
       tooltip: 'Monthly revenue',
       prefix: '$',
@@ -202,8 +203,8 @@ export default function StoreDashboard() {
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="grad-sales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10B981" stopOpacity={0.2} />
-                    <stop offset="100%" stopColor="#10B981" stopOpacity={0} />
+                    <stop offset="0%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.2} />
+                    <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0} />
                   </linearGradient>
                 </defs>
 
@@ -224,13 +225,13 @@ export default function StoreDashboard() {
                       </div>
                     )
                   }}
-                  cursor={{ stroke: '#10B981', strokeWidth: 2, opacity: 0.1 }}
+                  cursor={{ stroke: CARDLECT_COLORS.primary.darker, strokeWidth: 2, opacity: 0.1 }}
                 />
 
                 <Area
                   type="monotone"
                   dataKey="sales"
-                  stroke="#10B981"
+                  stroke={CARDLECT_COLORS.primary.darker}
                   strokeWidth={2}
                   fill="url(#grad-sales)"
                   isAnimationActive={true}

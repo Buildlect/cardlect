@@ -27,6 +27,8 @@ const mockAssignments: Assignment[] = [
 export default function AssignmentsPage() {
   const [assignments, setAssignments] = useState(mockAssignments)
   const [showNew, setShowNew] = useState(false)
+  const [newAssignmentForm, setNewAssignmentForm] = useState({ title: '', description: '', dueDate: '', maxScore: '100', class: '10A' })
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
   const stats = {
     total: assignments.length,
@@ -37,15 +39,41 @@ export default function AssignmentsPage() {
 
   const getStatusIcon = (status: string) => {
     switch(status) {
-      case 'open': return <Clock className="text-blue-600" size={16} />
-      case 'closing': return <AlertCircle className="text-yellow-600" size={16} />
-      case 'closed': return <CheckCircle className="text-green-600" size={16} />
+      case 'open': return <Clock style={{ color: CARDLECT_COLORS.primary.darker }} size={16} />
+      case 'closing': return <AlertCircle style={{ color: CARDLECT_COLORS.warning.main }} size={16} />
+      case 'closed': return <CheckCircle style={{ color: CARDLECT_COLORS.success.main }} size={16} />
       default: return null
     }
   }
 
   const getSubmissionPercentage = (submitted: number, total: number) => {
     return Math.round((submitted / total) * 100)
+  }
+
+  const handleAddAssignment = () => {
+    if (!newAssignmentForm.title.trim() || !newAssignmentForm.dueDate) {
+      alert('Title and due date are required')
+      return
+    }
+    const newAssignment: Assignment = {
+      id: `${assignments.length + 1}`,
+      title: newAssignmentForm.title.trim(),
+      class: newAssignmentForm.class,
+      dueDate: newAssignmentForm.dueDate,
+      submitted: 0,
+      total: 35,
+      status: 'open'
+    }
+    setAssignments([newAssignment, ...assignments])
+    setNewAssignmentForm({ title: '', description: '', dueDate: '', maxScore: '100', class: '10A' })
+    setShowNew(false)
+    alert('Assignment created successfully!')
+  }
+
+  const handleDeleteAssignment = (id: string) => {
+    setAssignments(assignments.filter(a => a.id !== id))
+    setDeleteConfirm(null)
+    alert('Assignment deleted')
   }
 
   return (
@@ -56,8 +84,8 @@ export default function AssignmentsPage() {
             <h1 className="text-3xl font-bold text-foreground">Assignments</h1>
             <p className="text-muted-foreground">Create and manage student assignments</p>
           </div>
-          <Button style={{ backgroundColor: CARDLECT_COLORS.primary.darker }} className="text-white hover:opacity-90 transition-opacity">
-            <Plus size={18} /> New Assignment
+          <Button onClick={() => setShowNew(!showNew)} style={{ backgroundColor: CARDLECT_COLORS.primary.darker }} className="text-white hover:opacity-90 transition-opacity">
+            <Plus size={18} /> {showNew ? 'Cancel' : 'New Assignment'}
           </Button>
         </div>
 
@@ -74,7 +102,7 @@ export default function AssignmentsPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Active</div>
-              <div className="text-2xl font-bold text-blue-600">{stats.open}</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.primary.darker }}>{stats.open}</div>
               <div className="text-xs text-muted-foreground mt-2">Awaiting submissions</div>
             </CardContent>
           </Card>
@@ -82,7 +110,7 @@ export default function AssignmentsPage() {
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Submitted</div>
-              <div className="text-2xl font-bold text-green-600">{stats.submitted}</div>
+              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.success.main }}>{stats.submitted}</div>
               <div className="text-xs text-muted-foreground mt-2">Out of {stats.totalSubmittable}</div>
             </CardContent>
           </Card>
@@ -97,6 +125,41 @@ export default function AssignmentsPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* New Assignment Form */}
+        {showNew && (
+          <div className="bg-card border border-border rounded-lg p-6 mb-6">
+            <h3 className="text-lg font-bold mb-4">Create New Assignment</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Title *</label>
+                <input type="text" placeholder="Assignment title" value={newAssignmentForm.title} onChange={(e) => setNewAssignmentForm({...newAssignmentForm, title: e.target.value})} className="w-full border border-border rounded px-3 py-2 bg-background text-foreground" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Description</label>
+                <textarea placeholder="Assignment description" value={newAssignmentForm.description} onChange={(e) => setNewAssignmentForm({...newAssignmentForm, description: e.target.value})} className="w-full border border-border rounded px-3 py-2 bg-background text-foreground h-20" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Due Date *</label>
+                  <input type="date" value={newAssignmentForm.dueDate} onChange={(e) => setNewAssignmentForm({...newAssignmentForm, dueDate: e.target.value})} className="w-full border border-border rounded px-3 py-2 bg-background text-foreground" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Class</label>
+                  <select value={newAssignmentForm.class} onChange={(e) => setNewAssignmentForm({...newAssignmentForm, class: e.target.value})} className="w-full border border-border rounded px-3 py-2 bg-background text-foreground">
+                    <option>10A</option>
+                    <option>10B</option>
+                    <option>11</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2 mt-6">
+              <Button onClick={handleAddAssignment} style={{ backgroundColor: CARDLECT_COLORS.primary.darker }} className="text-white hover:opacity-90">Create Assignment</Button>
+              <Button onClick={() => setShowNew(false)} variant="outline">Cancel</Button>
+            </div>
+          </div>
+        )}
 
         {/* Assignments List */}
         <div className="space-y-4">
@@ -146,12 +209,27 @@ export default function AssignmentsPage() {
                   <div className="flex gap-2 mt-4">
                     <Button variant="outline" size="sm">View Submissions</Button>
                     <Button variant="outline" size="sm">Edit</Button>
+                    <Button variant="outline" size="sm" onClick={() => setDeleteConfirm(assignment.id)} className="text-red-500 hover:bg-red-50">Delete</Button>
                   </div>
                 </CardContent>
               </Card>
             )
           })}
         </div>
+
+        {/* Delete Confirmation */}
+        {deleteConfirm && (
+          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center" onClick={() => setDeleteConfirm(null)}>
+            <div className="bg-white dark:bg-card rounded-lg p-6 max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-lg font-bold mb-2">Delete Assignment?</h3>
+              <p className="text-muted-foreground mb-6">This cannot be undone.</p>
+              <div className="flex gap-2">
+                <button onClick={() => handleDeleteAssignment(deleteConfirm)} className="flex-1 bg-red-500 text-white py-2 rounded hover:bg-red-600">Delete</button>
+                <button onClick={() => setDeleteConfirm(null)} className="flex-1 border rounded py-2 hover:bg-muted">Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   )

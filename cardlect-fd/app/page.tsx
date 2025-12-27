@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { MessageSquare, Eye, EyeOff, Mail, Facebook } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { CARDLECT_COLORS } from "@/lib/cardlect-colors"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { MOCK_USERS } from "@/contexts/mock-users"  // Import the MOCK_USERS from context
@@ -225,11 +226,15 @@ export default function LoginPage() {
                       setCredentialError("")
                     }}
                     onBlur={() => setTouched((t) => ({ ...t, email: true }))}
-                    className={`w-full h-12 px-4 bg-gray-50 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                    className={`w-full h-12 px-4 bg-gray-50 rounded-xl focus:ring-2 focus:border-transparent ${
                       credentialError && touched.email
                         ? "border-red-500 ring-red-200"
                         : "border-gray-200"
                     }`}
+                    style={{
+                      ...(credentialError && touched.email ? { outlineColor: CARDLECT_COLORS.danger.main } : { outlineColor: CARDLECT_COLORS.primary.darker }),
+                      outlineOffset: '2px'
+                    }}
                   />
                 </div>
 
@@ -243,11 +248,15 @@ export default function LoginPage() {
                       setCredentialError("")
                     }}
                     onBlur={() => setTouched((t) => ({ ...t, password: true }))}
-                    className={`w-full h-12 px-4 pr-12 bg-gray-50 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                    className={`w-full h-12 px-4 pr-12 bg-gray-50 rounded-xl focus:ring-2 focus:border-transparent ${
                       credentialError && touched.password
                         ? "border-red-500 ring-red-200"
                         : "border-gray-200"
                     }`}
+                    style={{
+                      ...(credentialError && touched.password ? { outlineColor: CARDLECT_COLORS.danger.main } : { outlineColor: CARDLECT_COLORS.primary.darker }),
+                      outlineOffset: '2px'
+                    }}
                   />
                   <button
                     type="button"
@@ -263,7 +272,7 @@ export default function LoginPage() {
                 </div>
 
                 {credentialError && (
-                  <div className="text-sm text-red-600 mt-1">
+                  <div style={{ color: CARDLECT_COLORS.danger.main }} className="text-sm mt-1">
                     {credentialError}
                   </div>
                 )}
@@ -277,9 +286,13 @@ export default function LoginPage() {
                         setTerms(e.target.checked)
                         if (e.target.checked) setTermsError("")
                       }}
-                      className={`w-4 h-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500 focus:ring-2 cursor-pointer ${
+                      className={`w-4 h-4 rounded border-gray-300 focus:ring-2 cursor-pointer ${
                         termsError ? "ring-2 ring-red-200 border-red-500" : ""
                       }`}
+                      style={{
+                        accentColor: CARDLECT_COLORS.primary.darker,
+                        ...(termsError ? { borderColor: CARDLECT_COLORS.danger.main } : {})
+                      }}
                     />
                     <span className="text-sm text-gray-600">
                       Accept our Terms of Service
@@ -294,7 +307,9 @@ export default function LoginPage() {
                 </div>
 
                 {termsError && (
-                  <div className="text-sm text-red-600 mt-1">{termsError}</div>
+                  <div style={{ color: CARDLECT_COLORS.danger.main }} className="text-sm mt-1">
+                    {termsError}
+                  </div>
                 )}
 
                 <Button
@@ -305,7 +320,10 @@ export default function LoginPage() {
                     !rememberMe ||
                     loading
                   }
-                  className={`w-full h-12 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60`}
+                  className="w-full h-12 text-white rounded-xl font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60"
+                  style={{ 
+                    backgroundColor: isValidEmail(email) && password.trim().length > 0 && rememberMe && !loading ? CARDLECT_COLORS.primary.darker : '#FFB8A6',
+                  }}
                 >
                   {loading ? "Signing in..." : "Login"}
                 </Button>
@@ -340,11 +358,14 @@ export default function LoginPage() {
                 </Button>
               </div>
 
-              <p className="text-center text-sm text-gray-600 mt-6 md:text-left">
+              <p className="text-sm font-medium transition-colors text-center mt-4"
+                  style={{ color: '#6B7280' }}
+              >
                 Don't have an account?{" "}
                 <Link
                   href="#"
-                  className="text-orange-600 hover:text-orange-700 hover:underline font-medium"
+                  className="hover:underline font-medium"
+                  style={{ color: CARDLECT_COLORS.primary.darker }}
                 >
                   Contact Support
                 </Link>
