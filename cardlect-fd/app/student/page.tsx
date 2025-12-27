@@ -3,7 +3,7 @@
 import { useProtectedRoute } from '@/contexts/auth-context'
 import { useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
-import { BookOpen, Clock, Award, Users, Bell, Zap } from 'lucide-react'
+import { BookOpen, Clock, Award, Users, TrendingUp, Bell, Zap, Calendar, FileText, CheckCircle, AlertCircle } from 'lucide-react'
 import {
   LineChart,
   Line,
@@ -16,26 +16,13 @@ import {
 } from 'recharts'
 import { CARDLECT_COLORS, SEMANTIC_COLORS } from '@/lib/cardlect-colors'
 
+type CardStatus = "Issued" | "Blocked" | "Suspended"
+
 export default function StudentsDashboard() {
   const [alerts] = useState([
-    {
-      text: 'Upcoming exam: Math on Friday',
-      icon: BookOpen,
-      color: '#3B82F6',
-      bg: '#1a1a1a',
-    },
-    {
-      text: 'Assignment due: Science Project',
-      icon: Zap,
-      color: '#F59E0B',
-      bg: '#262626',
-    },
-    {
-      text: 'New resources added to portal',
-      icon: Bell,
-      color: '#10B981',
-      bg: '#1a1a1a',
-    },
+    { text: 'Upcoming exam: Math on Friday', icon: BookOpen, color: '#3B82F6', bg: '#1a1a1a' },
+    { text: 'Assignment due: Science Project', icon: Zap, color: '#F59E0B', bg: '#262626' },
+    { text: 'New resources added to portal', icon: Bell, color: '#10B981', bg: '#1a1a1a' },
   ])
 
   const sampleData = [
@@ -59,43 +46,15 @@ export default function StudentsDashboard() {
   ]
 
   const metrics = [
-    {
-      label: 'Current GPA',
-      value: '3.8',
-      change: '+0.2 this term',
-      icon: Award,
-      color: CARDLECT_COLORS.primary.darker,
-      data: sampleData,
-      tooltip: 'Your current Grade Point Average',
-    },
-    {
-      label: 'Attendance',
-      value: '98%',
-      change: '+1% this week',
-      icon: Clock,
-      color: SEMANTIC_COLORS.status.online,
-      data: sampleData,
-      tooltip: 'Attendance rate this term',
-    },
-    {
-      label: 'Assignments',
-      value: 12,
-      change: '+2 completed',
-      icon: BookOpen,
-      color: CARDLECT_COLORS.info.main,
-      data: sampleData,
-      tooltip: 'Total assignments this term',
-    },
-    {
-      label: 'Study Groups',
-      value: 5,
-      change: 'Math, Science, English...',
-      icon: Users,
-      color: CARDLECT_COLORS.primary.main,
-      data: sampleData,
-      tooltip: 'Active study groups',
-    },
+    { label: 'Current GPA', value: '3.8', change: '+0.2 this term', icon: Award, color: CARDLECT_COLORS.primary.darker, data: sampleData, tooltip: 'Your current Grade Point Average' },
+    { label: 'Attendance', value: '98%', change: '+1% this week', icon: Clock, color: SEMANTIC_COLORS.status.online, data: sampleData, tooltip: 'Attendance rate this term' },
+    { label: 'Assignments', value: 12, change: '+2 completed', icon: BookOpen, color: CARDLECT_COLORS.info.main, data: sampleData, tooltip: 'Total assignments this term' },
+    { label: 'Study Groups', value: 5, change: 'Math, Science, English...', icon: Users, color: CARDLECT_COLORS.primary.main, data: sampleData, tooltip: 'Active study groups' },
   ]
+
+  const [editForm, setEditForm] = useState<{ cardStatus: CardStatus }>({
+    cardStatus: "Issued",
+  })
 
   return (
     <DashboardLayout currentPage="dashboard" role="students">
@@ -107,7 +66,7 @@ export default function StudentsDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {metrics.map((metric, i) => {
           const Icon = metric.icon
-          const chartData = metric.data.map((d, idx) => ({ x: idx, y: d.value }))
+          const chartDataPoints = metric.data.map((d, idx) => ({ x: idx, y: d.value }))
 
           return (
             <div
@@ -142,17 +101,13 @@ export default function StudentsDashboard() {
 
               <div className="mt-5 relative z-10 h-10">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData} aria-hidden>
+                  <LineChart data={chartDataPoints} aria-hidden>
                     <XAxis dataKey="x" hide />
                     <YAxis hide domain={['dataMin', 'dataMax']} />
                     <Tooltip
                       content={({ active, payload }) => {
                         if (!active || !payload || !payload.length) return null
-                        return (
-                          <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-lg whitespace-nowrap">
-                            {payload[0].value}%
-                          </div>
-                        )
+                        return <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-lg whitespace-nowrap">{payload[0].value}%</div>
                       }}
                       cursor={{ stroke: metric.color, strokeWidth: 2, opacity: 0.1 }}
                     />
@@ -179,17 +134,12 @@ export default function StudentsDashboard() {
                     <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-
                 <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 12 }} />
                 <YAxis hide />
                 <Tooltip
                   content={({ active, payload }) => {
                     if (!active || !payload || !payload.length) return null
-                    return (
-                      <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-lg whitespace-nowrap">
-                        Grade: {payload[0].value}%
-                      </div>
-                    )
+                    return <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-lg whitespace-nowrap">Grade: {payload[0].value}%</div>
                   }}
                   cursor={{ stroke: CARDLECT_COLORS.primary.darker, strokeWidth: 2, opacity: 0.1 }}
                 />
