@@ -187,7 +187,7 @@ export default function WalletPage() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Input
-                    placeholder="Student Name"
+                    placeholder="Student Name/ID"
                     value={topupData.studentName}
                     onChange={(e) => setTopupData({ ...topupData, studentName: e.target.value })}
                   />
