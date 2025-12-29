@@ -33,7 +33,7 @@ export function SettingsPageTemplate({ role, roleDisplayName, roleInitials }: Se
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground">Settings</h1>
-          <p className="text-muted-foreground">Manage your account and system preferences</p>
+          <p className="text-muted-foreground">Manage your account and preferences</p>
         </div>
 
         {/* Success Message */}

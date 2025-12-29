@@ -1,7 +1,9 @@
 // Cardlect Color Palette & Theming System
 // Primary Darker (#E65100) is the main brand color used for charts, lines, buttons, and primary elements
 export const CARDLECT_COLORS = {
-  primary: { light: '#FFA726', main: '#FF9800', dark: '#F57C00', darker: '#E65100' },
+  // Cardlect's main color => #d96126, #d96126ff, rgba(217, 97, 38, 1), hsla(20, 70%, 50%, 1.00)
+  // Adjust or change only others - to make them perfect
+  primary: { light: '#FFA726', main: '#d96126', dark: '#d96126', darker: '#d96126' },
   secondary: { light: '#4DD0E1', main: '#00BCD4', dark: '#0097A7', darker: '#006064' },
   success: { light: '#66BB6A', main: '#4CAF50', dark: '#388E3C', darker: '#1B5E20' },
   warning: { light: '#FFD54F', main: '#FFC107', dark: '#FFA000', darker: '#FF6F00' },
