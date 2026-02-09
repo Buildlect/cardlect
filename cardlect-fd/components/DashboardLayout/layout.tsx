@@ -5,26 +5,29 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Sidebar, defaultMenuItems, type MenuItem } from "@/components/DashboardLayout/sidebar"
 import { Header } from "@/components/DashboardLayout/header"
-import { useProtectedRoute } from "@/contexts/auth-context"
+import { useProtectedRoute, getAuthUser, type UserRole } from "@/contexts/auth-context"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
   currentPage?: string
-  role?: "admin" | "security" | "super-user" | "parents" | "students" | "finance" | "store" | "teacher" | "clinic" | "approved-stores" | "exam-officer" | "librarian" | "visitor"
+  role?: UserRole
   menuItems?: MenuItem[]
 }
 
 export default function DashboardLayout({
   children,
   currentPage = "dashboard",
-  role = "admin",
+  role,
   menuItems,
 }: DashboardLayoutProps) {
-  const { isLoading, isAuthorized } = useProtectedRoute(role as any)
+  const { isLoading, isAuthorized, user } = useProtectedRoute(role as any)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
+  
+  // Determine effective role: use authenticated user's role if available, otherwise use prop
+  const effectiveRole = (user?.role || role || "admin") as UserRole
 
   useEffect(() => {
     const checkMobile = () => {
@@ -56,7 +59,7 @@ export default function DashboardLayout({
 
   const finalMenuItems =
     menuItems ||
-    defaultMenuItems[role as keyof typeof defaultMenuItems] ||
+    defaultMenuItems[effectiveRole as keyof typeof defaultMenuItems] ||
     defaultMenuItems.admin
 
   const handleMobileMenuToggle = () => {
@@ -87,7 +90,7 @@ export default function DashboardLayout({
           onNavigate={(href: string) => router.push(href)}
           currentPage={currentPage}
           menuItems={finalMenuItems}
-          role={role}
+          role={effectiveRole}
         />
       </div>
 
@@ -101,13 +104,13 @@ export default function DashboardLayout({
             currentPage={currentPage}
             isMobile={true}
             menuItems={finalMenuItems}
-            role={role}
+            role={effectiveRole}
           />
         </>
       )}
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header sidebarOpen={sidebarOpen} onMenuClick={handleMobileMenuToggle} role={role} />
+        <Header sidebarOpen={sidebarOpen} onMenuClick={handleMobileMenuToggle} role={effectiveRole} />
 
         <main className="flex-1 overflow-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
