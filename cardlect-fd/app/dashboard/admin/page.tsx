@@ -1,2 +1,6 @@
-// Wrapper for /dashboard/admin - redirects to original /admin page
-export { default } from "@/app/admin/page"
+'use client'
+import { default as dynamicImport } from 'next/dynamic'
+const Page = dynamicImport(() => import('@/app/admin/page'), { ssr: false })
+export default function DashboardWrapper(props: any) {
+  return Page ? <Page {...props} /> : null
+}

@@ -26,6 +26,7 @@ export interface AuthUser {
   role: UserRole
   schoolId?: string
   schoolName?: string
+  allowedPages?: string[]
 }
 
 // Simple in-memory store (in production, We'll use session/localStorage with encryption)
@@ -96,6 +97,19 @@ export function useProtectedRoute(requiredRole?: UserRole) {
   const [isLoading, setIsLoading] = useState(true)
   const [isAuthorized, setIsAuthorized] = useState(false)
 
+  function flattenHref(href: string) {
+    if (!href) return href
+    // Only flatten dashboard paths; leave others alone
+    if (!href.startsWith('/dashboard')) return href
+    const tail = href.replace(/^\/dashboard\/?/, '')
+    if (!tail) return '/dashboard'
+    const parts = tail.split('/').filter(Boolean)
+    const fixed = parts.filter(p => !p.startsWith('['))
+    const dynamics = parts.filter(p => p.startsWith('['))
+    const flat = '/dashboard/' + (fixed.join('-') || '') + (dynamics.length ? '/' + dynamics.join('/') : '')
+    return flat
+  }
+
   useEffect(() => {
     // Small delay to ensure localStorage is ready
     const timer = setTimeout(() => {
@@ -128,6 +142,23 @@ export function useProtectedRoute(requiredRole?: UserRole) {
         router.push(dashboardRoutes[user.role] || '/')
         setIsLoading(false)
         return
+      }
+
+      // Page-level permission enforcement: if current path is a dashboard path
+      try {
+        const pathname = typeof window !== 'undefined' ? window.location.pathname : ''
+        const flatPath = flattenHref(pathname)
+        if (user && user.allowedPages && pathname.startsWith('/dashboard')) {
+          if (!user.allowedPages.includes(flatPath)) {
+            // Not allowed to view this page; redirect to user's first allowed page or home
+            const first = user.allowedPages[0] || '/'
+            router.push(first)
+            setIsLoading(false)
+            return
+          }
+        }
+      } catch (e) {
+        // ignore
       }
 
       // User is authorized

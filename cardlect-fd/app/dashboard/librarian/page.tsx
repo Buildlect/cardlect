@@ -1,2 +1,6 @@
-// Wrapper for /dashboard/librarian - redirects to original /librarian page
-export { default } from "@/app/librarian/page"
+'use client'
+import { default as dynamicImport } from 'next/dynamic'
+const Page = dynamicImport(() => import('@/app/librarian/page'), { ssr: false })
+export default function DashboardWrapper(props: any) {
+  return Page ? <Page {...props} /> : null
+}

@@ -57,10 +57,33 @@ export default function DashboardLayout({
     return null
   }
 
+  // Build a flat list of all available menu items (flatten nested dashboard hrefs)
+  const flattenHref = (href: string) => {
+    if (!href.startsWith('/dashboard')) return href
+    const tail = href.replace(/^\/dashboard\/?/, '')
+    if (!tail) return '/dashboard'
+    const parts = tail.split('/').filter(Boolean)
+    const fixed = parts.filter(p => !p.startsWith('['))
+    const dynamics = parts.filter(p => p.startsWith('['))
+    return '/dashboard/' + (fixed.join('-') || '') + (dynamics.length ? '/' + dynamics.join('/') : '')
+  }
+
+  const allItems: MenuItem[] = []
+  Object.values(defaultMenuItems).forEach((arr) => {
+    arr.forEach((it) => {
+      const flatHref = flattenHref(it.href)
+      if (!allItems.find(a => a.href === flatHref)) {
+        allItems.push({ ...it, href: flatHref })
+      }
+    })
+  })
+
+  // If the authenticated user has explicit allowedPages, filter the global list by it.
   const finalMenuItems =
     menuItems ||
-    defaultMenuItems[effectiveRole as keyof typeof defaultMenuItems] ||
-    defaultMenuItems.admin
+    (user && (user as any).allowedPages
+      ? allItems.filter((it) => (user as any).allowedPages.includes(it.href))
+      : defaultMenuItems[effectiveRole as keyof typeof defaultMenuItems] || defaultMenuItems.admin)
 
   const handleMobileMenuToggle = () => {
     setMobileMenuOpen(!mobileMenuOpen)

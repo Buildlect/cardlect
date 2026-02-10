@@ -1,2 +1,6 @@
-// Wrapper for /dashboard/clinic - redirects to original /clinic page
-export { default } from "@/app/clinic/page"
+'use client'
+import { default as dynamicImport } from 'next/dynamic'
+const Page = dynamicImport(() => import('@/app/clinic/page'), { ssr: false })
+export default function DashboardWrapper(props: any) {
+  return Page ? <Page {...props} /> : null
+}
