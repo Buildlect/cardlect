@@ -1,127 +1,277 @@
 'use client'
 
+import { useProtectedRoute } from '@/contexts/auth-context'
 import { useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Search, FileText, AlertCircle } from 'lucide-react'
+import { Users, ClipboardList, AlertTriangle, CheckCircle, TrendingUp, Bell, Activity, Calendar } from 'lucide-react'
 import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
+import {
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts'
 
-interface MedicalRecord {
-  id: string
-  studentName: string
-  date: string
-  diagnosis: string
-  treatment: string
-  notes: string
-  status: 'completed' | 'pending'
-}
+export default function ClinicDashboard() {
+  const [alerts] = useState([
+    {
+      text: 'Vaccination schedule: Class 4A tomorrow',
+      icon: Calendar,
+      color: '#3B82F6',
+      bg: '#1a1a1a',
+    },
+    {
+      text: 'Medical supplies: Low stock alert',
+      icon: AlertTriangle,
+      color: '#EF4444',
+      bg: '#262626',
+    },
+    {
+      text: 'Health report: Available for download',
+      icon: CheckCircle,
+      color: '#10B981',
+      bg: '#1a1a1a',
+    },
+  ])
 
-const mockRecords: MedicalRecord[] = [
-  { id: '1', studentName: 'Chioma Okonkwo', date: '2024-01-10', diagnosis: 'Common Cold', treatment: 'Rest and medications', notes: 'Recovery in progress', status: 'completed' },
-  { id: '2', studentName: 'Tunde Adebayo', date: '2024-01-08', diagnosis: 'Headache', treatment: 'Pain relief tablets', notes: 'Discharged same day', status: 'completed' },
-  { id: '3', studentName: 'Amara Obi', date: '2024-01-12', diagnosis: 'Vaccination', treatment: 'Flu vaccine administered', notes: 'Follow-up in 3 months', status: 'completed' },
-  { id: '4', studentName: 'Jamal Hassan', date: '2024-01-05', diagnosis: 'Minor cut', treatment: 'Wound cleaning and bandaging', notes: 'Monitor for infection', status: 'pending' },
-]
+  const sampleData = [
+    { name: 'Mon', value: 15 },
+    { name: 'Tue', value: 18 },
+    { name: 'Wed', value: 12 },
+    { name: 'Thu', value: 22 },
+    { name: 'Fri', value: 16 },
+    { name: 'Sat', value: 0 },
+    { name: 'Sun', value: 0 },
+  ]
 
-export default function MedicalRecordsPage() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [expandedRecord, setExpandedRecord] = useState<string | null>(null)
+  const chartData = [
+    { day: 'Mon', visits: 15, vaccinated: 8 },
+    { day: 'Tue', visits: 18, vaccinated: 10 },
+    { day: 'Wed', visits: 12, vaccinated: 6 },
+    { day: 'Thu', visits: 22, vaccinated: 14 },
+    { day: 'Fri', visits: 16, vaccinated: 9 },
+    { day: 'Sat', visits: 0, vaccinated: 0 },
+    { day: 'Sun', visits: 0, vaccinated: 0 },
+  ]
 
-  const filteredRecords = mockRecords.filter(r =>
-    r.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.diagnosis.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const metrics = [
+    {
+      label: 'Total Visits',
+      value: 83,
+      change: '+12% this week',
+      icon: Users,
+      color: CARDLECT_COLORS.primary.darker,
+      data: sampleData,
+      tooltip: 'Total clinic visits this week',
+    },
+    {
+      label: 'Students Treated',
+      value: 68,
+      change: '+8 today',
+      icon: CheckCircle,
+      color: CARDLECT_COLORS.success.main,
+      data: sampleData,
+      tooltip: 'Students treated this week',
+    },
+    {
+      label: 'Pending Cases',
+      value: 5,
+      change: '2 follow-ups needed',
+      icon: ClipboardList,
+      color: CARDLECT_COLORS.warning.main,
+      data: sampleData,
+      tooltip: 'Cases requiring follow-up',
+    },
+    {
+      label: 'Health Score',
+      value: '88%',
+      change: '+4% from last month',
+      icon: TrendingUp,
+      color: CARDLECT_COLORS.primary.darker,
+      data: sampleData,
+      tooltip: 'Overall student health score',
+    },
+  ]
 
   return (
-    <DashboardLayout currentPage="medical-records" role="clinic">
+    <DashboardLayout currentPage="dashboard" role="clinic">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Medical Records</h1>
-        <p className="text-muted-foreground">Access and manage student medical records</p>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Clinic Dashboard</h1>
+        <p className="text-muted-foreground">Monitor student health, clinic visits, and medical records.</p>
       </div>
 
-      {/* Quick Stat */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Total Records</p>
-                <p className="text-3xl font-bold text-foreground">{mockRecords.length}</p>
-              </div>
-              <FileText size={24} style={{ color: CARDLECT_COLORS.primary.darker }} />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Pending Follow-up</p>
-                <p className="text-3xl font-bold text-foreground">{mockRecords.filter(r => r.status === 'pending').length}</p>
-              </div>
-              <AlertCircle size={24} style={{ color: CARDLECT_COLORS.warning.main }} />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {metrics.map((metric, i) => {
+          const Icon = metric.icon
+          const chartData = metric.data.map((d, idx) => ({ x: idx, y: d.value }))
 
-      {/* Records List */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Medical Records</CardTitle>
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-3 text-muted-foreground" size={18} />
-              <Input
-                placeholder="Search records..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {filteredRecords.map((record) => (
-              <div
-                key={record.id}
-                onClick={() => setExpandedRecord(expandedRecord === record.id ? null : record.id)}
-                className="border border-border rounded-lg p-4 cursor-pointer hover:bg-secondary/50 transition-colors"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">{record.studentName}</h3>
-                    <p className="text-sm text-muted-foreground">{record.diagnosis} - {record.date}</p>
+          return (
+            <div
+              key={i}
+              className="relative group overflow-hidden rounded-3xl border border-border bg-card p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 ease-in-out"
+              role="group"
+              aria-label={`${metric.label} metric card`}
+            >
+              {/* Tooltip */}
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
+                <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-lg whitespace-nowrap">
+                  {metric.tooltip}
+                </div>
+              </div>
+
+              <div className="flex items-start justify-between relative z-10">
+                <div>
+                  <p className="text-muted-foreground text-xs font-medium mb-1">
+                    {metric.label}
+                  </p>
+                  <p className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                    {typeof metric.value === 'number' ? metric.value.toLocaleString() : metric.value}
+                  </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-green-400">
+                      +
+                      <span className="opacity-90">{metric.change}</span>
+                    </span>
                   </div>
-                  <span
-                    className="px-3 py-1 rounded-full text-sm font-medium text-white"
-                    style={{ backgroundColor: record.status === 'completed' ? CARDLECT_COLORS.success.main : CARDLECT_COLORS.warning.main }}
-                  >
-                    {record.status}
-                  </span>
                 </div>
 
-                {expandedRecord === record.id && (
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <div className="space-y-3 text-sm">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Treatment</p>
-                        <p className="font-semibold text-foreground">{record.treatment}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Notes</p>
-                        <p className="font-semibold text-foreground">{record.notes}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {/* icons */}
+                <div
+                  className={`bg-card/50 flex items-center justify-center w-14 h-14 rounded-xl shadow-sm`}
+                  aria-hidden
+                  title={metric.label}
+                >
+                  <Icon size={24} color={metric.color} />
+                </div>
               </div>
-            ))}
+
+              {/* Recharts sparkline with tooltip */}
+              <div className="mt-5 relative z-10 h-10">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} aria-hidden>
+                    <XAxis dataKey="x" hide />
+                    <YAxis hide domain={['dataMin', 'dataMax']} />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload || !payload.length) return null
+                        return (
+                          <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-lg whitespace-nowrap">
+                            {payload[0].value}
+                          </div>
+                        )
+                      }}
+                      cursor={{ stroke: metric.color, strokeWidth: 2, opacity: 0.1 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="y"
+                      stroke={metric.color}
+                      strokeWidth={2}
+                      dot={false}
+                      isAnimationActive={true}
+                      activeDot={{ r: 3, stroke: metric.color, strokeWidth: 1 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="mt-1 text-xs text-muted-foreground">trend</div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Main Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+        {/* Weekly Visits */}
+        <div className="lg:col-span-2 bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all">
+          <h3 className="text-lg font-semibold mb-5 text-foreground tracking-tight">
+            Weekly Clinic Visits
+          </h3>
+
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="grad-clinic" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.2} />
+                    <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+
+                <XAxis
+                  dataKey="day"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 12 }}
+                />
+                <YAxis hide />
+
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (!active || !payload || !payload.length) return null
+                    return (
+                      <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-lg whitespace-nowrap">
+                        {payload[0].value} visits
+                      </div>
+                    )
+                  }}
+                  cursor={{ stroke: CARDLECT_COLORS.primary.darker, strokeWidth: 2, opacity: 0.1 }}
+                />
+
+                <Area
+                  type="monotone"
+                  dataKey="visits"
+                  stroke={CARDLECT_COLORS.primary.darker}
+                  strokeWidth={2}
+                  fill="url(#grad-clinic)"
+                  isAnimationActive={true}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Clinic Alerts */}
+        <div className="bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-lg transition-all">
+          <h3 className="text-lg font-semibold mb-4 text-foreground tracking-tight">
+            Alerts
+          </h3>
+
+          <div className="space-y-4">
+            {alerts.map((a, i) => {
+              const Icon = a.icon
+              return (
+                <div
+                  key={i}
+                  className="flex items-center gap-4 p-4 rounded-2xl border border-border/40 hover:border-border bg-background/30 hover:bg-background/50 transition-all hover:shadow-lg hover:scale-[1.01] cursor-pointer group"
+                >
+                  {/* Alert Icon */}
+                  <div className="p-3 bg-card dark:bg-card rounded-xl flex items-center justify-center shadow-md relative">
+                    <Icon size={20} color={a.color} />
+
+                    {/* Pulse dot */}
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full animate-ping" />
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full" />
+                  </div>
+
+                  {/* Text */}
+                  <span className="text-sm text-foreground font-medium tracking-tight">
+                    {a.text}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
     </DashboardLayout>
   )
 }

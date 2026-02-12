@@ -1,351 +1,374 @@
 'use client'
 
+import { useProtectedRoute } from '@/contexts/auth-context'
 import { useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 import {
-  LogIn,
-  LogOut,
-  Shield,
   Users,
-  Download,
-  Search,
-  Calendar,
-  X,
-  ChevronDown,
-  RefreshCw
+  Shield,
+  Bell,
+  DoorOpen,
+  FileText,
+  UserCheck,
+  Activity,
+  Clock,
+  AlertTriangle,
+  CheckCircle,
+  Eye,
+  Settings,
+  RefreshCw,
+  TrendingUp,
+  BarChart3
 } from 'lucide-react'
+import Link from 'next/link'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell
+} from 'recharts'
+import { CARDLECT_COLORS, SEMANTIC_COLORS } from '@/lib/cardlect-colors'
 
-interface GateLog {
-  id: string
-  time: string
-  userName: string
-  userId: string
-  gateLocation: string
-  accessType: 'entry' | 'exit'
-  status: 'granted' | 'denied' | 'pending'
-}
-
-interface StatCard {
+interface MetricCard {
   title: string
   value: number
   change: string
   icon: React.ReactNode
   borderColor: string
+  href?: string
 }
 
-export default function GateLogs() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
+interface ActivityItem {
+  id: string
+  time: string
+  type: 'entry' | 'exit' | 'alert' | 'incident'
+  description: string
+  user?: string
+  location?: string
+  icon: React.ReactNode
+}
 
-  const handleExportLogs = () => {
-    const csvContent = generateCSVContent()
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5)
-    link.href = url
-    link.download = `gate-logs-${timestamp}.csv`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
+interface QuickAction {
+  title: string
+  description: string
+  icon: React.ReactNode
+  href: string
+  color: string
+}
 
-  const generateCSVContent = () => {
-    const headers = ['Time', 'User Name', 'User ID', 'Gate Location', 'Access Type', 'Status']
-    const rows = [
-      headers.join(','),
-      ...gateLogs.map(log => [
-        `"${log.time}"`,
-        `"${log.userName}"`,
-        `"${log.userId}"`,
-        `"${log.gateLocation}"`,
-        `"${log.accessType}"`,
-        `"${log.status}"`
-      ].join(','))
-    ]
-    return rows.join('\n')
-  }
+export default function SecurityDashboard() {
+  const [refreshing, setRefreshing] = useState(false)
 
-  const stats: StatCard[] = [
+  const metrics: MetricCard[] = [
     {
-      title: 'TOTAL ENTRIES TODAY',
-      value: 156,
-      change: '+23% from yesterday',
-      icon: <LogIn className="w-5 h-5" />,
-      borderColor: CARDLECT_COLORS.success.main
-    },
-    {
-      title: 'TOTAL EXITS TODAY',
-      value: 142,
-      change: '98% completion rate',
-      icon: <LogOut className="w-5 h-5" />,
-      borderColor: CARDLECT_COLORS.info.main
-    },
-    {
-      title: 'ACCESS DENIED',
-      value: 3,
-      change: 'This week',
-      icon: <Shield className="w-5 h-5" />,
-      borderColor: CARDLECT_COLORS.danger.main
-    },
-    {
-      title: 'ACTIVE USERS',
-      value: 28,
-      change: 'Currently on premises',
+      title: 'TOTAL STUDENTS',
+      value: 1247,
+      change: 'Enrolled this year',
       icon: <Users className="w-5 h-5" />,
-      borderColor: CARDLECT_COLORS.secondary.main
+      borderColor: `border-l-[${CARDLECT_COLORS.primary.darker}]`,
+      href: '/admin/students'
+    },
+    {
+      title: 'ACTIVE GATES',
+      value: 8,
+      change: 'All operational',
+      icon: <DoorOpen className="w-5 h-5" />,
+      borderColor: `border-l-[${CARDLECT_COLORS.success.main}]`
+    },
+    {
+      title: 'TODAY\'S ALERTS',
+      value: 3,
+      change: '2 resolved',
+      icon: <Bell className="w-5 h-5" />,
+      borderColor: `border-l-[${CARDLECT_COLORS.warning.main}]`,
+      href: '/security/alerts'
+    },
+    {
+      title: 'CURRENTLY INSIDE',
+      value: 234,
+      change: 'Peak: 312',
+      icon: <UserCheck className="w-5 h-5" />,
+      borderColor: `border-l-[${CARDLECT_COLORS.primary.darker}]`
     }
   ]
 
-  const gateLogs: GateLog[] = [
+  const recentActivities: ActivityItem[] = [
     {
       id: '1',
-      time: '08:30 AM',
-      userName: 'Alice Johnson',
-      userId: 'STU001',
-      gateLocation: 'Main Entrance',
-      accessType: 'entry',
-      status: 'granted'
+      time: '2 min ago',
+      type: 'entry',
+      description: 'Student entry granted',
+      user: 'Alice Johnson (STU001)',
+      location: 'Main Entrance',
+      icon: <DoorOpen className="w-4 h-4 text-green-500" />
     },
     {
       id: '2',
-      time: '08:45 AM',
-      userName: 'Bob Smith',
-      userId: 'STU002',
-      gateLocation: 'Side Gate A',
-      accessType: 'entry',
-      status: 'granted'
+      time: '5 min ago',
+      type: 'alert',
+      description: 'Unauthorized access attempt',
+      location: 'Side Gate B',
+      icon: <AlertTriangle className="w-4 h-4 text-red-500" />
     },
     {
       id: '3',
-      time: '09:00 AM',
-      userName: 'Charlie Brown',
-      userId: 'STA001',
-      gateLocation: 'Staff Entrance',
-      accessType: 'entry',
-      status: 'denied'
+      time: '8 min ago',
+      type: 'exit',
+      description: 'Staff exit recorded',
+      user: 'Dr. Smith (STA005)',
+      location: 'Staff Exit',
+      icon: <DoorOpen className="w-4 h-4 text-blue-500" />
     },
     {
       id: '4',
-      time: '09:15 AM',
-      userName: 'Diana Prince',
-      userId: 'STU003',
-      gateLocation: 'Main Entrance',
-      accessType: 'exit',
-      status: 'granted'
+      time: '12 min ago',
+      type: 'incident',
+      description: 'Visitor check-in completed',
+      user: 'John Parent',
+      location: 'Visitor Center',
+      icon: <FileText className="w-4 h-4 text-purple-500" />
     },
     {
       id: '5',
-      time: '09:30 AM',
-      userName: 'Eve Wilson',
-      userId: 'STU004',
-      gateLocation: 'Library Exit',
-      accessType: 'exit',
-      status: 'pending'
-    },
-    {
-      id: '6',
-      time: '09:45 AM',
-      userName: 'Frank Miller',
-      userId: 'STA002',
-      gateLocation: 'Gym Entrance',
-      accessType: 'entry',
-      status: 'granted'
+      time: '15 min ago',
+      type: 'entry',
+      description: 'Bulk entry - Class 5A',
+      location: 'School Yard Gate',
+      icon: <Users className="w-4 h-4 text-green-500" />
     }
   ]
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'granted':
-        return { color: CARDLECT_COLORS.success.main, backgroundColor: CARDLECT_COLORS.success.main + '20' }
-      case 'denied':
-        return { color: CARDLECT_COLORS.danger.main, backgroundColor: CARDLECT_COLORS.danger.main + '20' }
-      case 'pending':
-        return { color: CARDLECT_COLORS.warning.main, backgroundColor: CARDLECT_COLORS.warning.main + '20' }
-      default:
-        return { color: '#9E9E9E', backgroundColor: '#9E9E9E20' }
+  const quickActions: QuickAction[] = [
+    {
+      title: 'View Gate Logs',
+      description: 'Monitor all access events',
+      icon: <DoorOpen className="w-5 h-5" />,
+      href: '/security/gate-logs',
+      color: 'bg-blue-500 hover:bg-blue-600'
+    },
+    {
+      title: 'Check Alerts',
+      description: 'Review security notifications',
+      icon: <Bell className="w-5 h-5" />,
+      href: '/security/alerts',
+      color: 'bg-yellow-500 hover:bg-yellow-600'
+    },
+    {
+      title: 'Visitor Management',
+      description: 'Manage visitor access',
+      icon: <FileText className="w-5 h-5" />,
+      href: '/security/visitor-incident-log',
+      color: 'bg-purple-500 hover:bg-purple-600'
+    },
+    {
+      title: 'Pickup Authorization',
+      description: 'Authorize student pickups',
+      icon: <UserCheck className="w-5 h-5" />,
+      href: '/security/pickup-authorization',
+      color: 'bg-green-500 hover:bg-green-600'
     }
-  }
+  ]
 
-  const formatStatus = (status: string) => {
-    switch (status) {
-      case 'granted':
-        return 'Granted'
-      case 'denied':
-        return 'Denied'
-      case 'pending':
-        return 'Pending'
-      default:
-        return status
-    }
-  }
+  // Chart data
+  const accessPatternsData = [
+    { time: '6 AM', entries: 12, exits: 8 },
+    { time: '7 AM', entries: 45, exits: 32 },
+    { time: '8 AM', entries: 89, exits: 67 },
+    { time: '9 AM', entries: 156, exits: 134 },
+    { time: '10 AM', entries: 98, exits: 112 },
+    { time: '11 AM', entries: 76, exits: 89 },
+    { time: '12 PM', entries: 123, exits: 145 },
+    { time: '1 PM', entries: 87, exits: 92 },
+    { time: '2 PM', entries: 65, exits: 78 },
+    { time: '3 PM', entries: 134, exits: 156 },
+    { time: '4 PM', entries: 167, exits: 189 },
+    { time: '5 PM', entries: 198, exits: 234 },
+    { time: '6 PM', entries: 45, exits: 67 }
+  ]
 
-  const formatAccessType = (type: string) => {
-    return type === 'entry' ? 'Entry' : 'Exit'
+  const alertsData = [
+    { time: 'Mon', critical: 2, warning: 5, info: 12 },
+    { time: 'Tue', critical: 1, warning: 3, info: 8 },
+    { time: 'Wed', critical: 0, warning: 7, info: 15 },
+    { time: 'Thu', critical: 3, warning: 4, info: 9 },
+    { time: 'Fri', critical: 1, warning: 6, info: 11 },
+    { time: 'Sat', critical: 0, warning: 2, info: 4 },
+    { time: 'Sun', critical: 1, warning: 3, info: 6 }
+  ]
+
+  const handleRefresh = () => {
+    setRefreshing(true)
+    setTimeout(() => setRefreshing(false), 1000)
   }
 
   return (
-    <DashboardLayout currentPage="gate-logs" role="security">
+    <DashboardLayout currentPage="dashboard" role="security">
       <div className="min-h-screen bg-background text-foreground">
         <div className="p-6 md:p-8">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-3">
-                <h1 className="text-3xl font-bold">Gate Logs</h1>
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+              <div>
+                <h1 className="text-3xl font-bold">Security Dashboard</h1>
+                <p className="text-muted-foreground mt-1">
+                  Welcome back! Here's an overview of your school's security status.
+                </p>
               </div>
-              <div className="flex gap-3">
-                <Button variant="outline" className="gap-2">
-                  <RefreshCw className="w-4 h-4" />
-                  Refresh
-                </Button>
-                <Button onClick={handleExportLogs} className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Download className="w-4 h-4" />
-                  Export Logs
-                </Button>
-              </div>
+              <Button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                variant="outline"
+                className="gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                {refreshing ? 'Refreshing...' : 'Refresh'}
+              </Button>
             </div>
-            <p className="text-muted-foreground">
-              Real-time monitoring of gate access and security events.
-            </p>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {stats.map((stat, idx) => (
+          {/* Metrics Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {metrics.map((metric, idx) => (
               <div
                 key={idx}
-                className="bg-card border border-border rounded-lg p-6 hover:bg-secondary/40 transition-colors"
-                style={{ borderLeftColor: stat.borderColor, borderLeftWidth: '4px' }}
+                className={`bg-card border border-border rounded-3xl p-6 hover:shadow-2xl hover:scale-[1.02] transition-all ${metric.href ? 'cursor-pointer' : ''}`}
+                onClick={() => metric.href && (window.location.href = metric.href)}
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="text-muted-foreground text-xs font-medium tracking-wide">
-                    {stat.title}
+                <div className="flex items-start justify-between relative z-10">
+                  <div>
+                    <p className="text-muted-foreground text-xs font-medium mb-1">
+                      {metric.title}
+                    </p>
+                    <p className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                      {metric.value.toLocaleString()}
+                    </p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-green-400">
+                        {metric.icon}
+                        <span className="opacity-90">{metric.change}</span>
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-muted-foreground">{stat.icon}</div>
                 </div>
-                <div className="text-4xl font-bold mb-2">{stat.value}</div>
-                <div className="text-xs text-muted-foreground">{stat.change}</div>
               </div>
             ))}
           </div>
 
-          {/* Filters */}
-          <div className="bg-card border border-border rounded-lg p-6 mb-6">
-            <div className="flex flex-col lg:flex-row gap-4">
-              {/* Search */}
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name, ID, or gate location..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground"
-                />
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Access Patterns Chart */}
+            <div className="bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all">
+              <h3 className="text-lg font-semibold mb-5 text-foreground tracking-tight">
+                Access Patterns Today
+              </h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={accessPatternsData}>
+                    <XAxis
+                      dataKey="time"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 12 }}
+                    />
+                    <YAxis hide />
+                    <Tooltip
+                      cursor={{ stroke: CARDLECT_COLORS.primary.darker, strokeWidth: 1, opacity: 0.2 }}
+                      contentStyle={{
+                        background: 'var(--card)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '10px',
+                        color: 'var(--foreground)'
+                      }}
+                      formatter={(value) => [`${value}`, '']}
+                    />
+                    <defs>
+                      <linearGradient id="entriesGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.3} />
+                        <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <Line
+                      type="monotone"
+                      dataKey="entries"
+                      stroke={CARDLECT_COLORS.primary.darker}
+                      strokeWidth={2}
+                      dot={false}
+                      name="Entries"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="exits"
+                      stroke={CARDLECT_COLORS.success.main}
+                      strokeWidth={2}
+                      dot={false}
+                      name="Exits"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
               </div>
+            </div>
 
-              {/* Filters Row */}
-              <div className="flex flex-wrap gap-3">
-                <button className="flex items-center gap-2 px-4 py-2 bg-secondary border border-border rounded-lg text-sm hover:bg-secondary/80 transition-colors text-foreground">
-                  Status: All
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-                <button className="flex items-center gap-2 px-4 py-2 bg-secondary border border-border rounded-lg text-sm hover:bg-secondary/80 transition-colors text-foreground">
-                  Gate: All
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-                <button className="flex items-center gap-2 px-4 py-2 bg-secondary border border-border rounded-lg text-sm hover:bg-secondary/80 transition-colors text-foreground">
-                  Access Type: All
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-                {statusFilter && (
-                  <div className="flex items-center gap-2 px-4 py-2 bg-primary/20 border border-primary/50 rounded-lg text-sm text-primary">
-                    Status: {formatStatus(statusFilter)}
-                    <button
-                      onClick={() => setStatusFilter('')}
-                      className="hover:bg-primary/30 rounded-full p-0.5"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </div>
-                )}
-                <button className="flex items-center gap-2 px-4 py-2 bg-secondary border border-border rounded-lg text-sm hover:bg-secondary/80 transition-colors text-foreground">
-                  <Calendar className="w-4 h-4" />
-                  Date: Today
-                </button>
+            {/* Alerts Over Time Chart */}
+            <div className="bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all">
+              <h3 className="text-lg font-semibold mb-5 text-foreground tracking-tight">
+                Alerts This Week
+              </h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={alertsData}>
+                    <XAxis
+                      dataKey="time"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 12 }}
+                    />
+                    <YAxis hide />
+                    <Tooltip
+                      contentStyle={{
+                        background: 'var(--card)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '10px',
+                        color: 'var(--foreground)'
+                      }}
+                    />
+                    <Bar dataKey="critical" stackId="a" fill={CARDLECT_COLORS.danger.main} />
+                    <Bar dataKey="warning" stackId="a" fill={CARDLECT_COLORS.warning.main} />
+                    <Bar dataKey="info" stackId="a" fill={CARDLECT_COLORS.primary.darker} />
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             </div>
           </div>
 
-          {/* Gate Logs Table */}
-          <div className="bg-card border border-border rounded-lg overflow-hidden">
-            {/* Table Header */}
-            <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-border text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              <div className="col-span-2">Time</div>
-              <div className="col-span-3">User/Student</div>
-              <div className="col-span-2">Gate Location</div>
-              <div className="col-span-2">Access Type</div>
-              <div className="col-span-3">Status</div>
+          {/* Quick Actions */}
+          <div className="bg-card border border-border rounded-lg p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <Settings className="w-5 h-5 text-primary" />
+              <h2 className="text-xl font-semibold text-foreground">Quick Actions</h2>
             </div>
 
-            {/* Table Rows */}
-            <div className="divide-y divide-border">
-              {gateLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-secondary/40 transition-colors items-center"
-                >
-                  {/* Time */}
-                  <div className="col-span-2 text-sm">
-                    <div className="text-foreground">{log.time}</div>
-                    <div className="text-xs text-muted-foreground">Today</div>
-                  </div>
-
-                  {/* User/Student */}
-                  <div className="col-span-3">
-                    <div className="font-medium text-sm text-foreground">{log.userName}</div>
-                    <div className="text-xs text-muted-foreground">ID: {log.userId}</div>
-                  </div>
-
-                  {/* Gate Location */}
-                  <div className="col-span-2 text-sm text-foreground">{log.gateLocation}</div>
-
-                  {/* Access Type */}
-                  <div className="col-span-2 text-sm">
-                    <div className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium ${log.accessType === 'entry' ? 'bg-primary/10 text-primary' : 'bg-orange-500/10 text-orange-600'
-                      }`}>
-                      {log.accessType === 'entry' ? <LogIn className="w-3 h-3" /> : <LogOut className="w-3 h-3" />}
-                      {formatAccessType(log.accessType)}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {quickActions.map((action, idx) => (
+                <Link key={idx} href={action.href}>
+                  <div className="flex items-center gap-4 p-4 bg-secondary rounded-lg hover:bg-secondary/80 transition-colors cursor-pointer">
+                    <div className={`p-2 rounded-lg ${action.color} text-white`}>
+                      {action.icon}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{action.title}</p>
+                      <p className="text-xs text-muted-foreground">{action.description}</p>
                     </div>
                   </div>
-
-                  {/* Status */}
-                  <div className="col-span-3">
-                    <div style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      padding: '0.25rem 0.75rem',
-                      borderRadius: '9999px',
-                      fontSize: '0.75rem',
-                      fontWeight: '500',
-                      ...getStatusColor(log.status)
-                    }}>
-                      <div style={{
-                        width: '0.375rem',
-                        height: '0.375rem',
-                        borderRadius: '9999px',
-                        backgroundColor: log.status === 'granted' ? CARDLECT_COLORS.success.main : log.status === 'denied' ? CARDLECT_COLORS.danger.main : CARDLECT_COLORS.warning.main
-                      }} />
-                      {formatStatus(log.status)}
-                    </div>
-                  </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
