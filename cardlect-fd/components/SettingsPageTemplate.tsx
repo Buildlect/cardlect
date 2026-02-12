@@ -6,7 +6,7 @@ import { useTheme } from '@/components/theme-provider'
 import { Lock, Bell, Globe, Shield, LogOut, Save, Sun, Moon } from 'lucide-react'
 
 interface SettingsPageProps {
-  role: "admin" | "security" | "super-user" | "parents" | "students" | "finance" | "store" | "teacher" | "clinic" | "approved-stores" | "exam-officer" | "librarian"
+  role: "admin" | "security" | "super-user" | "parents" | "students" | "finance" | "store" | "teacher" | "clinic" | "approved-stores" | "exam-officer" | "librarian" | "visitor"
   roleDisplayName: string
   roleInitials: string
 }

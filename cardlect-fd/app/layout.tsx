@@ -5,6 +5,9 @@ import { CardlectProvider } from '@/contexts/cardlect-context'
 import MobilePopup from '@/components/mobile-checker'
 import './globals.css'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 // Load Inter and Montserrat and expose them as CSS variables
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
 const montserrat = Montserrat({ subsets: ['latin'], variable: '--font-montserrat', display: 'swap' })

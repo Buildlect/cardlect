@@ -21,6 +21,7 @@ export interface MockUser {
   schoolId?: string
   schoolName?: string
   password: string // For demo only
+  allowedPages?: string[]
 }
 
 export const MOCK_USERS: MockUser[] = [
@@ -32,6 +33,20 @@ export const MOCK_USERS: MockUser[] = [
     schoolId: "sch-001",
     schoolName: "Cardlect Admin",
     password: "password",
+    allowedPages: [
+      "/dashboard/super-user",
+      "/dashboard/super-user-analytics",
+      "/dashboard/super-user-api",
+      "/dashboard/super-user-approved-stores",
+      "/dashboard/super-user-bulk-import",
+      "/dashboard/super-user-cards",
+      "/dashboard/communication",
+      "/dashboard/super-user-exams",
+      "/dashboard/super-user-schools",
+      "/dashboard/settings",
+      "/dashboard/super-user-staff-management",
+      "/dashboard/super-user-student-registration",
+    ],
   },
   {
     id: "admin-001",
@@ -41,6 +56,20 @@ export const MOCK_USERS: MockUser[] = [
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
+    allowedPages: [
+      "/dashboard/admin",
+      "/dashboard/admin-students",
+      "/dashboard/admin-staffs",
+      "/dashboard/admin-classes",
+      "/dashboard/admin-cards",
+      "/dashboard/admin-attendance",
+      "/dashboard/admin-gate-logs",
+      "/dashboard/admin-wallet",
+      "/dashboard/admin-exams",
+      "/dashboard/admin-reports",
+      "/dashboard/communication",
+      "/dashboard/settings",
+    ],
   },
   {
     id: "finance-001",
@@ -50,6 +79,15 @@ export const MOCK_USERS: MockUser[] = [
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
+    allowedPages: [
+      "/dashboard/finance",
+      "/dashboard/finance-invoices",
+      "/dashboard/finance-payments",
+      "/dashboard/communication",
+      "/dashboard/finance-reports",
+      "/dashboard/finance-students",
+      "/dashboard/settings",
+    ],
   },
   {
     id: "security-001",
@@ -59,6 +97,15 @@ export const MOCK_USERS: MockUser[] = [
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
+    allowedPages: [
+      "/dashboard/security",
+      "/dashboard/security-pickup-authorization",
+      "/dashboard/security-alerts",
+      "/dashboard/security-gate-logs",
+      "/dashboard/security-visitor-incident-log",
+      "/dashboard/communication",
+      "/dashboard/settings",
+    ],
   },
   {
     id: "teacher-001",
@@ -68,6 +115,16 @@ export const MOCK_USERS: MockUser[] = [
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
+    allowedPages: [
+      "/dashboard/teacher",
+      "/dashboard/teacher-exams",
+      "/dashboard/teacher-classes",
+      "/dashboard/teacher-assignments",
+      "/dashboard/communication",
+      "/dashboard/teacher-grades",
+      "/dashboard/teacher-attendance",
+      "/dashboard/settings",
+    ],
   },
   {
     id: "exam-001",
@@ -77,6 +134,14 @@ export const MOCK_USERS: MockUser[] = [
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
+    allowedPages: [
+      "/dashboard/exam-officer",
+      "/dashboard/exam-officer-exams",
+      "/dashboard/exam-officer-results",
+      "/dashboard/communication",
+      "/dashboard/exam-officer-reports",
+      "/dashboard/settings",
+    ],
   },
   {
     id: "librarian-001",
@@ -86,6 +151,15 @@ export const MOCK_USERS: MockUser[] = [
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
+    allowedPages: [
+      "/dashboard/librarian",
+      "/dashboard/librarian-books",
+      "/dashboard/librarian-borrowals",
+      "/dashboard/communication",
+      "/dashboard/librarian-students",
+      "/dashboard/librarian-reports",
+      "/dashboard/settings",
+    ],
   },
   {
     id: "clinic-001",
@@ -95,6 +169,15 @@ export const MOCK_USERS: MockUser[] = [
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
+    allowedPages: [
+      "/dashboard/clinic",
+      "/dashboard/clinic-students",
+      "/dashboard/communication",
+      "/dashboard/clinic-medical-records",
+      "/dashboard/clinic-visits",
+      "/dashboard/clinic-reports",
+      "/dashboard/settings",
+    ],
   },
   {
     id: "store-001",
@@ -104,6 +187,15 @@ export const MOCK_USERS: MockUser[] = [
     schoolId: "sch-001",
     schoolName: "Cambridge Academy Store",
     password: "password",
+    allowedPages: [
+      "/dashboard/store",
+      "/dashboard/store-inventory",
+      "/dashboard/store-sales",
+      "/dashboard/communication",
+      "/dashboard/store-customers",
+      "/dashboard/store-reports",
+      "/dashboard/settings",
+    ],
   },
   {
     id: "approved-stores-001",
@@ -113,6 +205,15 @@ export const MOCK_USERS: MockUser[] = [
     schoolId: "sch-001",
     schoolName: "Approved Partner Store",
     password: "password",
+    allowedPages: [
+      "/dashboard/approved-stores",
+      "/dashboard/approved-stores-stores",
+      "/dashboard/communication",
+      "/dashboard/approved-stores-orders",
+      "/dashboard/approved-stores-sales",
+      "/dashboard/settings",
+      "/dashboard/approved-stores-partners",
+    ],
   },
   {
     id: "parents-001",
@@ -122,6 +223,16 @@ export const MOCK_USERS: MockUser[] = [
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
+    allowedPages: [
+      "/dashboard/parent",
+      "/dashboard/parent-exams",
+      "/dashboard/parent-children",
+      "/dashboard/parent-activity-log",
+      "/dashboard/communication",
+      "/dashboard/parent-notifications",
+      "/dashboard/parent-reports",
+      "/dashboard/settings",
+    ],
   },
   {
     id: "student-001",
@@ -131,6 +242,16 @@ export const MOCK_USERS: MockUser[] = [
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
+    allowedPages: [
+      "/dashboard/student",
+      "/dashboard/student-exams",
+      "/dashboard/student-assignments",
+      "/dashboard/student-grades",
+      "/dashboard/communication",
+      "/dashboard/student-schedule",
+      "/dashboard/student-study-groups",
+      "/dashboard/settings",
+    ],
   },
 ]
 

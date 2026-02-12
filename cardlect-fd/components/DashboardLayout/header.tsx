@@ -56,20 +56,20 @@ export function Header({ sidebarOpen, onMenuClick, role = "admin" }: HeaderProps
     "visitor": "VI",
   }
 
-  // Settings routes for each role
+  // Settings routes for each role - now using singleton /dashboard/settings
   const settingsRoutes = {
-    "super-user": "/super-user/settings",
-    "admin": "/admin/settings",
-    "security": "/security/setting",
-    "finance": "/finance/settings",
-    "teacher": "/teacher/settings",
-    "parents": "/parent/settings",
-    "students": "/student/settings",
-    "clinic": "/clinic/settings",
-    "store": "/store/settings",
-    "approved-stores": "/approved-stores/settings",
-    "exam-officer": "/exam-officer/settings",
-    "librarian": "/librarian/settings",
+    "super-user": "/dashboard/settings",
+    "admin": "/dashboard/settings",
+    "security": "/dashboard/settings",
+    "finance": "/dashboard/settings",
+    "teacher": "/dashboard/settings",
+    "parents": "/dashboard/settings",
+    "students": "/dashboard/settings",
+    "clinic": "/dashboard/settings",
+    "store": "/dashboard/settings",
+    "approved-stores": "/dashboard/settings",
+    "exam-officer": "/dashboard/settings",
+    "librarian": "/dashboard/settings",
     "visitor": "/",
   }
 
