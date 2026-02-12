@@ -125,18 +125,18 @@ export function useProtectedRoute(requiredRole?: UserRole) {
       if (requiredRole && user.role !== requiredRole) {
         // Wrong role, redirect to correct dashboard
         const dashboardRoutes: Record<UserRole, string> = {
-          'super-user': '/super-user',
-          'admin': '/admin',
-          'finance': '/finance',
-          'security': '/security',
-          'teacher': '/teacher',
-          'parents': '/parent',
-          'students': '/student',
-          'clinic': '/clinic',
-          'store': '/store',
-          'approved-stores': '/approved-stores',
-          'exam-officer': '/exam-officer',
-          'librarian': '/librarian',
+          'super-user': '/dashboard/super-user',
+          'admin': '/dashboard/admin',
+          'finance': '/dashboard/finance',
+          'security': '/dashboard/security',
+          'teacher': '/dashboard/teacher',
+          'parents': '/dashboard/parent',
+          'students': '/dashboard/student',
+          'clinic': '/dashboard/clinic',
+          'store': '/dashboard/store',
+          'approved-stores': '/dashboard/approved-stores',
+          'exam-officer': '/dashboard/exam-officer',
+          'librarian': '/dashboard/librarian',
           'visitor': '/',
         }
         router.push(dashboardRoutes[user.role] || '/')

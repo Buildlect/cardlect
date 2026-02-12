@@ -27,7 +27,6 @@ export default function CommunicationPage() {
     teacher: 'Teacher Communications',
     parents: 'Parent Communications',
     students: 'Student Communications',
-    teacher: 'Teacher Communications',
     clinic: 'Clinic Communications',
     store: 'Store Communications',
     'approved-stores': 'Store Communications',

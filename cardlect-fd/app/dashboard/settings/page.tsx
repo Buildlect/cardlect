@@ -30,6 +30,7 @@ export default function SettingsPage() {
     'approved-stores': 'Store Manager',
     'exam-officer': 'Exam Officer',
     librarian: 'Librarian',
+    visitor: 'Visitor',
   }
 
   const roleInitials: Record<string, string> = {
@@ -45,6 +46,7 @@ export default function SettingsPage() {
     'approved-stores': 'SM',
     'exam-officer': 'EO',
     librarian: 'LB',
+    visitor: 'VI',
   }
 
   return (
