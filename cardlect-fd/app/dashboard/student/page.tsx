@@ -198,13 +198,77 @@ export default function StudentsDashboard() {
 
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} aria-hidden>
-                <XAxis dataKey="day" hide />
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="grad-performance" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.2} />
+                    <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+
+                <XAxis
+                  dataKey="day"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 12 }}
+                />
                 <YAxis hide />
-                <Tooltip />
-                <Line type="monotone" dataKey="grade" stroke={CARDLECT_COLORS.primary.darker} strokeWidth={2} dot={false} />
-              </LineChart>
+
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (!active || !payload || !payload.length) return null
+                    return (
+                      <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-lg whitespace-nowrap">
+                        Grade: {payload[0].value}%
+                      </div>
+                    )
+                  }}
+                  cursor={{ stroke: CARDLECT_COLORS.primary.darker, strokeWidth: 2, opacity: 0.1 }}
+                />
+
+                <Area
+                  type="monotone"
+                  dataKey="grade"
+                  stroke={CARDLECT_COLORS.primary.darker}
+                  strokeWidth={2}
+                  fill="url(#grad-performance)"
+                  isAnimationActive={true}
+                />
+              </AreaChart>
             </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Notifications */}
+        <div className="bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-lg transition-all">
+          <h3 className="text-lg font-semibold mb-4 text-foreground tracking-tight">
+            Updates
+          </h3>
+
+          <div className="space-y-4">
+            {alerts.map((a, i) => {
+              const Icon = a.icon
+              return (
+                <div
+                  key={i}
+                  className="flex items-center gap-4 p-4 rounded-2xl border border-border/40 hover:border-border bg-background/30 hover:bg-background/50 transition-all hover:shadow-lg hover:scale-[1.01] cursor-pointer group"
+                >
+                  {/* Alert Icon */}
+                  <div className="p-3 bg-card dark:bg-card rounded-xl flex items-center justify-center shadow-md relative">
+                    <Icon size={20} color={a.color} />
+
+                    {/* Pulse dot */}
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full animate-ping" />
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full" />
+                  </div>
+
+                  {/* Text */}
+                  <span className="text-sm text-foreground font-medium tracking-tight">
+                    {a.text}
+                  </span>
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>

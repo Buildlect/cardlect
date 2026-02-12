@@ -201,6 +201,103 @@ export default function Dashboard() {
           )
         })}
       </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+        {/* ScanActivityChart */}
+        <div className="lg:col-span-2 bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all">
+          <h3 className="text-lg font-semibold mb-5 text-foreground tracking-tight">
+            NFC Scan Activity
+          </h3>
+
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={scanData}
+              >
+                {/* --- X Axis --- */}
+                <XAxis
+                  dataKey="day"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 12 }}
+                />
+
+                {/* --- Y Axis hidden for clean look --- */}
+                <YAxis hide />
+
+                {/* --- Tooltip --- */}
+                <Tooltip
+                  cursor={{ stroke: CARDLECT_COLORS.primary.darker, strokeWidth: 1, opacity: 0.2 }}
+                  contentStyle={{
+                    background: '#1a1a1a',
+                    border: '1px solid #333',
+                    borderRadius: '10px',
+                  }}
+                  labelStyle={{ color: '#fff' }}
+                  formatter={(value) => [`${value}`, 'Scans']}
+                />
+
+                {/* --- Gradient Fill --- */}
+                <defs>
+                  <linearGradient id="scanGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.45} />
+                    <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
+
+                {/* --- Smooth area line --- */}
+                <Area
+                  type="monotone"
+                  dataKey="scans"
+                  stroke={CARDLECT_COLORS.primary.darker}
+                  strokeWidth={3}
+                  fill="url(#scanGradient)"
+                  isAnimationActive={true}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* RecentAlerts */}
+        <div className="bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-lg transition-all">
+          <h3 className="text-lg font-semibold mb-4 text-foreground tracking-tight">
+            Recent Alerts
+          </h3>
+
+          <div className="space-y-4">
+            {alerts.map((a, i) => {
+              const Icon = a.icon
+              return (
+                <div
+                  key={i}
+                  className="flex items-center gap-4 p-4 rounded-2xl border border-border/40 hover:border-border bg-background/30 hover:bg-background/50 transition-all hover:shadow-lg hover:scale-[1.01] cursor-pointer group"
+                >
+                  {/* Alert Icon */}
+                  <div
+                    className="p-3  bg-card dark:bg-card rounded-xl flex items-center justify-center shadow-md relative"
+                  >
+                    <Icon size={20} color={a.color} />
+
+                    {/* Pulse dot */}
+                    <span
+                      className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"
+                    />
+                    <span
+                      className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full"
+                    />
+                  </div>
+
+                  {/* Text */}
+                  <span className="text-sm text-foreground font-medium tracking-tight">
+                    {a.text}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
     </DashboardLayout>
   )
 }

@@ -1,310 +1,415 @@
 'use client'
 
+import { useProtectedRoute } from '@/contexts/auth-context'
 import { useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
-import { Store, MapPin, DollarSign, TrendingUp, ShoppingCart, CheckCircle, Plus, Eye, Bell, CreditCard } from 'lucide-react'
+import { Users, Clock, AlertTriangle, MapPin, Bell, CheckCircle, TrendingUp, Calendar, ChevronDown } from 'lucide-react'
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 import {
   LineChart,
   Line,
   AreaChart,
   Area,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
 } from 'recharts'
-import { CARDLECT_COLORS, SEMANTIC_COLORS } from '@/lib/cardlect-colors'
 
-interface ApprovedStore {
+interface Child {
   id: string
   name: string
-  location: string
-  category: string
-  rating: number
-  distance: string
-  operatingHours: string
-  acceptedCards: boolean
-  lastVisit: string
+  grade: string
+  avatar: string
+  status: 'in-school' | 'left-school'
+  lastUpdate: string
+  attendance: number
 }
 
-interface ChildTransaction {
-  id: string
-  childName: string
-  store: string
-  amount: number
-  date: string
-  time: string
-  category: string
-}
-
-export default function ParentApprovedStoresPage() {
-  const [approvedStores] = useState<ApprovedStore[]>([
+export default function ParentsDashboard() {
+  const [children] = useState<Child[]>([
     {
       id: '1',
-      name: 'BrightSnacks Cafeteria',
-      location: 'Inside Oxford International School',
-      category: 'Food & Beverage',
-      rating: 4.8,
-      distance: '0.5 km',
-      operatingHours: '6:30 AM - 4:30 PM (Weekdays)',
-      acceptedCards: true,
-      lastVisit: 'Today, 12:45 PM',
+      name: 'Sarah Johnson',
+      grade: 'Grade 10',
+      avatar: '👧',
+      status: 'in-school',
+      lastUpdate: '9:00 AM',
+      attendance: 95,
     },
     {
       id: '2',
-      name: 'Tech Hub Store',
-      location: 'Inside Trinity Academy',
-      category: 'Electronics & Books',
-      rating: 4.5,
-      distance: 'On Campus',
-      operatingHours: '8:00 AM - 5:00 PM (Weekdays)',
-      acceptedCards: true,
-      lastVisit: 'Yesterday, 2:30 PM',
+      name: 'Michael Johnson',
+      grade: 'Grade 8',
+      avatar: '👦',
+      status: 'left-school',
+      lastUpdate: '3:45 PM',
+      attendance: 92,
     },
     {
       id: '3',
-      name: 'Uniform & Sports Hub',
-      location: "Inside St. Mary's Secondary",
-      category: 'School Supplies',
-      rating: 4.6,
-      distance: 'On Campus',
-      operatingHours: '7:00 AM - 4:00 PM (Weekdays)',
-      acceptedCards: true,
-      lastVisit: '3 days ago',
+      name: 'Emma Johnson',
+      grade: 'Grade 6',
+      avatar: '👧',
+      status: 'in-school',
+      lastUpdate: '9:05 AM',
+      attendance: 98,
     },
   ])
 
-  const [childTransactions] = useState<ChildTransaction[]>([
+  const [selectedChildId, setSelectedChildId] = useState(children[0].id)
+  const [showChildSelector, setShowChildSelector] = useState(false)
+  
+  const selectedChild = children.find(c => c.id === selectedChildId) || children[0]
+  const [alerts] = useState([
     {
-      id: '1',
-      childName: 'Sarah Johnson',
-      store: 'BrightSnacks Cafeteria',
-      amount: 2500,
-      date: '2024-01-15',
-      time: '12:45 PM',
-      category: 'Food & Beverage',
+      text: `${selectedChild.name} left school at 3:45 PM`,
+      icon: Clock,
+      color: CARDLECT_COLORS.success.main,
+      bg: '#1a1a1a',
     },
     {
-      id: '2',
-      childName: 'Michael Johnson',
-      store: 'Tech Hub Store',
-      amount: 5000,
-      date: '2024-01-14',
-      time: '3:15 PM',
-      category: 'Books & Stationery',
+      text: 'New message from teacher',
+      icon: Bell,
+      color: CARDLECT_COLORS.warning.main,
+      bg: '#262626',
     },
     {
-      id: '3',
-      childName: 'Emma Johnson',
-      store: 'Uniform & Sports Hub',
-      amount: 3500,
-      date: '2024-01-12',
-      time: '2:10 PM',
-      category: 'School Uniforms',
-    },
-    {
-      id: '4',
-      childName: 'Sarah Johnson',
-      store: 'BrightSnacks Cafeteria',
-      amount: 1800,
-      date: '2024-01-10',
-      time: '1:20 PM',
-      category: 'Food & Beverage',
+      text: `Attendance: ${selectedChild.attendance}% this term`,
+      icon: CheckCircle,
+      color: CARDLECT_COLORS.success.main,
+      bg: '#1a1a1a',
     },
   ])
 
-  const spendingData = [
-    { day: 'Mon', Sarah: 2500, Michael: 0, Emma: 0 },
-    { day: 'Tue', Sarah: 0, Michael: 5000, Emma: 0 },
-    { day: 'Wed', Sarah: 1800, Michael: 0, Emma: 3500 },
-    { day: 'Thu', Sarah: 2000, Michael: 0, Emma: 0 },
-    { day: 'Fri', Sarah: 3000, Michael: 4200, Emma: 2500 },
+  const sampleData = [
+    { name: 'Mon', value: 1 },
+    { name: 'Tue', value: 1 },
+    { name: 'Wed', value: 1 },
+    { name: 'Thu', value: 1 },
+    { name: 'Fri', value: 1 },
+    { name: 'Sat', value: 0 },
+    { name: 'Sun', value: 0 },
   ]
 
-  const spendByCategory = [
-    { name: 'Food & Beverage', value: 12500, color: CARDLECT_COLORS.primary.darker },
-    { name: 'Books & Stationery', value: 9200, color: CARDLECT_COLORS.primary.main },
-    { name: 'School Supplies', value: 6000, color: CARDLECT_COLORS.info.main },
+  const chartData = [
+    { day: 'Mon', pickups: 1, entries: 1 },
+    { day: 'Tue', pickups: 1, entries: 1 },
+    { day: 'Wed', pickups: 1, entries: 1 },
+    { day: 'Thu', pickups: 1, entries: 1 },
+    { day: 'Fri', pickups: 1, entries: 1 },
+    { day: 'Sat', pickups: 0, entries: 0 },
+    { day: 'Sun', pickups: 0, entries: 0 },
   ]
 
-  const stats = {
-    totalStores: approvedStores.length,
-    totalSpending: childTransactions.reduce((sum, t) => sum + t.amount, 0),
-    avgTransaction: Math.round(childTransactions.reduce((sum, t) => sum + t.amount, 0) / childTransactions.length),
-    thisMonth: 28000,
-  }
+  const metrics = [
+    {
+      label: 'Current Status',
+      value: selectedChild.status === 'in-school' ? 'In School' : 'At Home',
+      change: `Since ${selectedChild.lastUpdate}`,
+      icon: MapPin,
+      color: selectedChild.status === 'in-school' ? CARDLECT_COLORS.success.main : CARDLECT_COLORS.warning.main,
+      data: sampleData,
+      tooltip: 'Real-time status of your child',
+    },
+    {
+      label: 'This Week Pickups',
+      value: 5,
+      change: '+0 pending',
+      icon: Calendar,
+      color: CARDLECT_COLORS.primary.darker,
+      data: sampleData,
+      tooltip: 'Authorized pickups this week',
+    },
+    {
+      label: 'Attendance Rate',
+      value: `${selectedChild.attendance}%`,
+      change: `+${selectedChild.attendance > 90 ? 2 : 0}% from last month`,
+      icon: TrendingUp,
+      color: selectedChild.attendance > 90 ? CARDLECT_COLORS.success.main : CARDLECT_COLORS.warning.main,
+      data: sampleData,
+      tooltip: 'Current attendance percentage',
+    },
+    {
+      label: 'Pending Tasks',
+      value: 2,
+      change: '1 payment due',
+      icon: AlertTriangle,
+      color: CARDLECT_COLORS.danger.main,
+      data: sampleData,
+      tooltip: 'Actions requiring attention',
+    },
+  ]
 
   return (
-    <DashboardLayout currentPage="approved-stores" role="parents">
+    <DashboardLayout currentPage="dashboard" role="parents">
       <div className="mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Approved Stores & Spending</h1>
-          <p className="text-muted-foreground">Monitor where your children can use their cards and track their spending at approved stores.</p>
-        </div>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Parent Portal</h1>
+        <p className="text-muted-foreground">Monitor your children's activities and school updates in real-time.</p>
       </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-card border border-border rounded-2xl p-5">
-          <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wide mb-1">Approved Stores</p>
-          <p className="text-3xl font-bold text-foreground">{stats.totalStores}</p>
-          <p className="text-xs text-muted-foreground mt-2">Available this month</p>
-        </div>
-
-        <div className="bg-card border border-border rounded-2xl p-5">
-          <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wide mb-1">This Month Spending</p>
-          <p className="text-3xl font-bold" style={{ color: CARDLECT_COLORS.primary.darker }}>₦{(stats.thisMonth / 1000).toFixed(1)}k</p>
-          <p className="text-xs text-muted-foreground mt-2">All children combined</p>
-        </div>
-
-        <div className="bg-card border border-border rounded-2xl p-5">
-          <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wide mb-1">Avg Transaction</p>
-          <p className="text-3xl font-bold" style={{ color: SEMANTIC_COLORS.financial.income }}>₦{stats.avgTransaction.toLocaleString()}</p>
-          <p className="text-xs text-muted-foreground mt-2">Per transaction</p>
-        </div>
-
-        <div className="bg-card border border-border rounded-2xl p-5">
-          <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wide mb-1">Transactions</p>
-          <p className="text-3xl font-bold text-foreground">{childTransactions.length}</p>
-          <p className="text-xs text-muted-foreground mt-2">This period</p>
-        </div>
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Spending Trend */}
-        <div className="lg:col-span-2 bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all">
-          <h3 className="text-lg font-bold mb-5 text-foreground">Weekly Spending by Child</h3>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={spendingData}>
-                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 12 }} />
-                <YAxis hide />
-                <Tooltip
-                  contentStyle={{
-                    background: 'var(--card)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '10px',
-                    color: 'var(--foreground)'
-                  }}
-                  formatter={(value: any) => `₦${Number(value).toLocaleString()}`}
-                />
-                <Legend />
-                <Bar dataKey="Sarah" stackId="a" fill={CARDLECT_COLORS.primary.darker} />
-                <Bar dataKey="Michael" stackId="a" fill={CARDLECT_COLORS.primary.main} />
-                <Bar dataKey="Emma" stackId="a" fill={CARDLECT_COLORS.secondary.main} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Spending by Category */}
-        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all">
-          <h3 className="text-lg font-bold mb-5 text-foreground">By Category</h3>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={spendByCategory} cx="50%" cy="50%" outerRadius={100} fill="#8884d8" dataKey="value">
-                  {spendByCategory.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value: any) => `₦${(Number(value) / 1000).toFixed(1)}k`} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </div>
-
-      {/* Approved Stores */}
-      <div className="mb-8">
-        <h2 className="text-lg font-bold text-foreground mb-4">Available Stores</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {approvedStores.map((store) => (
-            <div key={store.id} className="bg-card border border-border rounded-2xl p-5 hover:shadow-lg hover:scale-[1.02] transition-all">
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <p className="font-bold text-foreground text-sm">{store.name}</p>
-                  <p className="text-xs text-muted-foreground mt-1">{store.category}</p>
-                </div>
-                <div className="flex items-center gap-0.5" style={{ color: CARDLECT_COLORS.warning.main }}>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <span key={i} style={{ opacity: i < Math.floor(store.rating) ? 1 : 0.3 }}>★</span>
-                  ))}
-                </div>
+      {/* Children Selector */}
+      <div className="mb-8 flex flex-col gap-4">
+        <div className="relative">
+          <button
+            onClick={() => setShowChildSelector(!showChildSelector)}
+            className="w-full md:w-96 flex items-center justify-between gap-3 px-6 py-4 rounded-2xl border border-border bg-card hover:border-accent-primary transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{selectedChild.avatar}</span>
+              <div className="text-left">
+                <p className="font-semibold text-foreground">{selectedChild.name}</p>
+                <p className="text-xs text-muted-foreground">{selectedChild.grade}</p>
               </div>
-
-              <div className="space-y-2 mb-3 pb-3 border-b border-border text-xs text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <MapPin size={14} />
-                  <span>{store.location}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="w-1 h-1 rounded-full" style={{ backgroundColor: SEMANTIC_COLORS.status.online }} />
-                  <span>{store.operatingHours}</span>
-                </div>
-              </div>
-
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Last Visit:</span>
-                  <span className="text-foreground font-semibold">{store.lastVisit}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Cards:</span>
-                  {store.acceptedCards && (
-                    <div className="flex items-center gap-1" style={{ color: SEMANTIC_COLORS.status.online }}>
-                      <CheckCircle size={14} />
-                      <span className="font-semibold">Accepted</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <button className="w-full py-2 rounded-lg text-xs font-semibold transition-all" style={{ backgroundColor: CARDLECT_COLORS.primary.darker + '15', color: CARDLECT_COLORS.primary.darker }}>
-                View Details
-              </button>
             </div>
+            <ChevronDown
+              size={20}
+              className={`transition-transform ${showChildSelector ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {/* Dropdown Menu */}
+          {showChildSelector && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-2xl shadow-xl z-50">
+              {children.map((child) => (
+                <button
+                  key={child.id}
+                  onClick={() => {
+                    setSelectedChildId(child.id)
+                    setShowChildSelector(false)
+                  }}
+                  className={`w-full flex items-center justify-between gap-3 px-6 py-4 border-b border-border/50 hover:bg-background/50 transition-colors last:border-b-0 ${
+                    selectedChildId === child.id ? 'bg-background/50' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{child.avatar}</span>
+                    <div className="text-left">
+                      <p className="font-semibold text-foreground">{child.name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs text-muted-foreground">{child.grade}</p>
+                        <span
+                          className={`inline-block w-2 h-2 rounded-full ${
+                            child.status === 'in-school'
+                              ? 'bg-green-400'
+                              : 'bg-gray-400'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  {selectedChildId === child.id && (
+                    <div className="text-accent-primary">✓</div>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Children Status Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {children.map((child) => (
+            <button
+              key={child.id}
+              onClick={() => {
+                setSelectedChildId(child.id)
+                setShowChildSelector(false)
+              }}
+              className={`p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                selectedChildId === child.id
+                  ? 'border-accent-primary bg-accent-primary/5'
+                  : 'border-border hover:border-accent-primary/50'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">{child.avatar}</span>
+                <div className="text-left">
+                  <p className="font-medium text-foreground text-sm">{child.name}</p>
+                  <div className="flex items-center gap-1">
+                    <span
+                      className={`inline-block w-1.5 h-1.5 rounded-full ${
+                        child.status === 'in-school'
+                          ? 'bg-green-400'
+                          : 'bg-gray-400'
+                      }`}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      {child.status === 'in-school' ? 'In School' : 'At Home'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </button>
           ))}
         </div>
       </div>
 
-      {/* Recent Transactions */}
-      <div className="bg-card border border-border rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all">
-        <h3 className="text-lg font-bold mb-4 text-foreground">Recent Transactions</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-border">
-                <th className="text-left py-3 px-2 text-muted-foreground font-semibold text-xs">Child Name</th>
-                <th className="text-left py-3 px-2 text-muted-foreground font-semibold text-xs">Store</th>
-                <th className="text-left py-3 px-2 text-muted-foreground font-semibold text-xs">Category</th>
-                <th className="text-left py-3 px-2 text-muted-foreground font-semibold text-xs">Amount</th>
-                <th className="text-left py-3 px-2 text-muted-foreground font-semibold text-xs">Date & Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {childTransactions.map((txn) => (
-                <tr key={txn.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                  <td className="py-3 px-2 text-foreground font-medium text-xs">{txn.childName}</td>
-                  <td className="py-3 px-2 text-muted-foreground text-xs">{txn.store}</td>
-                  <td className="py-3 px-2 text-muted-foreground text-xs">{txn.category}</td>
-                  <td className="py-3 px-2 text-foreground font-semibold">₦{txn.amount.toLocaleString()}</td>
-                  <td className="py-3 px-2 text-muted-foreground text-xs">{txn.date} @ {txn.time}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Metrics Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {metrics.map((metric, i) => {
+          const Icon = metric.icon
+          const chartData = metric.data.map((d, idx) => ({ x: idx, y: d.value }))
+
+          return (
+            <div
+              key={i}
+              className="relative group overflow-hidden rounded-3xl border border-border bg-card p-6 hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 ease-in-out"
+              role="group"
+              aria-label={`${metric.label} metric card`}
+            >
+              {/* Tooltip */}
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-20">
+                <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-lg whitespace-nowrap">
+                  {metric.tooltip}
+                </div>
+              </div>
+
+              <div className="flex items-start justify-between relative z-10">
+                <div>
+                  <p className="text-muted-foreground text-xs font-medium mb-1">
+                    {metric.label}
+                  </p>
+                  <p className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                    {typeof metric.value === 'number' ? metric.value.toLocaleString() : metric.value}
+                  </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium text-green-400">
+                      {metric.color === '#EF4444' ? '-' : '+'}
+                      <span className="opacity-90">{metric.change}</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* icons */}
+                <div
+                  className={`bg-card/50 flex items-center justify-center w-14 h-14 rounded-xl shadow-sm`}
+                  aria-hidden
+                  title={metric.label}
+                >
+                  <Icon size={24} color={metric.color} />
+                </div>
+              </div>
+
+              {/* Recharts sparkline with tooltip */}
+              <div className="mt-5 relative z-10 h-10">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} aria-hidden>
+                    <XAxis dataKey="x" hide />
+                    <YAxis hide domain={['dataMin', 'dataMax']} />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload || !payload.length) return null
+                        return (
+                          <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-lg whitespace-nowrap">
+                            {payload[0].value}
+                          </div>
+                        )
+                      }}
+                      cursor={{ stroke: metric.color, strokeWidth: 2, opacity: 0.1 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="y"
+                      stroke={metric.color}
+                      strokeWidth={2}
+                      dot={false}
+                      isAnimationActive={true}
+                      activeDot={{ r: 3, stroke: metric.color, strokeWidth: 1 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="mt-1 text-xs text-muted-foreground">trend</div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Main Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+        {/* Activity Chart */}
+        <div className="lg:col-span-2 bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-xl transition-all">
+          <h3 className="text-lg font-semibold mb-5 text-foreground tracking-tight">
+            {selectedChild.name}'s Weekly Activity
+          </h3>
+
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="grad-activity" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.2} />
+                    <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+
+                <XAxis
+                  dataKey="day"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: 'rgba(255,255,255,0.55)', fontSize: 12 }}
+                />
+                <YAxis hide />
+
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (!active || !payload || !payload.length) return null
+                    return (
+                      <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 shadow-lg whitespace-nowrap">
+                        {payload[0].value} entries
+                      </div>
+                    )
+                  }}
+                  cursor={{ stroke: CARDLECT_COLORS.primary.darker, strokeWidth: 2, opacity: 0.1 }}
+                />
+
+                <Area
+                  type="monotone"
+                  dataKey="entries"
+                  stroke={CARDLECT_COLORS.primary.darker}
+                  strokeWidth={2}
+                  fill="url(#grad-activity)"
+                  isAnimationActive={true}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-        <button className="w-full mt-4 py-2 rounded-lg text-xs font-semibold transition-all" style={{ backgroundColor: CARDLECT_COLORS.primary.darker + '15', color: CARDLECT_COLORS.primary.darker }}>
-          View All Transactions →
-        </button>
+
+        {/* Recent Alerts */}
+        <div className="bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-lg transition-all">
+          <h3 className="text-lg font-semibold mb-4 text-foreground tracking-tight">
+            Recent Alerts
+          </h3>
+
+          <div className="space-y-4">
+            {alerts.map((a, i) => {
+              const Icon = a.icon
+              return (
+                <div
+                  key={i}
+                  className="flex items-center gap-4 p-4 rounded-2xl border border-border/40 hover:border-border bg-background/30 hover:bg-background/50 transition-all hover:shadow-lg hover:scale-[1.01] cursor-pointer group"
+                >
+                  {/* Alert Icon */}
+                  <div className="p-3 bg-card dark:bg-card rounded-xl flex items-center justify-center shadow-md relative">
+                    <Icon size={20} color={a.color} />
+
+                    {/* Pulse dot */}
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping" />
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full" />
+                  </div>
+
+                  {/* Text */}
+                  <span className="text-sm text-foreground font-medium tracking-tight">
+                    {a.text}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
       </div>
     </DashboardLayout>
   )

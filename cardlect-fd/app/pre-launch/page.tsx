@@ -33,18 +33,18 @@ export default function PreLaunchPage() {
     
     // Redirect to appropriate dashboard
     const dashboardRoutes: { [key: string]: string } = {
-      'super-user': '/super-user',
-      'admin': '/admin',
-      'finance': '/finance',
-      'security': '/security',
-      'teacher': '/teacher',
-      'exam-officer': '/exam-officer',
-      'librarian': '/librarian',
-      'clinic': '/clinic',
-      'store': '/store',
-      'approved-stores': '/approved-stores',
-      'parents': '/parent',
-      'students': '/student',
+      'super-user': '/dashboard/super-user',
+      'admin': '/dashboard/admin',
+      'finance': '/dashboard/finance',
+      'security': '/dashboard/security',
+      'teacher': '/dashboard/teacher',
+      'exam-officer': '/dashboard/exam-officer',
+      'librarian': '/dashboard/librarian',
+      'clinic': '/dashboard/clinic',
+      'store': '/dashboard/store',
+      'approved-stores': '/dashboard/approved-stores',
+      'parents': '/dashboard/parent',
+      'students': '/dashboard/student',
       'visitor': '/',
     }
     
