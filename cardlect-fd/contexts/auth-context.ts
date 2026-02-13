@@ -4,19 +4,19 @@ import { useContext, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
-export type UserRole = 
-  | 'super-user' 
-  | 'admin' 
-  | 'finance' 
-  | 'security' 
-  | 'teacher' 
-  | 'parents' 
-  | 'students' 
-  | 'clinic' 
-  | 'store' 
-  | 'approved-stores' 
-  | 'exam-officer' 
-  | 'librarian' 
+export type UserRole =
+  | 'super-user'
+  | 'admin'
+  | 'finance'
+  | 'security'
+  | 'teacher'
+  | 'parents'
+  | 'students'
+  | 'clinic'
+  | 'store'
+  | 'approved-stores'
+  | 'exam-officer'
+  | 'librarian'
   | 'visitor'
 
 export interface AuthUser {
@@ -47,7 +47,7 @@ export function setAuthUser(user: AuthUser | null) {
 
 export function getAuthUser(): AuthUser | null {
   if (currentUser) return currentUser
-  
+
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem('cardlect_user')
     if (stored) {
@@ -59,7 +59,7 @@ export function getAuthUser(): AuthUser | null {
       }
     }
   }
-  
+
   return null
 }
 
@@ -114,7 +114,7 @@ export function useProtectedRoute(requiredRole?: UserRole) {
     // Small delay to ensure localStorage is ready
     const timer = setTimeout(() => {
       const user = getAuthUser()
-      
+
       if (!user) {
         // Not authenticated, redirect to login
         router.push('/')

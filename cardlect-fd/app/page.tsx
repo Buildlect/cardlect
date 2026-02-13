@@ -129,7 +129,7 @@ export default function LoginPage() {
         setLoading(false)
         return
       }
-      
+
       // Log in the user directly
       setAuthUser({
         id: matched.id,
@@ -137,7 +137,7 @@ export default function LoginPage() {
         email: matched.email,
         role: matched.role,
       })
-      
+
       // Redirect to their dashboard
       const dashboardRoutes: Record<UserRole, string> = {
         'super-user': '/super-user',
@@ -161,7 +161,7 @@ export default function LoginPage() {
   return (
     <div>
       {/* header */}
-      
+
       <div className="bg-gray-50 min-h-screen flex flex-col md:flex-row">
         {/* Left Side - Purple Gradient (hidden on small, decorative on desktop) */}
         <div className="hidden md:block md:w-2/5 md:max-h-screen rounded-half background-bg p-12 md:p-20 flex flex-col md:justify-center text-white">
@@ -226,11 +226,10 @@ export default function LoginPage() {
                       setCredentialError("")
                     }}
                     onBlur={() => setTouched((t) => ({ ...t, email: true }))}
-                    className={`w-full h-12 px-4 bg-gray-50 rounded-xl focus:ring-2 focus:border-transparent ${
-                      credentialError && touched.email
+                    className={`w-full h-12 px-4 bg-gray-50 rounded-xl focus:ring-2 focus:border-transparent ${credentialError && touched.email
                         ? "border-red-500 ring-red-200"
                         : "border-gray-200"
-                    }`}
+                      }`}
                     style={{
                       ...(credentialError && touched.email ? { outlineColor: CARDLECT_COLORS.danger.main } : { outlineColor: CARDLECT_COLORS.primary.darker }),
                       outlineOffset: '2px'
@@ -248,11 +247,10 @@ export default function LoginPage() {
                       setCredentialError("")
                     }}
                     onBlur={() => setTouched((t) => ({ ...t, password: true }))}
-                    className={`w-full h-12 px-4 pr-12 bg-gray-50 rounded-xl focus:ring-2 focus:border-transparent ${
-                      credentialError && touched.password
+                    className={`w-full h-12 px-4 pr-12 bg-gray-50 rounded-xl focus:ring-2 focus:border-transparent ${credentialError && touched.password
                         ? "border-red-500 ring-red-200"
                         : "border-gray-200"
-                    }`}
+                      }`}
                     style={{
                       ...(credentialError && touched.password ? { outlineColor: CARDLECT_COLORS.danger.main } : { outlineColor: CARDLECT_COLORS.primary.darker }),
                       outlineOffset: '2px'
@@ -286,9 +284,8 @@ export default function LoginPage() {
                         setTerms(e.target.checked)
                         if (e.target.checked) setTermsError("")
                       }}
-                      className={`w-4 h-4 rounded border-gray-300 focus:ring-2 cursor-pointer ${
-                        termsError ? "ring-2 ring-red-200 border-red-500" : ""
-                      }`}
+                      className={`w-4 h-4 rounded border-gray-300 focus:ring-2 cursor-pointer ${termsError ? "ring-2 ring-red-200 border-red-500" : ""
+                        }`}
                       style={{
                         accentColor: CARDLECT_COLORS.primary.darker,
                         ...(termsError ? { borderColor: CARDLECT_COLORS.danger.main } : {})
@@ -321,7 +318,7 @@ export default function LoginPage() {
                     loading
                   }
                   className="w-full h-12 text-white rounded-xl font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-60"
-                  style={{ 
+                  style={{
                     backgroundColor: isValidEmail(email) && password.trim().length > 0 && rememberMe && !loading ? CARDLECT_COLORS.primary.darker : '#FFB8A6',
                   }}
                 >
@@ -359,7 +356,7 @@ export default function LoginPage() {
               </div>
 
               <p className="text-sm font-medium transition-colors text-center mt-4"
-                  style={{ color: '#6B7280' }}
+                style={{ color: '#6B7280' }}
               >
                 Don't have an account?{" "}
                 <Link
