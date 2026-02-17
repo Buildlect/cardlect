@@ -56,7 +56,7 @@ interface SidebarProps {
 // Role-based default menu items
 export const defaultMenuItems = {
   admin: [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/admin", id: "dashboard" },
+    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: Users, label: "Students", href: "/dashboard/admin-students", id: "students" },
     { icon: Users, label: "Staff", href: "/dashboard/admin-staffs", id: "staff" },
     { icon: Book, label: "Classes", href: "/dashboard/admin-classes", id: "classes" },
@@ -70,7 +70,7 @@ export const defaultMenuItems = {
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
   ] as MenuItem[],
   security: [
-    { icon: LayoutGrid, label: "Dashboard", href: "/dashboard/security", id: "dashboard" },
+    { icon: LayoutGrid, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: UserCheck, label: "Pickup Authorization", href: "/dashboard/security-pickup-authorization", id: "pickup-authorization" },
     { icon: Bell, label: "Alerts", href: "/dashboard/security-alerts", id: "alerts" },
     { icon: DoorOpen, label: "Gate Logs", href: "/dashboard/security-gate-logs", id: "gate-logs" },
@@ -79,19 +79,19 @@ export const defaultMenuItems = {
     { icon: Settings, label: "Settings", href: "/dashboard/security-setting", id: "settings" },
   ] as MenuItem[],
   "super-user": [
-    { icon: LayoutGrid, label: "Dashboard", href: "/dashboard/super-user", id: "dashboard" },
+    { icon: LayoutGrid, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: Building2, label: "Manage Schools", href: "/dashboard/super-user-schools", id: "schools" },
     { icon: CreditCard, label: "Cards", href: "/dashboard/super-user-cards", id: "cards" },
     { icon: Award, label: "CBT Exams", href: "/dashboard/super-user-exams", id: "exams" },
     { icon: BarChart3, label: "Analytics", href: "/dashboard/super-user-analytics", id: "analytics" },
-    { icon: FileText, label: "Logs", href: "/dashboard/super-user", id: "logs" },
+    { icon: FileText, label: "Logs", href: "/dashboard/overview", id: "logs" },
     { icon: Upload, label: "Bulk Import", href: "/dashboard/super-user-bulk-import", id: "bulk-import" },
     { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
     { icon: Key, label: "Manage API Keys", href: "/dashboard/super-user-api", id: "api" },
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
   ] as MenuItem[],
   parents: [
-    { icon: LayoutGrid, label: "Dashboard", href: "/dashboard/parent", id: "dashboard" },
+    { icon: LayoutGrid, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: Award, label: "CBT Exams", href: "/dashboard/parent-exams", id: "exams" },
     { icon: Users, label: "My Children", href: "/dashboard/parent-children", id: "children" },
     { icon: Clock, label: "Activity Log", href: "/dashboard/parent-activity-log", id: "activity-log" },
@@ -101,7 +101,7 @@ export const defaultMenuItems = {
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
   ] as MenuItem[],
   students: [
-    { icon: LayoutGrid, label: "Dashboard", href: "/dashboard/student", id: "dashboard" },
+    { icon: LayoutGrid, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: Award, label: "CBT Exams", href: "/dashboard/student-exams", id: "exams" },
     { icon: Book, label: "Assignments", href: "/dashboard/student-assignments", id: "assignments" },
     { icon: Award, label: "Grades", href: "/dashboard/student-grades", id: "grades" },
@@ -111,7 +111,7 @@ export const defaultMenuItems = {
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
   ] as MenuItem[],
   finance: [
-    { icon: LayoutGrid, label: "Dashboard", href: "/dashboard/finance", id: "dashboard" },
+    { icon: LayoutGrid, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: DollarSign, label: "Invoices", href: "/dashboard/finance-invoices", id: "invoices" },
     { icon: CreditCard, label: "Payments", href: "/dashboard/finance-payments", id: "payments" },
     { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
@@ -120,7 +120,7 @@ export const defaultMenuItems = {
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
   ] as MenuItem[],
   store: [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/store", id: "dashboard" },
+    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: Package, label: "Inventory", href: "/dashboard/store-inventory", id: "inventory" },
     { icon: ShoppingCart, label: "Sales", href: "/dashboard/store-sales", id: "sales" },
     { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
@@ -129,7 +129,7 @@ export const defaultMenuItems = {
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
   ] as MenuItem[],
   teacher: [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/teacher", id: "dashboard" },
+    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: Award, label: "CBT Exams", href: "/dashboard/teacher-exams", id: "exams" },
     { icon: Users, label: "Classes", href: "/dashboard/teacher-classes", id: "classes" },
     { icon: FileText, label: "Assignments", href: "/dashboard/teacher-assignments", id: "assignments" },
@@ -139,7 +139,7 @@ export const defaultMenuItems = {
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
   ] as MenuItem[],
   clinic: [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/clinic", id: "dashboard" },
+    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: Users, label: "Students", href: "/dashboard/clinic-students", id: "students" },
     { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
     { icon: ClipboardList, label: "Medical Records", href: "/dashboard/clinic-medical-records", id: "medical-records" },
@@ -148,7 +148,7 @@ export const defaultMenuItems = {
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
   ] as MenuItem[],
   "approved-stores": [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/approved-stores", id: "dashboard" },
+    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: Store, label: "Stores", href: "/dashboard/approved-stores/stores", id: "stores" },
     { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
     { icon: ShoppingCart, label: "Orders", href: "/dashboard/approved-stores/orders", id: "orders" },
@@ -157,7 +157,7 @@ export const defaultMenuItems = {
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
   ] as MenuItem[],
   "exam-officer": [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/exam-officer", id: "dashboard" },
+    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: Award, label: "Exams", href: "/dashboard/exam-officer/exams", id: "exams" },
     { icon: FileText, label: "Results", href: "/dashboard/exam-officer/results", id: "results" },
     { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
@@ -165,7 +165,7 @@ export const defaultMenuItems = {
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
   ] as MenuItem[],
   "librarian": [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/librarian", id: "dashboard" },
+    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: Book, label: "Books", href: "/dashboard/librarian/books", id: "books" },
     { icon: Clock, label: "Borrowals", href: "/dashboard/librarian/borrowals", id: "borrowals" },
     { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
@@ -174,7 +174,7 @@ export const defaultMenuItems = {
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
   ] as MenuItem[],
   "visitor": [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard", id: "dashboard" },
+    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
   ] as MenuItem[],

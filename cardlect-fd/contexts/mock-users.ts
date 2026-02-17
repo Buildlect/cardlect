@@ -34,7 +34,7 @@ export const MOCK_USERS: MockUser[] = [
     schoolName: "Cardlect Admin",
     password: "password",
     allowedPages: [
-      "/dashboard/super-user",
+      "/dashboard/overview",
       "/dashboard/super-user-analytics",
       "/dashboard/super-user-api",
       "/dashboard/super-user-approved-stores",
@@ -57,7 +57,7 @@ export const MOCK_USERS: MockUser[] = [
     schoolName: "Cambridge Academy",
     password: "password",
     allowedPages: [
-      "/dashboard/admin",
+      "/dashboard/overview",
       "/dashboard/admin-students",
       "/dashboard/admin-staffs",
       "/dashboard/admin-classes",
@@ -80,7 +80,7 @@ export const MOCK_USERS: MockUser[] = [
     schoolName: "Cambridge Academy",
     password: "password",
     allowedPages: [
-      "/dashboard/finance",
+      "/dashboard/overview",
       "/dashboard/finance-invoices",
       "/dashboard/finance-payments",
       "/dashboard/communication",
@@ -98,7 +98,7 @@ export const MOCK_USERS: MockUser[] = [
     schoolName: "Cambridge Academy",
     password: "password",
     allowedPages: [
-      "/dashboard/security",
+      "/dashboard/overview",
       "/dashboard/security-pickup-authorization",
       "/dashboard/security-alerts",
       "/dashboard/security-gate-logs",
@@ -116,7 +116,7 @@ export const MOCK_USERS: MockUser[] = [
     schoolName: "Cambridge Academy",
     password: "password",
     allowedPages: [
-      "/dashboard/teacher",
+      "/dashboard/overview",
       "/dashboard/teacher-exams",
       "/dashboard/teacher-classes",
       "/dashboard/teacher-assignments",
@@ -135,7 +135,7 @@ export const MOCK_USERS: MockUser[] = [
     schoolName: "Cambridge Academy",
     password: "password",
     allowedPages: [
-      "/dashboard/exam-officer",
+      "/dashboard/overview",
       "/dashboard/exam-officer-exams",
       "/dashboard/exam-officer-results",
       "/dashboard/communication",
@@ -152,7 +152,7 @@ export const MOCK_USERS: MockUser[] = [
     schoolName: "Cambridge Academy",
     password: "password",
     allowedPages: [
-      "/dashboard/librarian",
+      "/dashboard/overview",
       "/dashboard/librarian-books",
       "/dashboard/librarian-borrowals",
       "/dashboard/communication",
@@ -170,7 +170,7 @@ export const MOCK_USERS: MockUser[] = [
     schoolName: "Cambridge Academy",
     password: "password",
     allowedPages: [
-      "/dashboard/clinic",
+      "/dashboard/overview",
       "/dashboard/clinic-students",
       "/dashboard/communication",
       "/dashboard/clinic-medical-records",
@@ -188,7 +188,7 @@ export const MOCK_USERS: MockUser[] = [
     schoolName: "Cambridge Academy Store",
     password: "password",
     allowedPages: [
-      "/dashboard/store",
+      "/dashboard/overview",
       "/dashboard/store-inventory",
       "/dashboard/store-sales",
       "/dashboard/communication",
@@ -206,7 +206,7 @@ export const MOCK_USERS: MockUser[] = [
     schoolName: "Approved Partner Store",
     password: "password",
     allowedPages: [
-      "/dashboard/approved-stores",
+      "/dashboard/overview",
       "/dashboard/approved-stores-stores",
       "/dashboard/communication",
       "/dashboard/approved-stores-orders",
@@ -224,7 +224,7 @@ export const MOCK_USERS: MockUser[] = [
     schoolName: "Cambridge Academy",
     password: "password",
     allowedPages: [
-      "/dashboard/parent",
+      "/dashboard/overview",
       "/dashboard/parent-exams",
       "/dashboard/parent-children",
       "/dashboard/parent-activity-log",
@@ -243,7 +243,7 @@ export const MOCK_USERS: MockUser[] = [
     schoolName: "Cambridge Academy",
     password: "password",
     allowedPages: [
-      "/dashboard/student",
+      "/dashboard/overview",
       "/dashboard/student-exams",
       "/dashboard/student-assignments",
       "/dashboard/student-grades",
@@ -256,37 +256,10 @@ export const MOCK_USERS: MockUser[] = [
 ]
 
 export const getDashboardRoute = (role: UserRole): string => {
-  switch (role) {
-    case "super-user":
-      return "/super-user"
-    case "admin":
-      return "/admin"
-    case "finance":
-      return "/finance"
-    case "security":
-      return "/security"
-    case "teacher":
-      return "/teacher"
-    case "exam-officer":
-      return "/exam-officer"
-    case "librarian":
-      return "/librarian"
-    case "clinic":
-      return "/clinic"
-    case "store":
-      return "/store"
-    case "approved-stores":
-      return "/approved-stores"
-    case "parents":
-      return "/parent"
-    case "students":
-      return "/student"
-    case "visitor":
-      return "/"
-    default:
-      return "/"
-  }
+  if (role === 'visitor') return '/'
+  return "/dashboard/overview"
 }
+
 // Authentication helpers for demo/testing
 export function validateCredentials(email: string, password: string): MockUser | null {
   const user = MOCK_USERS.find(u => u.email === email && u.password === password)

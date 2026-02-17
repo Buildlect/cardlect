@@ -31,22 +31,7 @@ export default function LoginPage() {
     const user = getAuthUser()
     if (user) {
       // Redirect to their dashboard
-      const dashboardRoutes: Record<UserRole, string> = {
-        'super-user': '/super-user',
-        'admin': '/admin',
-        'finance': '/finance',
-        'security': '/security',
-        'teacher': '/teacher',
-        'parents': '/parent',
-        'students': '/student',
-        'clinic': '/clinic',
-        'store': '/store',
-        'approved-stores': '/approved-stores',
-        'exam-officer': '/exam-officer',
-        'librarian': '/librarian',
-        'visitor': '/',
-      }
-      router.push(dashboardRoutes[user.role] || '/admin')
+      router.push('/dashboard/overview')
     }
   }, [])
 
@@ -139,22 +124,7 @@ export default function LoginPage() {
       })
 
       // Redirect to their dashboard
-      const dashboardRoutes: Record<UserRole, string> = {
-        'super-user': '/super-user',
-        'admin': '/admin',
-        'finance': '/finance',
-        'security': '/security',
-        'teacher': '/teacher',
-        'parents': '/parent',
-        'students': '/student',
-        'clinic': '/clinic',
-        'store': '/store',
-        'approved-stores': '/approved-stores',
-        'exam-officer': '/exam-officer',
-        'librarian': '/librarian',
-        'visitor': '/',
-      }
-      router.push(dashboardRoutes[matched.role] || '/admin')
+      router.push('/dashboard/overview')
     }, 700)
   }
 
@@ -227,8 +197,8 @@ export default function LoginPage() {
                     }}
                     onBlur={() => setTouched((t) => ({ ...t, email: true }))}
                     className={`w-full h-12 px-4 bg-gray-50 rounded-xl focus:ring-2 focus:border-transparent ${credentialError && touched.email
-                        ? "border-red-500 ring-red-200"
-                        : "border-gray-200"
+                      ? "border-red-500 ring-red-200"
+                      : "border-gray-200"
                       }`}
                     style={{
                       ...(credentialError && touched.email ? { outlineColor: CARDLECT_COLORS.danger.main } : { outlineColor: CARDLECT_COLORS.primary.darker }),
@@ -248,8 +218,8 @@ export default function LoginPage() {
                     }}
                     onBlur={() => setTouched((t) => ({ ...t, password: true }))}
                     className={`w-full h-12 px-4 pr-12 bg-gray-50 rounded-xl focus:ring-2 focus:border-transparent ${credentialError && touched.password
-                        ? "border-red-500 ring-red-200"
-                        : "border-gray-200"
+                      ? "border-red-500 ring-red-200"
+                      : "border-gray-200"
                       }`}
                     style={{
                       ...(credentialError && touched.password ? { outlineColor: CARDLECT_COLORS.danger.main } : { outlineColor: CARDLECT_COLORS.primary.darker }),
