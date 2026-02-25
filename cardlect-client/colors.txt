@@ -1,7 +1,5 @@
 # Cardlect Dashboard Color Palette
 
-# testing commit and push
-
 ## Primary Brand Colors
 # Primary: Vibrant Orange
 primary-light: #FFA726
