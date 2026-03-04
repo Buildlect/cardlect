@@ -1,17 +1,11 @@
 export type UserRole =
-  | "super-user"
-  | "admin"
-  | "finance"
-  | "security"
-  | "teacher"
-  | "parents"
-  | "students"
-  | "clinic"
-  | "store"
-  | "approved-stores"
-  | "exam-officer"
-  | "librarian"
-  | "visitor"
+  | 'super_admin'
+  | 'school_admin'
+  | 'staff'
+  | 'parent'
+  | 'student'
+  | 'visitor'
+  | 'partner'
 
 export interface MockUser {
   id: string
@@ -29,7 +23,7 @@ export const MOCK_USERS: MockUser[] = [
     id: "su-001",
     name: "Super Admin",
     email: "superadmin@cardlect.com",
-    role: "super-user",
+    role: "super_admin",
     schoolId: "sch-001",
     schoolName: "Cardlect Admin",
     password: "password",
@@ -52,7 +46,7 @@ export const MOCK_USERS: MockUser[] = [
     id: "admin-001",
     name: "John Smith",
     email: "admin@school1.com",
-    role: "admin",
+    role: "school_admin",
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
@@ -75,7 +69,7 @@ export const MOCK_USERS: MockUser[] = [
     id: "finance-001",
     name: "Finance Manager",
     email: "finance@school1.com",
-    role: "finance",
+    role: "staff",
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
@@ -93,7 +87,7 @@ export const MOCK_USERS: MockUser[] = [
     id: "security-001",
     name: "Michael Johnson",
     email: "security@school1.com",
-    role: "security",
+    role: "staff",
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
@@ -111,7 +105,7 @@ export const MOCK_USERS: MockUser[] = [
     id: "teacher-001",
     name: "Sarah Williams",
     email: "teacher@school1.com",
-    role: "teacher",
+    role: "staff",
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
@@ -130,7 +124,7 @@ export const MOCK_USERS: MockUser[] = [
     id: "exam-001",
     name: "Dr. James Wilson",
     email: "examofficer@school1.com",
-    role: "exam-officer",
+    role: "staff",
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
@@ -147,7 +141,7 @@ export const MOCK_USERS: MockUser[] = [
     id: "librarian-001",
     name: "Emma Davis",
     email: "librarian@school1.com",
-    role: "librarian",
+    role: "staff",
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
@@ -165,7 +159,7 @@ export const MOCK_USERS: MockUser[] = [
     id: "clinic-001",
     name: "Dr. Robert Brown",
     email: "clinic@school1.com",
-    role: "clinic",
+    role: "staff",
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
@@ -183,7 +177,7 @@ export const MOCK_USERS: MockUser[] = [
     id: "store-001",
     name: "Store Manager",
     email: "store@school1.com",
-    role: "store",
+    role: "staff",
     schoolId: "sch-001",
     schoolName: "Cambridge Academy Store",
     password: "password",
@@ -201,7 +195,7 @@ export const MOCK_USERS: MockUser[] = [
     id: "approved-stores-001",
     name: "Vendor Manager",
     email: "vendor@school1.com",
-    role: "approved-stores",
+    role: "partner",
     schoolId: "sch-001",
     schoolName: "Approved Partner Store",
     password: "password",
@@ -219,7 +213,7 @@ export const MOCK_USERS: MockUser[] = [
     id: "parents-001",
     name: "Alice Thompson",
     email: "parent@cardlect.com",
-    role: "parents",
+    role: "parent",
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",
@@ -238,7 +232,7 @@ export const MOCK_USERS: MockUser[] = [
     id: "student-001",
     name: "Sarah Johnson",
     email: "student@school1.com",
-    role: "students",
+    role: "student",
     schoolId: "sch-001",
     schoolName: "Cambridge Academy",
     password: "password",

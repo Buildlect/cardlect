@@ -25,9 +25,9 @@ export default function DashboardLayout({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
-  
+
   // Determine effective role: use authenticated user's role if available, otherwise use prop
-  const effectiveRole = (user?.role || role || "admin") as UserRole
+  const effectiveRole = (user?.role || role || "school_admin") as UserRole
 
   useEffect(() => {
     const checkMobile = () => {

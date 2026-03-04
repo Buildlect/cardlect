@@ -24,11 +24,11 @@ export default function PreLaunchPage() {
   const handleLoginAs = (user: typeof MOCK_USERS[0]) => {
     setAuthUser({
       id: user.id,
-      name: user.name,
+      fullName: user.name,
       email: user.email,
-      role: user.role,
+      role: user.role as any,
       schoolId: user.schoolId,
-      schoolName: user.schoolName,
+      permissions: [], // Default empty for mock
     })
 
     // Redirect to appropriate dashboard
@@ -44,18 +44,13 @@ export default function PreLaunchPage() {
 
   const getRoleLabel = (role: string) => {
     const labels: { [key: string]: string } = {
-      'super-user': 'Super Admin',
-      'admin': 'School Admin',
-      'finance': 'Finance',
-      'security': 'Security',
-      'teacher': 'Teacher',
-      'exam-officer': 'Exam Officer',
-      'librarian': 'Librarian',
-      'clinic': 'Clinic',
-      'store': 'Store',
-      'approved-stores': 'Vendor',
-      'parents': 'Parent',
-      'students': 'Student',
+      'super_admin': 'Super Admin',
+      'school_admin': 'School Admin',
+      'staff': 'Staff Member',
+      'parent': 'Parent',
+      'student': 'Student',
+      'partner': 'Partner',
+      'visitor': 'Visitor'
     }
     return labels[role] || role
   }
@@ -132,7 +127,7 @@ export default function PreLaunchPage() {
                           className="px-4 py-2 text-sm rounded-lg font-medium transition-colors whitespace-nowrap text-white hover:opacity-90"
                           style={{ backgroundColor: mainColor }}
                         >
-                          Login as {user.role === 'students' ? 'Student' : user.role === 'parents' ? 'Parent' : getRoleLabel(user.role)}
+                          Login as {getRoleLabel(user.role)}
                         </button>
                       </div>
                     </div>
