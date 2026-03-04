@@ -29,32 +29,20 @@ export default function OverviewPage() {
 
     const renderOverview = () => {
         switch (user.role) {
-            case 'super-user':
+            case 'super_admin':
                 return <SuperUserOverview />
-            case 'admin':
+            case 'school_admin':
                 return <AdminOverview />
-            case 'finance':
-                return <FinanceOverview />
-            case 'security':
-                return <SecurityOverview />
-            case 'teacher':
-                return <TeacherOverview />
-            case 'parents':
+            case 'staff':
+                return <TeacherOverview /> // Defaulting to teacher for general staff for now
+            case 'parent':
                 return <ParentOverview />
-            case 'students':
+            case 'student':
                 return <StudentOverview />
-            case 'clinic':
-                return <ClinicOverview />
-            case 'store':
-                return <StoreOverview />
-            case 'approved-stores':
+            case 'partner':
                 return <ApprovedStoresOverview />
-            case 'exam-officer':
-                return <ExamOfficerOverview />
-            case 'librarian':
-                return <LibrarianOverview />
             default:
-                return <div>Unauthorized Role</div>
+                return <div>Unauthorized Role: {user.role}</div>
         }
     }
 

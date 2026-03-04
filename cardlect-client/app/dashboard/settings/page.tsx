@@ -18,35 +18,23 @@ export default function SettingsPage() {
   if (!user) return null
 
   const roleDisplayNames: Record<string, string> = {
-    'super-user': 'Super User',
-    admin: 'School Admin',
-    security: 'Security Officer',
-    finance: 'Finance Manager',
-    teacher: 'Teacher',
-    parents: 'Parent',
-    students: 'Student',
-    clinic: 'Clinic Staff',
-    store: 'Store Manager',
-    'approved-stores': 'Store Manager',
-    'exam-officer': 'Exam Officer',
-    librarian: 'Librarian',
-    visitor: 'Visitor',
+    'super_admin': 'Super Admin',
+    'school_admin': 'School Admin',
+    'staff': 'Staff Member',
+    'parent': 'Parent',
+    'student': 'Student',
+    'partner': 'Partner',
+    'visitor': 'Visitor',
   }
 
   const roleInitials: Record<string, string> = {
-    'super-user': 'SU',
-    admin: 'AD',
-    security: 'SO',
-    finance: 'FM',
-    teacher: 'TH',
-    parents: 'PA',
-    students: 'ST',
-    clinic: 'CS',
-    store: 'SM',
-    'approved-stores': 'SM',
-    'exam-officer': 'EO',
-    librarian: 'LB',
-    visitor: 'VI',
+    'super_admin': 'SA',
+    'school_admin': 'AD',
+    'staff': 'ST',
+    'parent': 'PA',
+    'student': 'SD',
+    'partner': 'PR',
+    'visitor': 'VI',
   }
 
   return (

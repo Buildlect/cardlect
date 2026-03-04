@@ -4,9 +4,10 @@ import { useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { useTheme } from '@/components/theme-provider'
 import { Lock, Bell, Globe, Shield, LogOut, Save, Sun, Moon } from 'lucide-react'
+import { UserRole } from '@/contexts/auth-context'
 
 interface SettingsPageProps {
-  role: "admin" | "security" | "super-user" | "parents" | "students" | "finance" | "store" | "teacher" | "clinic" | "approved-stores" | "exam-officer" | "librarian" | "visitor"
+  role: UserRole
   roleDisplayName: string
   roleInitials: string
 }
@@ -101,14 +102,12 @@ export function SettingsPageTemplate({ role, roleDisplayName, roleInitials }: Se
               </div>
               <button
                 onClick={() => setTwoFaEnabled(!twoFaEnabled)}
-                className={`w-12 h-7 rounded-full transition-all ${
-                  twoFaEnabled ? 'bg-primary' : 'bg-secondary'
-                } relative`}
+                className={`w-12 h-7 rounded-full transition-all ${twoFaEnabled ? 'bg-primary' : 'bg-secondary'
+                  } relative`}
               >
                 <div
-                  className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
-                    twoFaEnabled ? 'left-6' : 'left-1'
-                  }`}
+                  className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${twoFaEnabled ? 'left-6' : 'left-1'
+                    }`}
                 />
               </button>
             </div>
@@ -145,14 +144,12 @@ export function SettingsPageTemplate({ role, roleDisplayName, roleInitials }: Se
               </div>
               <button
                 onClick={() => setEmailNotifications(!emailNotifications)}
-                className={`w-12 h-7 rounded-full transition-all ${
-                  emailNotifications ? 'bg-primary' : 'bg-secondary'
-                } relative`}
+                className={`w-12 h-7 rounded-full transition-all ${emailNotifications ? 'bg-primary' : 'bg-secondary'
+                  } relative`}
               >
                 <div
-                  className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
-                    emailNotifications ? 'left-6' : 'left-1'
-                  }`}
+                  className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${emailNotifications ? 'left-6' : 'left-1'
+                    }`}
                 />
               </button>
             </div>
@@ -164,14 +161,12 @@ export function SettingsPageTemplate({ role, roleDisplayName, roleInitials }: Se
               </div>
               <button
                 onClick={() => setSlackIntegration(!slackIntegration)}
-                className={`w-12 h-7 rounded-full transition-all ${
-                  slackIntegration ? 'bg-primary' : 'bg-secondary'
-                } relative`}
+                className={`w-12 h-7 rounded-full transition-all ${slackIntegration ? 'bg-primary' : 'bg-secondary'
+                  } relative`}
               >
                 <div
-                  className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${
-                    slackIntegration ? 'left-6' : 'left-1'
-                  }`}
+                  className={`w-5 h-5 bg-white rounded-full absolute top-1 transition-all ${slackIntegration ? 'left-6' : 'left-1'
+                    }`}
                 />
               </button>
             </div>
@@ -191,33 +186,30 @@ export function SettingsPageTemplate({ role, roleDisplayName, roleInitials }: Se
               <div className="flex gap-3">
                 <button
                   onClick={() => setTheme('light')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
-                    theme === 'light'
-                      ? 'border-primary bg-primary/10 text-foreground'
-                      : 'border-border text-muted-foreground hover:text-foreground'
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${theme === 'light'
+                    ? 'border-primary bg-primary/10 text-foreground'
+                    : 'border-border text-muted-foreground hover:text-foreground'
+                    }`}
                 >
                   <Sun size={18} />
                   Light Mode
                 </button>
                 <button
                   onClick={() => setTheme('dark')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
-                    theme === 'dark'
-                      ? 'border-primary bg-primary/10 text-foreground'
-                      : 'border-border text-muted-foreground hover:text-foreground'
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${theme === 'dark'
+                    ? 'border-primary bg-primary/10 text-foreground'
+                    : 'border-border text-muted-foreground hover:text-foreground'
+                    }`}
                 >
                   <Moon size={18} />
                   Dark Mode
                 </button>
                 <button
                   onClick={() => setTheme('auto')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
-                    theme === 'auto'
-                      ? 'border-primary bg-primary/10 text-foreground'
-                      : 'border-border text-muted-foreground hover:text-foreground'
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${theme === 'auto'
+                    ? 'border-primary bg-primary/10 text-foreground'
+                    : 'border-border text-muted-foreground hover:text-foreground'
+                    }`}
                 >
                   <Globe size={18} />
                   Auto

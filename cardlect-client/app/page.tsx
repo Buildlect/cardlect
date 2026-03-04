@@ -8,12 +8,11 @@ import { Input } from "@/components/ui/input"
 import { CARDLECT_COLORS } from "@/lib/cardlect-colors"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { MOCK_USERS } from "@/contexts/mock-users"  // Import the MOCK_USERS from context
-import { setAuthUser, getAuthUser } from "@/contexts/auth-context"
-import type { UserRole } from "@/contexts/auth-context"
+import { useAuth } from "@/contexts/auth-context"
 
 export default function LoginPage() {
   const router = useRouter()
+  const { login: authLogin, isAuthenticated } = useAuth()
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -28,12 +27,10 @@ export default function LoginPage() {
 
   // Check if already authenticated and redirect
   useEffect(() => {
-    const user = getAuthUser()
-    if (user) {
-      // Redirect to their dashboard
+    if (isAuthenticated) {
       router.push('/dashboard/overview')
     }
-  }, [])
+  }, [isAuthenticated, router])
 
   const textOptions = [
     "You can Now manage and monitor what goes in and out of your school with Cardlet!",
@@ -79,7 +76,7 @@ export default function LoginPage() {
     return isValidEmail(email) && password.trim().length > 0 && rememberMe
   }
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setCredentialError("")
     setTermsError("")
@@ -100,32 +97,17 @@ export default function LoginPage() {
 
     setLoading(true)
 
-    setTimeout(() => {
-      const matched = MOCK_USERS.find(
-        (u) =>
-          u.email.toLowerCase() === email.trim().toLowerCase() &&
-          u.password === password
-      )
-
-      if (!matched) {
-        setCredentialError(
-          "Invalid credentials. Please check your email and password."
-        )
-        setLoading(false)
-        return
-      }
-
-      // Log in the user directly
-      setAuthUser({
-        id: matched.id,
-        name: matched.name,
-        email: matched.email,
-        role: matched.role,
-      })
-
-      // Redirect to their dashboard
+    try {
+      await authLogin(email.trim(), password)
+      // Login successful, AuthProvider will handle redirect via useEffect or this call finishes
       router.push('/dashboard/overview')
-    }, 700)
+    } catch (err: any) {
+      setCredentialError(
+        err.message || "Invalid credentials. Please check your email and password."
+      )
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

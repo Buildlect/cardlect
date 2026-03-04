@@ -1,284 +1,211 @@
-'use client'
+"use client"
 
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from "@/components/DashboardLayout/layout"
-import { Copy, Eye, EyeOff, Plus, Trash2, AlertCircle, CheckCircle, Sun, Moon } from 'lucide-react'
-import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
-
-interface ApiKey {
-  id: string
-  name: string
-  key: string
-  rateLimit: number
-  requestsToday: number
-  lastUsed: string
-  status: 'active' | 'inactive'
-  createdDate: string
-}
-
-interface WebhookLog {
-  id: string
-  event: string
-  status: 'success' | 'failed'
-  statusCode?: number
-  timestamp: string
-  endpoint: string
-}
-
-// Move mock data out of component so it's not recreated every render
-const initialApiKeys: ApiKey[] = [
-  { id: 'key-001', name: 'Mobile App Integration', key: 'sk_live_abc123def456ghi789jkl', rateLimit: 10000, requestsToday: 4523, lastUsed: '2 minutes ago', status: 'active', createdDate: '2024-01-10' },
-  { id: 'key-002', name: 'External Dashboard', key: 'sk_live_xyz789uvw456rst123opq', rateLimit: 5000, requestsToday: 1240, lastUsed: '15 minutes ago', status: 'active', createdDate: '2024-01-05' },
-  { id: 'key-003', name: 'Legacy System (Deprecated)', key: 'sk_live_old_key_12345678900', rateLimit: 1000, requestsToday: 0, lastUsed: '1 week ago', status: 'inactive', createdDate: '2023-06-15' },
-]
-
-const mockWebhooks: WebhookLog[] = [
-  { id: 'wh-001', event: 'card.scanned', status: 'success', statusCode: 200, timestamp: '2024-01-15 14:32:10', endpoint: 'https://app.example.com/webhooks/card' },
-  { id: 'wh-002', event: 'wallet.transaction', status: 'success', statusCode: 200, timestamp: '2024-01-15 14:28:45', endpoint: 'https://app.example.com/webhooks/wallet' },
-  { id: 'wh-003', event: 'gate.access', status: 'success', statusCode: 200, timestamp: '2024-01-15 14:15:20', endpoint: 'https://app.example.com/webhooks/gate' },
-  { id: 'wh-004', event: 'card.scanned', status: 'failed', statusCode: 500, timestamp: '2024-01-15 14:10:33', endpoint: 'https://webhook.example.com/cardlect' },
-  { id: 'wh-005', event: 'attendance.marked', status: 'success', statusCode: 200, timestamp: '2024-01-15 13:55:12', endpoint: 'https://app.example.com/webhooks/attendance' },
-]
+import { Copy, Eye, EyeOff, Plus, Trash2, AlertCircle, CheckCircle, Sun, Moon, Loader2, Code2, ShieldCheck, Zap, Terminal, Check } from 'lucide-react'
+import { CARDLECT_COLORS, SEMANTIC_COLORS } from '@/lib/cardlect-colors'
+import api from '@/lib/api-client'
+import { Button } from "@/components/ui/button"
 
 export default function ApiPage() {
-  const router = useRouter()
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [apiKeys, setApiKeys] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [showKeys, setShowKeys] = useState<{ [key: string]: boolean }>({})
   const [copiedKey, setCopiedKey] = useState<string | null>(null)
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>(() => initialApiKeys)
+  const [newKeyName, setNewKeyName] = useState('')
 
-  // Theme: persistent and respects system preference
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+  const fetchKeys = async () => {
+    setLoading(true)
     try {
-      const stored = localStorage.getItem('theme')
-      if (stored === 'light' || stored === 'dark') return stored
-    } catch {
-      /* ignore */
+      const response = await api.get('/api-keys')
+      setApiKeys(response.data.data)
+    } catch (err) {
+      console.error('Failed to fetch API keys')
+    } finally {
+      setLoading(false)
     }
-    // default to light; will be corrected in effect if prefers dark
-    return 'light'
-  })
+  }
 
   useEffect(() => {
-    try {
-      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-      if (!localStorage.getItem('theme') && prefersDark) {
-        setTheme('dark')
-      }
-    } catch {
-      // ignore
-    }
+    fetchKeys()
   }, [])
 
-  useEffect(() => {
+  const generateKey = async () => {
+    if (!newKeyName) return alert('Token identification name required.')
     try {
-      if (theme === 'dark') {
-        document.documentElement.classList.add('dark')
-      } else {
-        document.documentElement.classList.remove('dark')
-      }
-      localStorage.setItem('theme', theme)
-    } catch {
-      // ignore (e.g., during SSR or restricted storage)
-    }
-  }, [theme])
-
-  const toggleKeyVisibility = (keyId: string) => {
-    setShowKeys(prev => ({
-      ...prev,
-      [keyId]: !prev[keyId],
-    }))
-  }
-
-  // safer clipboard handling and async
-  const copyToClipboard = async (key: string, keyId: string) => {
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(key)
-      } else {
-        // fallback
-        const ta = document.createElement('textarea')
-        ta.value = key
-        ta.style.position = 'fixed'
-        ta.style.opacity = '0'
-        document.body.appendChild(ta)
-        ta.select()
-        document.execCommand('copy')
-        document.body.removeChild(ta)
-      }
-      setCopiedKey(keyId)
-      setTimeout(() => setCopiedKey(null), 2000)
-    } catch {
-      // optionally show a non-blocking error state in future
-      setCopiedKey(null)
+      await api.post('/api-keys', { name: newKeyName })
+      setNewKeyName('')
+      fetchKeys()
+    } catch (err) {
+      alert('Key generation failed.')
     }
   }
 
-  // functional update to avoid stale closure
-  const deleteApiKey = (id: string) => {
-    setApiKeys(prev => prev.filter(k => k.id !== id))
+  const deleteKey = async (id: string) => {
+    if (!confirm('Revoking this token will immediately terminate all dependent integrations. Proceed?')) return
+    try {
+      await api.delete(`/api-keys/${id}`)
+      fetchKeys()
+    } catch (err) {
+      alert('Key revocation failed.')
+    }
   }
 
-  const webhooks = useMemo(() => mockWebhooks, [])
+  const copyToClipboard = async (key: string, id: string) => {
+    await navigator.clipboard.writeText(key)
+    setCopiedKey(id)
+    setTimeout(() => setCopiedKey(null), 2000)
+  }
+
+  if (loading) {
+    return (
+      <DashboardLayout currentPage="api" role="super_admin">
+        <div className="flex items-center justify-center p-20 min-h-[60vh]">
+          <Loader2 className="w-12 h-12 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    )
+  }
 
   return (
-    <DashboardLayout currentPage="api" role="super-user">
-    <div className="flex h-screen bg-background">
-      <div className="flex-1 flex flex-col">
-        <main className="flex-1 overflow-auto">
-          <div className="p-8">
-            <div className="mb-8">
-              <h1 className="text-3xl font-bold text-foreground">API Keys & Integrations</h1>
-              <p className="text-muted-foreground">Manage API keys, webhooks, and third-party integrations</p>
-            </div>
+    <DashboardLayout currentPage="api" role="super_admin">
+      <div className="space-y-10 pb-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <h2 className="text-4xl font-black text-foreground tracking-tighter">Ecosystem Protocols</h2>
+            <p className="text-muted-foreground mt-1 font-medium italic">Global API management and hardware integration credentials.</p>
+          </div>
+          <div className="flex items-center gap-4 bg-card border border-border px-6 py-2 rounded-2xl shadow-sm">
+            <Code2 className="text-primary" size={20} />
+            <span className="text-xs font-black uppercase tracking-widest">Protocol v1.4.2-STABLE</span>
+          </div>
+        </div>
 
-            <div className="mb-8 p-4 bg-primary/10 border border-primary/20 rounded-lg">
-              <p className="text-sm text-foreground">
-                <a href="#" className="text-primary hover:underline">
-                  Read API Documentation
-                </a>{' '}
-                to learn how to integrate with Cardlect
-              </p>
-            </div>
-
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-foreground">API Keys</h2>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setTheme(t => (t === 'dark' ? 'light' : 'dark'))}
-                    aria-label="Toggle theme"
-                    className="p-2 rounded-lg hover:bg-secondary transition-all"
-                    title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-                  >
-                    {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                  </button>
-
-                  <button className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-lg hover:bg-primary/90 transition-all">
-                    <Plus size={18} />
-                    Generate New Key
-                  </button>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-8">
+            {/* Generation Area */}
+            <div className="bg-card border border-border rounded-[2.5rem] p-10 shadow-sm group">
+              <h3 className="text-2xl font-black text-foreground mb-8 tracking-tight">Generate New Hardware Token</h3>
+              <div className="flex gap-4">
+                <div className="relative group flex-1">
+                  <Terminal className="absolute left-6 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-all" size={20} />
+                  <input
+                    className="w-full bg-muted/40 border-2 border-transparent focus:border-primary/30 rounded-3xl h-16 pl-14 pr-6 font-black outline-none transition-all"
+                    placeholder="Developer Identity (e.g. Mobile App v2, Point of Sale Node)..."
+                    value={newKeyName}
+                    onChange={(e) => setNewKeyName(e.target.value)}
+                  />
                 </div>
+                <Button
+                  className="bg-primary hover:bg-primary-darker text-white rounded-3xl h-16 px-10 font-black shadow-xl shadow-primary/20 active:scale-95 transition-all"
+                  onClick={generateKey}
+                >
+                  <Plus size={24} />
+                </Button>
               </div>
+            </div>
 
-              <div className="space-y-4">
-                {apiKeys.map(apiKey => (
-                  <div key={apiKey.id} className="bg-card border border-border rounded-lg p-6 hover:border-primary/30 transition-all">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <h3 className="text-lg font-semibold text-foreground">{apiKey.name}</h3>
-                          <span
-                            className="px-2 py-1 rounded text-xs font-medium"
-                            style={apiKey.status === 'active' ? { backgroundColor: `${CARDLECT_COLORS.primary.main}19`, color: CARDLECT_COLORS.primary.main } : { backgroundColor: 'var(--muted)', color: 'var(--muted-foreground)' }}
-                          >
-                            {apiKey.status.charAt(0).toUpperCase() + apiKey.status.slice(1)}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">Created: {apiKey.createdDate}</p>
+            {/* Keys List */}
+            <div className="space-y-6">
+              <h3 className="text-xl font-black text-foreground flex items-center gap-3">
+                <ShieldCheck className="text-green-500" /> Authorized Registry
+              </h3>
+              {apiKeys.map(k => (
+                <div key={k.id} className="bg-card border border-border rounded-[2.5rem] p-8 shadow-sm hover:border-primary/40 transition-all group overflow-hidden relative">
+                  <div className="flex items-start justify-between mb-8">
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <h4 className="text-xl font-black text-foreground leading-none">{k.name}</h4>
+                        <span className={`px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${k.status === 'active' ? 'bg-green-500/10 text-green-600 border border-green-500/20' : 'bg-muted text-muted-foreground'}`}>
+                          {k.status}
+                        </span>
                       </div>
-                      <button
-                        className="p-2 hover:bg-secondary rounded transition-all"
-                        onClick={() => deleteApiKey(apiKey.id)}
-                        aria-label={`Delete ${apiKey.name}`}
-                      >
-                        <Trash2 size={18} className="text-destructive" />
-                      </button>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-2">Node: {k.school_id || 'GLOBAL_ROOT'}</p>
                     </div>
+                    <Button variant="ghost" size="icon" className="text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-xl" onClick={() => deleteKey(k.id)}>
+                      <Trash2 size={20} />
+                    </Button>
+                  </div>
 
-                    <div className="bg-secondary/30 rounded-lg p-4 mb-4 flex items-center justify-between">
-                      <div className="flex-1">
-                        <p className="text-sm text-muted-foreground mb-1">API Key</p>
-                        <code className="text-sm font-mono text-foreground">
-                          {showKeys[apiKey.id] ? apiKey.key : '••••••••••••••••••••••••••'}
-                        </code>
-                      </div>
-                      <button
-                        onClick={() => toggleKeyVisibility(apiKey.id)}
-                        className="p-2 hover:bg-secondary rounded transition-all ml-2"
-                        aria-label={showKeys[apiKey.id] ? 'Hide key' : 'Show key'}
-                      >
-                        {showKeys[apiKey.id] ? <EyeOff size={18} /> : <Eye size={18} />}
-                      </button>
-                      <button
-                        onClick={() => copyToClipboard(apiKey.key, apiKey.id)}
-                        className="p-2 hover:bg-secondary rounded transition-all"
-                        aria-label="Copy API key"
-                      >
-                        <Copy size={18} className={copiedKey === apiKey.id ? 'text-primary' : ''} />
-                      </button>
+                  <div className="bg-muted/30 border border-border rounded-2xl p-6 flex items-center justify-between group/key">
+                    <code className="font-mono text-sm font-black text-foreground break-all">
+                      {showKeys[k.id] ? k.key : k.key.substring(0, 10).padEnd(k.key.length, '•')}
+                    </code>
+                    <div className="flex gap-2">
+                      <Button variant="ghost" size="icon" className="rounded-lg h-10 w-10 hover:bg-white shadow-sm" onClick={() => setShowKeys(p => ({ ...p, [k.id]: !p[k.id] }))}>
+                        {showKeys[k.id] ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </Button>
+                      <Button variant="ghost" size="icon" className="rounded-lg h-10 w-10 hover:bg-white shadow-sm" onClick={() => copyToClipboard(k.key, k.id)}>
+                        {copiedKey === k.id ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
+                      </Button>
+                      {copiedKey === k.id && <span className="absolute top-0 right-0 p-1 text-[8px] font-black text-green-600 uppercase">Copied!</span>}
                     </div>
+                  </div>
 
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="bg-secondary/20 rounded-lg p-3">
-                        <p className="text-xs text-muted-foreground mb-1">Rate Limit</p>
-                        <p className="text-lg font-semibold text-foreground">{apiKey.rateLimit.toLocaleString()} req/mo</p>
-                      </div>
-                      <div className="bg-secondary/20 rounded-lg p-3">
-                        <p className="text-xs text-muted-foreground mb-1">Requests Today</p>
-                        <p className="text-lg font-semibold" style={{ color: CARDLECT_COLORS.primary.main }}>{apiKey.requestsToday.toLocaleString()}</p>
-                      </div>
-                      <div className="bg-secondary/20 rounded-lg p-3">
-                        <p className="text-xs text-muted-foreground mb-1">Last Used</p>
-                        <p className="text-lg font-semibold text-foreground">{apiKey.lastUsed}</p>
-                      </div>
+                  <div className="mt-8 flex items-center gap-8 border-t border-border pt-6">
+                    <div>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Last Transmission</p>
+                      <p className="text-sm font-black text-foreground">{k.last_used ? new Date(k.last_used).toLocaleString() : 'NEVER_USED'}</p>
                     </div>
+                    <div>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Generated</p>
+                      <p className="text-sm font-black text-foreground">{new Date(k.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <div className="ml-auto flex items-center gap-2 px-4 py-1 bg-primary/5 rounded-xl border border-primary/10">
+                      <Zap size={14} className="text-primary" />
+                      <p className="text-[10px] font-black text-primary uppercase">Production Token</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {apiKeys.length === 0 && (
+                <div className="bg-muted/10 border-2 border-dashed border-border rounded-[2.5rem] p-20 text-center">
+                  <Code2 size={48} className="mx-auto mb-6 text-muted-foreground opacity-20" />
+                  <p className="text-sm font-black uppercase tracking-widest text-muted-foreground opacity-40">Zero Production Tokens In Registry</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-8">
+            <div className="bg-card border border-border rounded-[2.5rem] p-10 shadow-sm space-y-8">
+              <h3 className="text-xl font-black text-foreground tracking-tight">Security Hardening</h3>
+              <div className="space-y-6">
+                {[
+                  { title: 'Transport Layer Security', desc: 'All API requests are intercepted via TLS 1.3 encrypted tunnels.' },
+                  { title: 'Hardware Isolation', desc: 'Tokens are bound to specific institutional nodes by default.' },
+                  { title: 'Rotation Protocol', desc: 'Security auditing recommends rotating production tokens every 90 days.' }
+                ].map((tip, i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle size={14} className="text-green-500" />
+                      <p className="text-xs font-black uppercase tracking-widest text-foreground">{tip.title}</p>
+                    </div>
+                    <p className="text-[11px] font-bold text-muted-foreground leading-relaxed">{tip.desc}</p>
                   </div>
                 ))}
               </div>
+              <Button variant="outline" className="w-full h-14 rounded-2xl border-2 font-black uppercase tracking-widest text-[10px]">
+                Security Whitepaper
+              </Button>
             </div>
 
-            <div>
-              <h2 className="text-2xl font-bold text-foreground mb-6">Webhook Logs</h2>
-
-              <div className="bg-card border border-border rounded-lg overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b border-border">
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Timestamp</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Event</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Endpoint</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Status</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Response</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {webhooks.map((log, idx) => (
-                        <tr key={log.id} className={`${idx % 2 === 0 ? 'bg-secondary/20' : ''} border-b border-border hover:bg-secondary/40 transition-all`}>
-                          <td className="px-6 py-4 text-sm text-muted-foreground font-mono">{log.timestamp}</td>
-                          <td className="px-6 py-4 text-sm text-foreground">{log.event}</td>
-                          <td className="px-6 py-4 text-sm text-muted-foreground truncate">{log.endpoint}</td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                              {log.status === 'success' ? (
-                                <CheckCircle size={16} style={{ color: CARDLECT_COLORS.success.main }} />
-                              ) : (
-                                <AlertCircle size={16} style={{ color: CARDLECT_COLORS.danger.main }} />
-                              )}
-                              <span className="text-sm font-medium text-foreground capitalize">{log.status}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm">
-                            <span
-                              className="px-2 py-1 rounded text-xs font-mono"
-                              style={log.status === 'success' ? { backgroundColor: `${CARDLECT_COLORS.success.main}19`, color: CARDLECT_COLORS.success.main } : { backgroundColor: `${CARDLECT_COLORS.danger.main}19`, color: CARDLECT_COLORS.danger.main }}
-                            >
-                              {log.statusCode}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+            <div className="bg-primary border border-primary rounded-[2.5rem] p-10 shadow-2xl shadow-primary/30 relative overflow-hidden group">
+              <div className="relative z-10 text-white space-y-6">
+                <Terminal size={40} className="opacity-40" />
+                <h3 className="text-2xl font-black tracking-tight leading-tight">Native Node Persistence</h3>
+                <p className="text-xs font-bold text-white/70 leading-relaxed">
+                  Cardlect's universal API enables deep integration with physical NFC hardware, biometric scanners, and institutional ERP systems.
+                </p>
+                <Button className="bg-white text-primary hover:bg-white/90 rounded-2xl h-12 px-6 font-black uppercase tracking-widest text-[10px]">
+                  Developer Portal
+                </Button>
               </div>
             </div>
           </div>
-        </main>
+        </div>
       </div>
-    </div>
     </DashboardLayout>
   )
 }

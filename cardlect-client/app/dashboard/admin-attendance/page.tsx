@@ -1,142 +1,200 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import DashboardLayout from "@/components/DashboardLayout/layout"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from "recharts"
 import { CARDLECT_COLORS } from "@/lib/cardlect-colors"
-
-const attendanceData = [
-  { date: "2024-01-15", present: 1100, absent: 50, late: 97 },
-  { date: "2024-01-16", present: 1150, absent: 30, late: 67 },
-  { date: "2024-01-17", present: 1200, absent: 20, late: 27 },
-  { date: "2024-01-18", present: 1170, absent: 40, late: 37 },
-  { date: "2024-01-19", present: 1180, absent: 35, late: 32 },
-]
-
-const classAttendance = [
-  { class: "JSS 1A", present: 34, absent: 1, rate: "97%" },
-  { class: "JSS 1B", present: 37, absent: 1, rate: "97%" },
-  { class: "JSS 2A", present: 40, absent: 2, rate: "95%" },
-  { class: "JSS 2B", present: 38, absent: 2, rate: "95%" },
-]
+import api from "@/lib/api-client"
+import { Loader2, Calendar, Users, Clock, AlertTriangle, TrendingUp } from "lucide-react"
 
 export default function AttendancePage() {
-  const [filterDate, setFilterDate] = useState("2024-01-19")
+  const [stats, setStats] = useState<any>(null)
+  const [trends, setTrends] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchData = async () => {
+    setLoading(true)
+    try {
+      const [statsRes, trendsRes] = await Promise.all([
+        api.get('/analytics/attendance/aggregate'),
+        api.get('/analytics/attendance/trends')
+      ])
+      setStats(statsRes.data.data)
+      setTrends(trendsRes.data.data.map((d: any) => ({
+        date: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }),
+        present: parseInt(d.present_count || 0)
+      })))
+    } catch (err) {
+      console.error('Failed to fetch attendance data:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+
+  if (loading || !stats) {
+    return (
+      <DashboardLayout currentPage="attendance" role="school_admin">
+        <div className="flex items-center justify-center p-20">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  const attendanceRate = stats.total_students > 0
+    ? ((parseInt(stats.present) + parseInt(stats.late)) / parseInt(stats.total_students) * 100).toFixed(1)
+    : "0"
 
   return (
-    <DashboardLayout currentPage="attendance" role="admin">
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold">Attendance Tracking</h2>
-        <p className="text-muted-foreground mt-1">Monitor school attendance and generate reports</p>
-      </div>
+    <DashboardLayout currentPage="attendance" role="school_admin">
+      <div className="space-y-8">
+        <div>
+          <h2 className="text-3xl font-extrabold text-foreground">Attendance Analytics</h2>
+          <p className="text-muted-foreground mt-1 tracking-tight">Real-time presence monitoring and historical trend mapping.</p>
+        </div>
 
-      {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Today's Attendance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">94.5%</div>
-            <p className="text-xs text-muted-foreground">1,180 present out of 1,247</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Absent</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.danger.main }}>35</div>
-            <p className="text-xs text-muted-foreground">Students</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Late Arrivals</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.warning.main }}>32</div>
-            <p className="text-xs text-muted-foreground">Students</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Weekly Average</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">95.8%</div>
-            <p className="text-xs text-muted-foreground">Attendance rate</p>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Key Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="border-primary/10 shadow-sm overflow-hidden group">
+            <CardHeader className="pb-2 bg-primary/5">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Presence Rate</CardTitle>
+                <TrendingUp size={16} className="text-primary" />
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="text-3xl font-black text-primary">{attendanceRate}%</div>
+              <p className="text-xs text-muted-foreground mt-1">Today's verified scan rate</p>
+            </CardContent>
+          </Card>
 
-      {/* Weekly Trend */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Weekly Attendance Trend</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={attendanceData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="present" fill={CARDLECT_COLORS.primary.darker} />
-              <Bar dataKey="absent" fill={CARDLECT_COLORS.danger.main} />
-              <Bar dataKey="late" fill={CARDLECT_COLORS.warning.main} />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+          <Card className="border-border shadow-sm overflow-hidden">
+            <CardHeader className="pb-2 bg-muted/30">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Absenteeism</CardTitle>
+                <AlertTriangle size={16} className="text-red-500" />
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="text-3xl font-black text-red-500">{stats.absent}</div>
+              <p className="text-xs text-muted-foreground mt-1">Confirmed pending</p>
+            </CardContent>
+          </Card>
 
-      {/* Class Attendance */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Class-wise Attendance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {classAttendance.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>No attendance data available.</p>
+          <Card className="border-border shadow-sm overflow-hidden">
+            <CardHeader className="pb-2 bg-muted/30">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Late Arrivals</CardTitle>
+                <Clock size={16} className="text-amber-500" />
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="text-3xl font-black text-amber-500">{stats.late}</div>
+              <p className="text-xs text-muted-foreground mt-1">Post 8:00 AM scans</p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border shadow-sm overflow-hidden">
+            <CardHeader className="pb-2 bg-muted/30">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Total Registry</CardTitle>
+                <Users size={16} className="text-blue-500" />
+              </div>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="text-3xl font-black text-foreground">{stats.total_students}</div>
+              <p className="text-xs text-muted-foreground mt-1">Enrolled active students</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Weekly Trend */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <Card className="lg:col-span-2 border-border shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-xl font-black">7-Day Presence Trend</CardTitle>
+                <p className="text-xs text-muted-foreground">Historical scan frequency across the current week</p>
+              </div>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="h-[350px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={trends} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
+                    <XAxis
+                      dataKey="date"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: 'var(--muted-foreground)', fontSize: 12, fontWeight: 600 }}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
+                    />
+                    <Tooltip
+                      cursor={{ fill: 'var(--primary)', opacity: 0.05 }}
+                      contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}
+                    />
+                    <Bar
+                      dataKey="present"
+                      radius={[6, 6, 0, 0]}
+                      barSize={40}
+                    >
+                      {trends.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={index === trends.length - 1 ? CARDLECT_COLORS.primary.darker : CARDLECT_COLORS.primary.main + '80'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Summary / Status */}
+          <div className="space-y-6">
+            <Card className="border-primary/20 bg-primary/5">
+              <CardHeader>
+                <CardTitle className="text-lg font-bold">System Status</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-4 p-3 bg-background rounded-xl border border-border/50">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-sm font-medium">Authentication Nodes Online</span>
+                </div>
+                <div className="flex items-center gap-4 p-3 bg-background rounded-xl border border-border/50">
+                  <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-sm font-medium">NFC Gateways Synchronized</span>
+                </div>
+                <div className="flex items-center gap-4 p-3 bg-background rounded-xl border border-border/50">
+                  <div className="w-2 h-2 rounded-full bg-amber-500" />
+                  <span className="text-sm font-medium">Backup Registry in Sync</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="bg-gradient-to-br from-primary to-primary-darker p-8 rounded-3xl text-white shadow-xl shadow-primary/20 relative overflow-hidden">
+              <div className="relative z-10">
+                <Calendar className="mb-4 opacity-50" size={32} />
+                <h3 className="text-xl font-black mb-2">Automated Reports</h3>
+                <p className="text-primary-foreground/80 text-xs leading-relaxed">
+                  Generate detailed PDF/Excel attendance manifests for any selected date range.
+                </p>
+                <button className="mt-6 w-full py-3 bg-white text-primary rounded-xl font-bold text-sm hover:bg-opacity-90 transition-all">
+                  Generate Today's Manifest
+                </button>
+              </div>
+              <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-white/10 rounded-full blur-3xl" />
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-2 px-4">Class</th>
-                    <th className="text-left py-2 px-4">Present</th>
-                    <th className="text-left py-2 px-4">Absent</th>
-                    <th className="text-left py-2 px-4">Rate</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {classAttendance.map((c, idx) => (
-                    <tr key={idx} className="border-b hover:bg-muted/50">
-                      <td className="py-2 px-4 font-medium">{c.class}</td>
-                      <td className="py-2 px-4 font-semibold" style={{ color: CARDLECT_COLORS.success.main }}>{c.present}</td>
-                      <td className="py-2 px-4" style={{ color: CARDLECT_COLORS.danger.main }}>{c.absent}</td>
-                      <td className="py-2 px-4">
-                        <span style={{
-                          backgroundColor: `${CARDLECT_COLORS.success.main}20`,
-                          color: CARDLECT_COLORS.success.main
-                        }} className="px-2 py-1 rounded text-xs font-medium">
-                          {c.rate}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+          </div>
+        </div>
+      </div>
     </DashboardLayout>
   )
 }

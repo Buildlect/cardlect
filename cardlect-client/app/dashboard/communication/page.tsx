@@ -1,9 +1,11 @@
-'use client'
-import { useProtectedRoute } from '@/contexts/auth-context'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+"use client"
+
+import { useProtectedRoute } from "@/contexts/auth-context"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { CommunicationComponent } from "@/components/CommunicationComponent"
+import { Loader2 } from "lucide-react"
 
 export default function CommunicationPage() {
   const { user, isAuthorized, isLoading } = useProtectedRoute()
@@ -11,51 +13,62 @@ export default function CommunicationPage() {
 
   useEffect(() => {
     if (!isLoading && !isAuthorized) {
-      router.replace('/auth/login')
+      router.replace("/auth/login")
     }
   }, [isLoading, isAuthorized, router])
 
-  if (isLoading) return <div>Loading...</div>
-  if (!user) return null
-
-  // Map role display names
-  const roleNames: Record<string, string> = {
-    admin: 'Admin Communications',
-    'super-user': 'Super User Communications',
-    security: 'Security Communications',
-    finance: 'Finance Communications',
-    teacher: 'Teacher Communications',
-    parents: 'Parent Communications',
-    students: 'Student Communications',
-    clinic: 'Clinic Communications',
-    store: 'Store Communications',
-    'approved-stores': 'Store Communications',
-    'exam-officer': 'Exam Officer Communications',
-    librarian: 'Librarian Communications',
+  if (isLoading || !user) {
+    return (
+      <DashboardLayout currentPage="communication" role="school_admin">
+        <div className="flex items-center justify-center p-20 min-h-[60vh]">
+          <Loader2 className="w-12 h-12 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    )
   }
 
-  const roleSubtitles: Record<string, string> = {
-    admin: 'Connect with super-user, security, and finance teams',
-    'super-user': 'Connect with all system users and administrators',
-    security: 'Coordinate with admin and super-user teams',
-    finance: 'Connect with admin, super-user, and parents',
-    teacher: 'Connect with super-user, admin, parents, and students',
-    parents: 'Connect with teachers, admin, and finance teams',
-    students: 'Connect with teachers and admin',
-    clinic: 'Connect with admin, super-user, parents, and students',
-    store: 'Connect with super-user and finance teams',
-    'approved-stores': 'Connect with super-user, finance, and store partners',
-    'exam-officer': 'Coordinate with super-user, admin, teachers, and students',
-    librarian: 'Connect with students, teachers, and administrators',
+  const roleConfigs: Record<string, { title: string; subtitle: string }> = {
+    school_admin: {
+      title: "Administrative Dispatch",
+      subtitle: "Coordinate institutional operations with staff, security, and vendors."
+    },
+    super_admin: {
+      title: "Global Command",
+      subtitle: "Monitor all school nodes and system-level communications."
+    },
+    staff: {
+      title: "Staff Communication",
+      subtitle: "Collaborate with administration and manage student inquiries."
+    },
+    security_officer: {
+      title: "Tactical Channel",
+      subtitle: "Real-time gate coordination and incident reporting."
+    },
+    parent: {
+      title: "Parent Portal",
+      subtitle: "Connect with teachers and school administration regarding your child."
+    },
+    student: {
+      title: "Academic Exchange",
+      subtitle: "Connect with instructors and group colleagues."
+    },
+    store_partner: {
+      title: "Partner Liaison",
+      subtitle: "Coordinate inventory and financial settlement with school finance."
+    }
+  }
+
+  const config = roleConfigs[user.role] || {
+    title: "Secure Communication",
+    subtitle: "End-to-end encrypted institutional messaging."
   }
 
   return (
     <DashboardLayout currentPage="communication" role={user.role}>
       <CommunicationComponent
         currentRole={user.role}
-        title={roleNames[user.role] || 'Communications'}
-        subtitle={roleSubtitles[user.role] || 'Connect and collaborate with team members'}
-        accentColor={{ start: 'orange', end: 'amber' }}
+        title={config.title}
+        subtitle={config.subtitle}
       />
     </DashboardLayout>
   )

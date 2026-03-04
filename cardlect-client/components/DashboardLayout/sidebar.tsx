@@ -34,7 +34,7 @@ import {
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import type { LucideIcon } from "lucide-react"
-import { logout } from "@/contexts/auth-context"
+import { useAuth, UserRole } from "@/contexts/auth-context"
 
 export interface MenuItem {
   icon: LucideIcon
@@ -50,12 +50,12 @@ interface SidebarProps {
   currentPage: string
   isMobile?: boolean
   menuItems: MenuItem[]
-  role?: "admin" | "security" | "super-user" | "parents" | "students" | "finance" | "store" | "teacher" | "clinic" | "approved-stores" | "exam-officer" | "librarian" | "visitor"
+  role?: UserRole
 }
 
 // Role-based default menu items
-export const defaultMenuItems = {
-  admin: [
+export const defaultMenuItems: Record<string, MenuItem[]> = {
+  school_admin: [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: Users, label: "Students", href: "/dashboard/admin-students", id: "students" },
     { icon: Users, label: "Staff", href: "/dashboard/admin-staffs", id: "staff" },
@@ -68,17 +68,8 @@ export const defaultMenuItems = {
     { icon: BarChart3, label: "Reports", href: "/dashboard/admin-reports", id: "reports" },
     { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
-  ] as MenuItem[],
-  security: [
-    { icon: LayoutGrid, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
-    { icon: UserCheck, label: "Pickup Authorization", href: "/dashboard/security-pickup-authorization", id: "pickup-authorization" },
-    { icon: Bell, label: "Alerts", href: "/dashboard/security-alerts", id: "alerts" },
-    { icon: DoorOpen, label: "Gate Logs", href: "/dashboard/security-gate-logs", id: "gate-logs" },
-    { icon: FileText, label: "Visitor & Incident Log", href: "/dashboard/security-visitor-incident-log", id: "visitor-incident-log" },
-    { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
-    { icon: Settings, label: "Settings", href: "/dashboard/security-setting", id: "settings" },
-  ] as MenuItem[],
-  "super-user": [
+  ],
+  super_admin: [
     { icon: LayoutGrid, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: Building2, label: "Manage Schools", href: "/dashboard/super-user-schools", id: "schools" },
     { icon: CreditCard, label: "Cards", href: "/dashboard/super-user-cards", id: "cards" },
@@ -89,8 +80,8 @@ export const defaultMenuItems = {
     { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
     { icon: Key, label: "Manage API Keys", href: "/dashboard/super-user-api", id: "api" },
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
-  ] as MenuItem[],
-  parents: [
+  ],
+  parent: [
     { icon: LayoutGrid, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: Award, label: "CBT Exams", href: "/dashboard/parent-exams", id: "exams" },
     { icon: Users, label: "My Children", href: "/dashboard/parent-children", id: "children" },
@@ -99,8 +90,8 @@ export const defaultMenuItems = {
     { icon: Bell, label: "Notifications", href: "/dashboard/parent-notifications", id: "notifications" },
     { icon: FileText, label: "Reports", href: "/dashboard/parent-reports", id: "reports" },
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
-  ] as MenuItem[],
-  students: [
+  ],
+  student: [
     { icon: LayoutGrid, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: Award, label: "CBT Exams", href: "/dashboard/student-exams", id: "exams" },
     { icon: Book, label: "Assignments", href: "/dashboard/student-assignments", id: "assignments" },
@@ -109,45 +100,8 @@ export const defaultMenuItems = {
     { icon: Clock, label: "Schedule", href: "/dashboard/student-schedule", id: "schedule" },
     { icon: Users, label: "Study Groups", href: "/dashboard/student-study-groups", id: "study-groups" },
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
-  ] as MenuItem[],
-  finance: [
-    { icon: LayoutGrid, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
-    { icon: DollarSign, label: "Invoices", href: "/dashboard/finance-invoices", id: "invoices" },
-    { icon: CreditCard, label: "Payments", href: "/dashboard/finance-payments", id: "payments" },
-    { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
-    { icon: BarChart3, label: "Reports", href: "/dashboard/finance-reports", id: "reports" },
-    { icon: Users, label: "Students", href: "/dashboard/finance-students", id: "students" },
-    { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
-  ] as MenuItem[],
-  store: [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
-    { icon: Package, label: "Inventory", href: "/dashboard/store-inventory", id: "inventory" },
-    { icon: ShoppingCart, label: "Sales", href: "/dashboard/store-sales", id: "sales" },
-    { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
-    { icon: Users, label: "Customers", href: "/dashboard/store-customers", id: "customers" },
-    { icon: BarChart3, label: "Reports", href: "/dashboard/store-reports", id: "reports" },
-    { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
-  ] as MenuItem[],
-  teacher: [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
-    { icon: Award, label: "CBT Exams", href: "/dashboard/teacher-exams", id: "exams" },
-    { icon: Users, label: "Classes", href: "/dashboard/teacher-classes", id: "classes" },
-    { icon: FileText, label: "Assignments", href: "/dashboard/teacher-assignments", id: "assignments" },
-    { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
-    { icon: Award, label: "Grades", href: "/dashboard/teacher-grades", id: "grades" },
-    { icon: Clock, label: "Attendance", href: "/dashboard/teacher-attendance", id: "attendance" },
-    { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
-  ] as MenuItem[],
-  clinic: [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
-    { icon: Users, label: "Students", href: "/dashboard/clinic-students", id: "students" },
-    { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
-    { icon: ClipboardList, label: "Medical Records", href: "/dashboard/clinic-medical-records", id: "medical-records" },
-    { icon: Activity, label: "Visits", href: "/dashboard/clinic-visits", id: "visits" },
-    { icon: FileText, label: "Reports", href: "/dashboard/clinic-reports", id: "reports" },
-    { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
-  ] as MenuItem[],
-  "approved-stores": [
+  ],
+  partner: [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: Store, label: "Stores", href: "/dashboard/approved-stores/stores", id: "stores" },
     { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
@@ -155,29 +109,17 @@ export const defaultMenuItems = {
     { icon: BarChart3, label: "Sales", href: "/dashboard/approved-stores/sales", id: "sales" },
     { icon: Users, label: "Merchants", href: "/dashboard/approved-stores/merchants", id: "merchants" },
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
-  ] as MenuItem[],
-  "exam-officer": [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
-    { icon: Award, label: "Exams", href: "/dashboard/exam-officer/exams", id: "exams" },
-    { icon: FileText, label: "Results", href: "/dashboard/exam-officer/results", id: "results" },
-    { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
-    { icon: BarChart3, label: "Reports", href: "/dashboard/exam-officer/reports", id: "reports" },
-    { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
-  ] as MenuItem[],
-  "librarian": [
-    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
-    { icon: Book, label: "Books", href: "/dashboard/librarian/books", id: "books" },
-    { icon: Clock, label: "Borrowals", href: "/dashboard/librarian/borrowals", id: "borrowals" },
-    { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
-    { icon: Users, label: "Students", href: "/dashboard/librarian/students", id: "students" },
-    { icon: BarChart3, label: "Reports", href: "/dashboard/librarian/reports", id: "reports" },
-    { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
-  ] as MenuItem[],
-  "visitor": [
+  ],
+  staff: [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
     { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
-  ] as MenuItem[],
+  ],
+  visitor: [
+    { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
+    { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
+    { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
+  ],
 }
 
 function Tooltip({ text }: { text: string }) {
@@ -208,13 +150,13 @@ export function Sidebar({
   currentPage,
   isMobile = false,
   menuItems,
-  role = "admin",
+  role = "school_admin",
 }: SidebarProps) {
   const router = useRouter()
+  const { logout: authLogout } = useAuth()
 
   const handleLogout = () => {
-    logout()
-    router.push('/auth/logout')
+    authLogout()
   }
 
   return (

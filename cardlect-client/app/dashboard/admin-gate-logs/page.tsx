@@ -1,398 +1,174 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useState, useEffect } from "react"
 import DashboardLayout from "@/components/DashboardLayout/layout"
-import { Users, BookOpen, Clock, Wallet, CreditCard, FileText, UserPlus } from "lucide-react"
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Legend,
-} from "recharts"
-import { CARDLECT_COLORS, SEMANTIC_COLORS } from "@/lib/cardlect-colors"
+import { ShieldCheck, ShieldAlert, LogIn, LogOut, Loader2, Search, Filter, Calendar } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CARDLECT_COLORS } from "@/lib/cardlect-colors"
+import api from "@/lib/api-client"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
-type Metric = {
-  icon: any
-  label: string
-  value: string
-  change: string
-  colorClass: string
-  colorHex: string
-  data: { name: string; value: number }[]
+interface GateLog {
+  created_at: string
+  action: string
+  details: string
+  user_name: string
+  role: string
 }
 
-function numberFormatter(v: number) {
-  if (v >= 1000) return `${(v / 1000).toFixed(1)}k`
-  return v.toString()
-}
+export default function GateLogsPage() {
+  const [logs, setLogs] = useState<GateLog[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [snapshot, setSnapshot] = useState<any>(null)
 
-function CustomTooltip({ active, payload, label, color, unit }: any) {
-  if (!active || !payload || !payload.length) return null
-  const p = payload[0]
-  return (
-    <div
-      style={{
-        background: "var(--card)",
-        border: "1px solid var(--border)",
-        padding: 8,
-        borderRadius: 8,
-        color: "var(--foreground)",
-        boxShadow: "0 6px 18px rgba(15, 23, 42, 0.06)",
-        minWidth: 120,
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{ width: 10, height: 10, background: color, borderRadius: 3 }} />
-        <div style={{ fontSize: 12, color: "var(--muted-foreground)" }}>{label}</div>
-      </div>
-      <div style={{ marginTop: 6, fontWeight: 700, fontSize: 14 }}>
-        {unit ?? ""}{numberFormatter(p?.value ?? 0)}
-      </div>
-    </div>
-  )
-}
-
-export default function AdminDashboard() {
-  const [currentPage, setCurrentPage] = useState("dashboard")
-  const router = useRouter()
-
-  const handleNavigate = (href: string, pageId: string) => {
-    setCurrentPage(pageId)
-    router.push(href)
+  const fetchData = async () => {
+    setLoading(true)
+    try {
+      const [logsRes, snapRes] = await Promise.all([
+        api.get('/analytics/safety/gate-logs?limit=50'),
+        api.get('/analytics/safety/snapshot')
+      ])
+      setLogs(logsRes.data.data)
+      setSnapshot(snapRes.data.data)
+    } catch (err) {
+      console.error('Failed to fetch gate logs:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  // Sample sparkline data
-  const sampleSeries = [
-    { name: "Mon", value: 60 },
-    { name: "Tue", value: 75 },
-    { name: "Wed", value: 68 },
-    { name: "Thu", value: 82 },
-    { name: "Fri", value: 71 },
-    { name: "Sat", value: 85 },
-    { name: "Sun", value: 78 },
-  ]
+  useEffect(() => {
+    fetchData()
+  }, [])
 
-  const metrics: Metric[] = [
-    {
-      icon: Users,
-      label: "Total Students",
-      value: "1,248",
-      change: "+12%",
-      colorClass: "from-cyan-400 to-cyan-600",
-      colorHex: CARDLECT_COLORS.primary.darker,
-      data: sampleSeries,
-    },
-    {
-      icon: Users,
-      label: "Total Staff",
-      value: "45",
-      change: "+2%",
-      colorClass: "from-emerald-400 to-emerald-600",
-      colorHex: CARDLECT_COLORS.primary.darker,
-      data: sampleSeries.map((d) => ({ ...d, value: Math.round(d.value / 4) })),
-    },
-    {
-      icon: BookOpen,
-      label: "Active Classes",
-      value: "24",
-      change: "0%",
-      colorClass: "from-orange-400 to-orange-600",
-      colorHex: CARDLECT_COLORS.primary.darker,
-      data: sampleSeries.map((d, i) => ({ ...d, value: 20 + (i % 3) * 2 })),
-    },
-    {
-      icon: CreditCard,
-      label: "Active Cards",
-      value: "1,180",
-      change: "+8%",
-      colorClass: "from-amber-400 to-amber-600",
-      colorHex: CARDLECT_COLORS.primary.darker,
-      data: sampleSeries.map((d) => ({ ...d, value: d.value + 20 })),
-    },
-    {
-      icon: Clock,
-      label: "Attendance Today",
-      value: "92%",
-      change: "+4%",
-      colorClass: "from-emerald-400 to-emerald-600",
-      colorHex: CARDLECT_COLORS.primary.darker,
-      data: sampleSeries.map((d) => ({ ...d, value: Math.round((d.value / 100) * 92) })),
-    },
-    {
-      icon: Wallet,
-      label: "Wallet Balance",
-      value: "₦45,230",
-      change: "+15%",
-      colorClass: "from-blue-400 to-blue-600",
-      colorHex: CARDLECT_COLORS.primary.darker,
-      data: sampleSeries.map((d, i) => ({ ...d, value: 300 + i * 20 })),
-    },
-  ]
-
-  // Overview data for the larger chart
-  const overviewData = [
-    { name: "Jan", students: 1000, cards: 900 },
-    { name: "Feb", students: 1050, cards: 920 },
-    { name: "Mar", students: 1075, cards: 940 },
-    { name: "Apr", students: 1100, cards: 980 },
-    { name: "May", students: 1120, cards: 1020 },
-    { name: "Jun", students: 1150, cards: 1080 },
-    { name: "Jul", students: 1170, cards: 1100 },
-    { name: "Aug", students: 1200, cards: 1120 },
-    { name: "Sep", students: 1225, cards: 1140 },
-    { name: "Oct", students: 1248, cards: 1160 },
-    { name: "Nov", students: 1260, cards: 1170 },
-    { name: "Dec", students: 1280, cards: 1180 },
-  ]
+  const filteredLogs = logs.filter(
+    (l) =>
+      (l.user_name || "Unidentified").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      l.details.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   return (
-    <DashboardLayout currentPage="dashboard" role="admin">
+    <DashboardLayout currentPage="gate-logs" role="school_admin">
       <div className="space-y-8">
-        {/* Metrics Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-          {metrics.map((metric, idx) => {
-            const Icon = metric.icon
-            const positive = metric.change.startsWith("+")
-            const gradientId = `sparkline-grad-${idx}`
-
-            return (
-              <div
-                key={idx}
-                className="bg-card p-6 rounded-xl border border-border shadow-sm transform hover:-translate-y-1 transition-transform"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-2">{metric.label}</p>
-                    <p className="text-2xl font-extrabold text-foreground">{metric.value}</p>
-                    <p className={`text-sm mt-2 ${positive ? "text-green-500" : "text-red-500"}`}>
-                      {metric.change} from last month
-                    </p>
-                  </div>
-
-                  <div className="p-3 rounded-lg bg-card shadow" style={{ color: metric.colorHex }}>
-                    <Icon size={22} />
-                  </div>
-                </div>
-
-                <div className="mt-4 h-14">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={metric.data} margin={{ top: 6, right: 0, left: 0, bottom: 6 }}>
-                      <defs>
-                        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor={metric.colorHex} stopOpacity={0.35} />
-                          <stop offset="60%" stopColor={metric.colorHex} stopOpacity={0.12} />
-                          <stop offset="100%" stopColor={metric.colorHex} stopOpacity={0.02} />
-                        </linearGradient>
-                      </defs>
-
-                      <XAxis dataKey="name" hide />
-                      <YAxis hide domain={["auto", "auto"]} />
-
-                      <Tooltip
-                        wrapperStyle={{ outline: "none" }}
-                        cursor={false}
-                        content={<CustomTooltip color={metric.colorHex} unit={metric.label === "Wallet Balance" ? "₦" : ""} />}
-                      />
-
-                      <Area
-                        type="monotone"
-                        dataKey="value"
-                        stroke={metric.colorHex}
-                        strokeWidth={2.2}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        fill={`url(#${gradientId})`}
-                        activeDot={{ r: 4, strokeWidth: 2, stroke: "#fff", fill: metric.colorHex }}
-                        dot={false}
-                        isAnimationActive={true}
-                        animationDuration={800}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            )
-          })}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-extrabold text-foreground tracking-tight">Access Control Logs</h2>
+            <p className="text-muted-foreground mt-1 tracking-tight">Real-time gate activity and terminal audits.</p>
+          </div>
+          <div className="flex bg-card border border-border rounded-2xl p-2 gap-2 shadow-sm">
+            <div className="px-4 py-2 text-center border-r border-border">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase">Campus Occupancy</p>
+              <p className="text-xl font-black text-primary">{(snapshot?.students_on_campus || 0) + (snapshot?.staff_on_campus || 0)}</p>
+            </div>
+            <div className="px-4 py-2 text-center border-r border-border">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase">Visitors Today</p>
+              <p className="text-xl font-black text-amber-500">{snapshot?.visitor_entries_today || 0}</p>
+            </div>
+            <div className="px-4 py-2 text-center">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase">Status</p>
+              <p className="text-xl font-black text-green-500 uppercase text-[12px] pt-1 tracking-widest">{snapshot?.security_status || 'MONITORED'}</p>
+            </div>
+          </div>
         </div>
 
-        {/* Overview Chart + Quick Actions */}
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-card p-6 rounded-xl border border-border shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-foreground">Overview</h2>
-              <div className="text-sm text-muted-foreground">Monthly trend</div>
-            </div>
-
-            <div className="h-60">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={overviewData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="gradStudents" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.28} />
-                      <stop offset="60%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.08} />
-                      <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.02} />
-                    </linearGradient>
-                    <linearGradient id="gradCards" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={CARDLECT_COLORS.primary.main} stopOpacity={0.26} />
-                      <stop offset="60%" stopColor={CARDLECT_COLORS.primary.main} stopOpacity={0.07} />
-                      <stop offset="100%" stopColor={CARDLECT_COLORS.primary.main} stopOpacity={0.02} />
-                    </linearGradient>
-                  </defs>
-
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.06} />
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(v) => numberFormatter(v as number)}
-                  />
-                  <Tooltip content={<CustomTooltip color={CARDLECT_COLORS.primary.darker} />} />
-                  <Legend
-                    verticalAlign="top"
-                    align="right"
-                    wrapperStyle={{ color: "var(--muted-foreground)", fontSize: 13 }}
-                    iconType="circle"
-                  />
-
-                  <Area
-                    type="monotone"
-                    dataKey="students"
-                    stroke={CARDLECT_COLORS.primary.darker}
-                    fill="url(#gradStudents)"
-                    strokeWidth={2.5}
-                    name="Students"
-                    activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff", fill: CARDLECT_COLORS.primary.darker }}
-                    isAnimationActive
-                    animationDuration={900}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="cards"
-                    stroke={CARDLECT_COLORS.primary.main}
-                    fill="url(#gradCards)"
-                    strokeWidth={2.5}
-                    name="Active Cards"
-                    activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff", fill: CARDLECT_COLORS.primary.main }}
-                    isAnimationActive
-                    animationDuration={900}
-                    animationEasing="ease-in-out"
-                    opacity={0.98}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+        {/* Filters */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by name, card ID or location..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 rounded-xl bg-muted/30 border-border h-12"
+            />
           </div>
+          <Button variant="outline" className="rounded-xl h-12 px-6 flex items-center gap-2 border-border">
+            <Filter size={18} /> Filters
+          </Button>
+          <Button className="bg-primary hover:bg-primary-darker text-white rounded-xl h-12 px-6 flex items-center gap-2">
+            <Calendar size={18} /> View History
+          </Button>
+        </div>
 
-          {/* Quick Actions */}
-          <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
-            <h3 className="text-lg font-bold text-foreground mb-2">Quick Actions</h3>
-            <p className="text-sm text-muted-foreground mb-4">Common admin tasks</p>
-
-            <div className="grid grid-cols-1 gap-3">
-              <button
-                onClick={() => handleNavigate("/admin/students", "students")}
-                className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-foreground">Manage Students</p>
-                    <p className="text-xs text-muted-foreground">Add, edit, or view records</p>
-                  </div>
-                  <Users size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                </div>
-              </button>
-
-              <button
-                onClick={() => handleNavigate("/admin/staffs", "staffs")}
-                className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-foreground">Manage Staff</p>
-                    <p className="text-xs text-muted-foreground">Add or edit staff profiles</p>
-                  </div>
-                  <UserPlus size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                </div>
-              </button>
-
-              <button
-                onClick={() => handleNavigate("/admin/classes", "classes")}
-                className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-foreground">Manage Classes</p>
-                    <p className="text-xs text-muted-foreground">Create or modify class schedules</p>
-                  </div>
-                  <BookOpen size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                </div>
-              </button>
-
-              <button
-                onClick={() => handleNavigate("/admin/attendance", "attendance")}
-                className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-foreground">View Attendance</p>
-                    <p className="text-xs text-muted-foreground">Track daily attendance</p>
-                  </div>
-                  <Clock size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                </div>
-              </button>
-
-              <button
-                onClick={() => handleNavigate("/admin/reports", "reports")}
-                className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-foreground">View Reports</p>
-                    <p className="text-xs text-muted-foreground">Export or view analytics</p>
-                  </div>
-                  <FileText size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                </div>
-              </button>
-
-              <button
-                onClick={() => handleNavigate("/admin/wallet", "wallet")}
-                className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-foreground">Manage Wallet</p>
-                    <p className="text-xs text-muted-foreground">Balances & transactions (₦)</p>
-                  </div>
-                  <Wallet size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                </div>
-              </button>
-
-              <button
-                onClick={() => handleNavigate("/admin/cards", "cards")}
-                className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-foreground">Manage Cards</p>
-                    <p className="text-xs text-muted-foreground">View or lock cards</p>
-                  </div>
-                  <CreditCard size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                </div>
-              </button>
+        {/* Logs Table */}
+        <div className="bg-card rounded-2xl border border-border shadow-md overflow-hidden">
+          {loading ? (
+            <div className="flex items-center justify-center p-20">
+              <Loader2 className="w-10 h-10 animate-spin text-primary" />
             </div>
-          </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-muted/40 border-b border-border">
+                    <th className="px-6 py-4 text-[11px] font-black uppercase text-muted-foreground tracking-widest">Timestamp</th>
+                    <th className="px-6 py-4 text-[11px] font-black uppercase text-muted-foreground tracking-widest">Entity</th>
+                    <th className="px-6 py-4 text-[11px] font-black uppercase text-muted-foreground tracking-widest">Credential Type</th>
+                    <th className="px-6 py-4 text-[11px] font-black uppercase text-muted-foreground tracking-widest">Movement</th>
+                    <th className="px-6 py-4 text-[11px] font-black uppercase text-muted-foreground tracking-widest">Checkpoint</th>
+                    <th className="px-6 py-4 text-[11px] font-black uppercase text-muted-foreground tracking-widest text-right">Result</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredLogs.map((log, idx) => {
+                    const isEntry = log.action.includes('access') || log.action.includes('in');
+                    return (
+                      <tr key={idx} className="hover:bg-muted/10 transition-colors group">
+                        <td className="px-6 py-5">
+                          <p className="text-sm font-bold text-foreground">{new Date(log.created_at).toLocaleTimeString()}</p>
+                          <p className="text-[10px] text-muted-foreground">{new Date(log.created_at).toLocaleDateString()}</p>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary border border-primary/10">
+                              <p className="font-black text-xs">{(log.user_name || 'U').charAt(0)}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-bold text-foreground">{log.user_name || 'Unidentified'}</p>
+                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-tighter">{log.role || 'Visitor'}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <span className="px-3 py-1 bg-muted rounded-lg text-[10px] font-bold uppercase text-muted-foreground">RFID SMART-CARD</span>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-2">
+                            {isEntry ? (
+                              <LogIn className="text-green-500" size={16} />
+                            ) : (
+                              <LogOut className="text-amber-500" size={16} />
+                            )}
+                            <span className={`text-xs font-black uppercase ${isEntry ? 'text-green-500' : 'text-amber-500'}`}>
+                              {isEntry ? 'Entry' : 'Exit'}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <p className="text-xs font-medium text-foreground italic">{log.details || 'Main Entrance'}</p>
+                        </td>
+                        <td className="px-6 py-5 text-right">
+                          <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-500/10 text-green-600 border border-green-500/20">
+                            <ShieldCheck size={12} />
+                            <span className="text-[10px] font-black uppercase">Granted</span>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+
+              {filteredLogs.length === 0 && (
+                <div className="p-20 text-center">
+                  <ShieldAlert size={48} className="mx-auto text-muted-foreground opacity-20 mb-4" />
+                  <p className="text-muted-foreground text-sm font-bold">No access logs match your query.</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>

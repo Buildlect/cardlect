@@ -7,92 +7,68 @@ import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ThemeToggleMobile } from "@/components/theme-toggle-mobile"
 import { CARDLECT_COLORS } from "@/lib/cardlect-colors"
-import { logout } from "@/contexts/auth-context"
+import { useAuth, UserRole } from "@/contexts/auth-context"
 
 interface HeaderProps {
   sidebarOpen: boolean
   onMenuClick: () => void
-  role?: "admin" | "security" | "super-user" | "parents" | "students" | "finance" | "store" | "teacher" | "clinic" | "approved-stores" | "exam-officer" | "librarian" | "visitor"
+  role?: UserRole
 }
 
-export function Header({ sidebarOpen, onMenuClick, role = "admin" }: HeaderProps) {
+export function Header({ sidebarOpen, onMenuClick, role = "school_admin" }: HeaderProps) {
   const router = useRouter()
+  const { logout } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
 
   // Role display names
-  const roleDisplayNames = {
-    "super-user": "Super Admin",
-    "admin": "School Admin",
-    "security": "Security Officer",
-    "finance": "Finance Manager",
-    "teacher": "Teacher",
-    "parents": "Parent",
-    "students": "Student",
-    "clinic": "Clinic Staff",
-    "store": "Store Manager",
-    "approved-stores": "Vendor Manager",
-    "exam-officer": "Exam Officer",
-    "librarian": "Librarian",
+  const roleDisplayNames: Record<UserRole, string> = {
+    "super_admin": "Super Admin",
+    "school_admin": "School Admin",
+    "staff": "Staff Member",
+    "parent": "Parent",
+    "student": "Student",
+    "partner": "Partner",
     "visitor": "Visitor",
   }
 
   // Role avatar initials
-  const roleInitials = {
-    "super-user": "SA",
-    "admin": "AD",
-    "security": "SC",
-    "finance": "FM",
-    "teacher": "TH",
-    "parents": "PA",
-    "students": "ST",
-    "clinic": "CL",
-    "store": "ST",
-    "approved-stores": "VM",
-    "exam-officer": "EO",
-    "librarian": "LB",
+  const roleInitials: Record<UserRole, string> = {
+    "super_admin": "SA",
+    "school_admin": "AD",
+    "staff": "ST",
+    "parent": "PA",
+    "student": "SD",
+    "partner": "PR",
     "visitor": "VI",
   }
 
-  // Settings routes for each role - now using singleton /dashboard/settings
-  const settingsRoutes = {
-    "super-user": "/dashboard/settings",
-    "admin": "/dashboard/settings",
-    "security": "/dashboard/settings",
-    "finance": "/dashboard/settings",
-    "teacher": "/dashboard/settings",
-    "parents": "/dashboard/settings",
-    "students": "/dashboard/settings",
-    "clinic": "/dashboard/settings",
-    "store": "/dashboard/settings",
-    "approved-stores": "/dashboard/settings",
-    "exam-officer": "/dashboard/settings",
-    "librarian": "/dashboard/settings",
+  // Settings routes for each role
+  const settingsRoutes: Record<UserRole, string> = {
+    "super_admin": "/dashboard/settings",
+    "school_admin": "/dashboard/settings",
+    "staff": "/dashboard/settings",
+    "parent": "/dashboard/settings",
+    "student": "/dashboard/settings",
+    "partner": "/dashboard/settings",
     "visitor": "/",
   }
 
   // Different placeholders based on role
-  const searchPlaceholders = {
-    admin: "Search students, staff...",
-    security: "Search visitor, incident...",
-    "super-user": "Search schools, users...",
-    parents: "Search child, activities...",
-    students: "Search assignments, grades...",
-    finance: "Search invoices, payments...",
-    store: "Search items, inventory...",
-    teacher: "Search classes, students...",
-    clinic: "Search students, medical...",
-    "approved-stores": "Search approved stores, orders...",
-    "exam-officer": "Search exams, results...",
-    "librarian": "Search books, students...",
-    "visitor": "Search information...",
+  const searchPlaceholders: Record<UserRole, string> = {
+    school_admin: "Search students, staff...",
+    super_admin: "Search schools, users...",
+    parent: "Search child, activities...",
+    student: "Search assignments, grades...",
+    staff: "Search classes, modules...",
+    partner: "Search stores, orders...",
+    visitor: "Search information...",
   }
 
   const handleLogout = () => {
     logout()
-    router.push("/auth/logout")
   }
 
   return (
@@ -128,7 +104,7 @@ export function Header({ sidebarOpen, onMenuClick, role = "admin" }: HeaderProps
           >
             {mobileSearchOpen ? <X size={20} /> : <Search size={20} />}
           </button>
-          
+
           <div className="hidden md:flex"><ThemeToggle /></div>
           <div className="md:hidden"><ThemeToggleMobile /></div>
 

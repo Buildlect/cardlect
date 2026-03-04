@@ -1,388 +1,278 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Send, Search, Phone, Video, Paperclip, Smile, MoreVertical, MessageSquare, Bell, X } from 'lucide-react'
+import { Send, Search, Phone, Video, Paperclip, Smile, MoreVertical, MessageSquare, Bell, X, Loader2 } from 'lucide-react'
 import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
+import api from '@/lib/api-client'
 
 interface User {
   id: string
-  name: string
-  avatar: string
+  full_name: string
+  avatar?: string
   role: string
   status: 'online' | 'offline' | 'away'
-  lastSeen?: string
+  last_seen?: string
 }
 
 interface Message {
   id: string
-  senderId: string
-  text: string
-  timestamp: string
+  sender_id: string
+  content: string
+  created_at: string
   type: 'sent' | 'received'
-  isRead?: boolean
+  is_read?: boolean
 }
 
 interface CommunicationComponentProps {
-  currentRole: 'admin' | 'security' | 'super-user' | 'parents' | 'students' | 'finance' | 'store' | 'teacher' | 'clinic' | 'approved-stores' | 'exam-officer' | 'librarian' | 'visitor'
+  currentRole: string
   title?: string
   subtitle?: string
-  accentColor?: { start: string; end: string }
-}
-
-const ROLE_PERMISSIONS = {
-  admin: ['super-user', 'security', 'finance', 'teacher', 'parents'],
-  'super-user': ['admin', 'security', 'finance', 'teacher', 'parents', 'students', 'clinic', 'store', 'approved-stores', 'exam-officer', 'librarian'],
-  security: ['admin', 'super-user', 'parents'],
-  finance: ['admin', 'super-user', 'parents', 'store'],
-  teacher: ['super-user', 'admin', 'parents', 'students', 'exam-officer'],
-  parents: ['teacher', 'admin', 'finance', 'clinic'],
-  students: ['teacher', 'admin', 'clinic', 'librarian'],
-  clinic: ['admin', 'super-user', 'parents', 'students'],
-  store: ['super-user', 'finance', 'approved-stores'],
-  'approved-stores': ['super-user', 'finance', 'store'],
-  'exam-officer': ['super-user', 'admin', 'teacher', 'students'],
-  'librarian': ['students', 'teacher', 'admin'],
-  'visitor': ['admin', 'super-user'],
-}
-
-const SAMPLE_USERS: Record<string, User[]> = {
-  admin: [
-    { id: '1', name: 'Super Admin', avatar: '👑', role: 'super-user', status: 'online', lastSeen: 'now' },
-    { id: '2', name: 'Security Chief', avatar: '👮', role: 'security', status: 'online', lastSeen: 'now' },
-    { id: '3', name: 'Finance Manager', avatar: '💼', role: 'finance', status: 'away', lastSeen: '5m' },
-    { id: '4', name: 'Head Teacher', avatar: '👨‍🏫', role: 'teacher', status: 'online', lastSeen: 'now' },
-  ],
-  'super-user': [
-    { id: '1', name: 'School Admin', avatar: '👨‍💼', role: 'admin', status: 'online', lastSeen: 'now' },
-    { id: '2', name: 'Security Team', avatar: '🚨', role: 'security', status: 'online', lastSeen: 'now' },
-    { id: '3', name: 'Finance Dept', avatar: '💰', role: 'finance', status: 'away', lastSeen: '10m' },
-    { id: '4', name: 'Store Manager', avatar: '🏪', role: 'store', status: 'online', lastSeen: 'now' },
-    { id: '5', name: 'Exam Officer', avatar: '📝', role: 'exam-officer', status: 'online', lastSeen: 'now' },
-    { id: '6', name: 'Librarian', avatar: '📚', role: 'librarian', status: 'online', lastSeen: '2m' },
-  ],
-  security: [
-    { id: '1', name: 'School Admin', avatar: '👨‍💼', role: 'admin', status: 'online', lastSeen: 'now' },
-    { id: '2', name: 'Super Admin', avatar: '👑', role: 'super-user', status: 'online', lastSeen: 'now' },
-    { id: '3', name: 'Parent', avatar: '👨‍👩‍👧', role: 'parents', status: 'online', lastSeen: '1m' },
-  ],
-  finance: [
-    { id: '1', name: 'School Admin', avatar: '👨‍💼', role: 'admin', status: 'online', lastSeen: 'now' },
-    { id: '2', name: 'Super Admin', avatar: '👑', role: 'super-user', status: 'away', lastSeen: '15m' },
-    { id: '3', name: 'Parent', avatar: '👨‍👩‍👧', role: 'parents', status: 'online', lastSeen: 'now' },
-    { id: '4', name: 'Store', avatar: '🏪', role: 'store', status: 'online', lastSeen: 'now' },
-  ],
-  teacher: [
-    { id: '1', name: 'Super Admin', avatar: '👑', role: 'super-user', status: 'online', lastSeen: 'now' },
-    { id: '2', name: 'School Admin', avatar: '👨‍💼', role: 'admin', status: 'online', lastSeen: 'now' },
-    { id: '3', name: 'Parent', avatar: '👨‍👩‍👧', role: 'parents', status: 'away', lastSeen: '20m' },
-    { id: '4', name: 'Student', avatar: '👨‍🎓', role: 'students', status: 'online', lastSeen: 'now' },
-    { id: '5', name: 'Exam Officer', avatar: '📝', role: 'exam-officer', status: 'online', lastSeen: '5m' },
-  ],
-  parents: [
-    { id: '1', name: 'Teacher', avatar: '👩‍🏫', role: 'teacher', status: 'online', lastSeen: 'now' },
-    { id: '2', name: 'School Admin', avatar: '👨‍💼', role: 'admin', status: 'online', lastSeen: 'now' },
-    { id: '3', name: 'Finance', avatar: '💼', role: 'finance', status: 'away', lastSeen: '30m' },
-    { id: '4', name: 'Clinic', avatar: '⚕️', role: 'clinic', status: 'online', lastSeen: '3m' },
-  ],
-  students: [
-    { id: '1', name: 'Teacher', avatar: '👩‍🏫', role: 'teacher', status: 'online', lastSeen: 'now' },
-    { id: '2', name: 'School Admin', avatar: '👨‍💼', role: 'admin', status: 'online', lastSeen: 'now' },
-    { id: '3', name: 'Librarian', avatar: '📚', role: 'librarian', status: 'online', lastSeen: '2m' },
-  ],
-  clinic: [
-    { id: '1', name: 'Super Admin', avatar: '👑', role: 'super-user', status: 'online', lastSeen: 'now' },
-    { id: '2', name: 'School Admin', avatar: '👨‍💼', role: 'admin', status: 'online', lastSeen: 'now' },
-    { id: '3', name: 'Parent', avatar: '👨‍👩‍👧', role: 'parents', status: 'online', lastSeen: '1m' },
-  ],
-  store: [
-    { id: '1', name: 'Super Admin', avatar: '👑', role: 'super-user', status: 'online', lastSeen: 'now' },
-    { id: '2', name: 'Finance', avatar: '💰', role: 'finance', status: 'online', lastSeen: 'now' },
-    { id: '3', name: 'Approved Store', avatar: '🛍️', role: 'approved-stores', status: 'online', lastSeen: '1m' },
-  ],
-  'approved-stores': [
-    { id: '1', name: 'Super Admin', avatar: '👑', role: 'super-user', status: 'online', lastSeen: 'now' },
-    { id: '2', name: 'Finance Team', avatar: '💰', role: 'finance', status: 'away', lastSeen: '25m' },
-    { id: '3', name: 'Store', avatar: '🏪', role: 'store', status: 'online', lastSeen: '3m' },
-  ],
-  'exam-officer': [
-    { id: '1', name: 'Super Admin', avatar: '👑', role: 'super-user', status: 'online', lastSeen: 'now' },
-    { id: '2', name: 'School Admin', avatar: '👨‍💼', role: 'admin', status: 'online', lastSeen: 'now' },
-    { id: '3', name: 'Teacher', avatar: '👩‍🏫', role: 'teacher', status: 'online', lastSeen: '4m' },
-    { id: '4', name: 'Student', avatar: '👨‍🎓', role: 'students', status: 'online', lastSeen: 'now' },
-  ],
-  'librarian': [
-    { id: '1', name: 'Student', avatar: '👨‍🎓', role: 'students', status: 'online', lastSeen: 'now' },
-    { id: '2', name: 'Teacher', avatar: '👩‍🏫', role: 'teacher', status: 'online', lastSeen: '5m' },
-    { id: '3', name: 'School Admin', avatar: '👨‍💼', role: 'admin', status: 'online', lastSeen: 'now' },
-  ],
-  'visitor': [
-    { id: '1', name: 'School Admin', avatar: '👨‍💼', role: 'admin', status: 'online', lastSeen: 'now' },
-    { id: '2', name: 'Super Admin', avatar: '👑', role: 'super-user', status: 'online', lastSeen: 'now' },
-  ],
 }
 
 export function CommunicationComponent({
   currentRole,
   title = 'Communications',
   subtitle = 'Connect and collaborate with team members',
-  accentColor = { start: 'orange', end: 'amber' },
 }: CommunicationComponentProps) {
-  const [user, setUser] = useState<User | null>(null)
-  const [msgs, setMsgs] = useState<Message[]>([])
-  const [txt, setTxt] = useState('')
-  const [query, setQuery] = useState('')
-  const [notificationOpen, setNotificationOpen] = useState(false)
-  const messagesRef = useRef<HTMLDivElement>(null)
+  const [activeUser, setActiveUser] = useState<User | null>(null)
+  const [messages, setMessages] = useState<Message[]>([])
+  const [text, setText] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [contacts, setContacts] = useState<User[]>([])
+  const [inbox, setInbox] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [sending, setSending] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  // Get allowed contacts based on role
-  const allowedRoles = (ROLE_PERMISSIONS as any)[currentRole] || []
-  const availableUsers = (SAMPLE_USERS as any)[currentRole]?.filter((u: User) => allowedRoles.includes(u.role)) || []
-  const filteredUsers = availableUsers.filter((u: User) => u.name.toLowerCase().includes(query.toLowerCase()))
-  const unreadCount = msgs.filter(m => m.type === 'received' && !m.isRead).length
+  const fetchContacts = async () => {
+    setLoading(true)
+    try {
+      // For now, let's fetch all users in the school as potential contacts
+      // In a real app, this would be filtered by permissions/previous chats
+      const response = await api.get('/users?limit=20')
+      setContacts(response.data.data)
 
-  useEffect(() => {
-    messagesRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [msgs])
-
-  const loadMessages = (u: User) => {
-    setUser(u)
-    setMsgs([
-      { id: '1', senderId: 'o', text: 'Hi there! How can I help?', timestamp: '2:10 PM', type: 'received', isRead: true },
-      { id: '2', senderId: 'me', text: 'Thanks for reaching out!', timestamp: '2:12 PM', type: 'sent', isRead: true },
-      { id: '3', senderId: 'o', text: 'I have some updates to share about the ongoing project.', timestamp: '2:15 PM', type: 'received', isRead: true },
-    ])
+      const inboxRes = await api.get('/communications/inbox')
+      setInbox(inboxRes.data.data)
+    } catch (err) {
+      console.error('Failed to fetch communications data:', err)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const sendMessage = () => {
-    if (txt.trim() && user) {
-      setMsgs([...msgs, {
-        id: Date.now().toString(),
-        senderId: 'me',
-        text: txt,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        type: 'sent',
-        isRead: true,
-      }])
-      setTxt('')
-      setTimeout(() => {
-        setMsgs(prev => [...prev, {
-          id: (Date.now() + 1).toString(),
-          senderId: 'o',
-          text: 'Thanks for that information. I\'ll review and get back to you soon.',
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          type: 'received',
-          isRead: false,
-        }])
-      }, 1500)
+  useEffect(() => {
+    fetchContacts()
+  }, [])
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  const loadChat = async (user: User) => {
+    setActiveUser(user)
+    setMessages([]) // In a real app, fetch history from /communications/history/:userId
+  }
+
+  const handleSendMessage = async () => {
+    if (!text.trim() || !activeUser || sending) return
+
+    setSending(true)
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      sender_id: 'me',
+      content: text,
+      created_at: new Date().toISOString(),
+      type: 'sent',
+      is_read: true
+    }
+
+    setMessages(prev => [...prev, newMessage])
+    const oldText = text
+    setText('')
+
+    try {
+      await api.post('/communications/send', {
+        recipient_id: activeUser.id,
+        content: oldText
+      })
+    } catch (err) {
+      console.error('Failed to send message:', err)
+      alert('Message failed to deliver.')
+    } finally {
+      setSending(false)
     }
   }
 
   const getStatusColor = (status: string) => {
-    if (status === 'online') return 'bg-green-500'
-    if (status === 'away') return 'bg-yellow-500'
-    return 'bg-gray-400'
+    switch (status) {
+      case 'online': return 'bg-green-500'
+      case 'away': return 'bg-amber-500'
+      default: return 'bg-muted-foreground/30'
+    }
   }
 
-  const getRoleColor = (role: string) => {
-    // Unified Cardlect Orange colors for all roles
-    return 'from-orange-500 to-amber-500'
-  }
+  const filteredContacts = contacts.filter(c =>
+    c.full_name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
   return (
-    <>
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">{title}</h1>
-            <p className="text-muted-foreground">{subtitle}</p>
+    <div className="flex flex-col h-full space-y-8 pb-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-4xl font-black text-foreground tracking-tighter">{title}</h1>
+          <p className="text-muted-foreground mt-1 font-medium italic">{subtitle}</p>
+        </div>
+        <div className="flex bg-card border border-border rounded-2xl p-2 shadow-sm gap-4 items-center px-6">
+          <div className="text-center">
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Active Threads</p>
+            <p className="text-xl font-black text-primary">{inbox.length}</p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <button onClick={() => setNotificationOpen(!notificationOpen)} className="p-3 hover:bg-muted rounded-lg transition-all relative">
-                <Bell size={20} className="text-muted-foreground hover:text-foreground transition-colors" />
-                {unreadCount > 0 && (
-                  <span style={{ backgroundColor: CARDLECT_COLORS.danger.main }} className="absolute top-0 right-0 w-5 h-5 rounded-full text-white text-xs flex items-center justify-center font-semibold">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
-              {notificationOpen && unreadCount > 0 && (
-                <div className="absolute top-full right-0 mt-2 w-64 bg-card border border-border rounded-lg shadow-lg p-4 z-50">
-                  <p className="text-sm font-semibold text-foreground mb-2">Unread Messages</p>
-                  <p className="text-xs text-muted-foreground">{unreadCount} new message{unreadCount > 1 ? 's' : ''} from your contacts</p>
-                </div>
-              )}
-            </div>
-          </div>
+          <div className="w-px h-8 bg-border" />
+          <button className="relative p-2 hover:bg-muted rounded-xl transition-all">
+            <Bell size={20} className="text-muted-foreground" />
+            <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-card" />
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 h-[calc(100vh-280px)]">
-        {/* Users List */}
-        <div className="lg:col-span-1 bg-card border border-border rounded-2xl overflow-hidden flex flex-col shadow-md">
-          <div className="p-4 border-b border-border bg-gradient-to-r from-card to-background/50">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 h-[700px]">
+        {/* Contact List */}
+        <div className="lg:col-span-1 bg-card border border-border rounded-3xl overflow-hidden flex flex-col shadow-xl">
+          <div className="p-6 border-b border-border bg-muted/20">
             <div className="relative">
-              <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search contacts..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition-all"
-                style={{ '--tw-ring-color': CARDLECT_COLORS.primary.darker } as any}
+                placeholder="Search encrypted channels..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-background border border-border rounded-1.5xl pl-12 pr-4 py-3 text-sm font-medium focus:ring-2 ring-primary/20 outline-none transition-all"
               />
             </div>
-            {filteredUsers.length > 0 && (
-              <p className="text-xs text-muted-foreground mt-2">{filteredUsers.length} contact{filteredUsers.length > 1 ? 's' : ''}</p>
-            )}
           </div>
 
-          <div className="flex-1 overflow-y-auto">
-            {filteredUsers.length === 0 ? (
-              <div className="p-8 text-center">
-                <MessageSquare size={32} className="mx-auto text-muted-foreground/50 mb-2" />
-                <p className="text-sm text-muted-foreground">No contacts available</p>
+          <div className="flex-1 overflow-y-auto p-2 space-y-1">
+            {loading ? (
+              <div className="flex justify-center p-12">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
               </div>
-            ) : (
-              filteredUsers.map((u: User) => (
-                <button
-                  key={u.id}
-                  onClick={() => loadMessages(u)}
-                  className={`w-full p-4 border-b border-border hover:bg-muted/50 transition-all text-left group ${
-                    user?.id === u.id ? 'bg-muted/70 border-l-2' : ''
+            ) : filteredContacts.map((contact) => (
+              <button
+                key={contact.id}
+                onClick={() => loadChat(contact)}
+                className={`w-full p-4 rounded-2xl transition-all text-left flex items-center gap-4 group ${activeUser?.id === contact.id ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'hover:bg-muted/50'
                   }`}
-                  style={user?.id === u.id ? { borderLeftColor: CARDLECT_COLORS.primary.darker } : {}}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${getRoleColor(u.role)} flex items-center justify-center text-lg shadow-sm`}>
-                        {u.avatar}
-                      </div>
-                      <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-card ${getStatusColor(u.status)}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate group-hover:font-semibold transition-all">{u.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{u.role} • {u.lastSeen}</p>
-                    </div>
+              >
+                <div className="relative flex-shrink-0">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-black text-lg border-2 ${activeUser?.id === contact.id ? 'bg-white/20 border-white/30' : 'bg-primary/5 border-primary/10 text-primary'
+                    }`}>
+                    {contact.full_name.charAt(0)}
                   </div>
-                </button>
-              ))
-            )}
+                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-4 ${activeUser?.id === contact.id ? 'border-primary' : 'border-card'
+                    } ${getStatusColor(contact.status)}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-black truncate ${activeUser?.id === contact.id ? 'text-white' : 'text-foreground'}`}>
+                    {contact.full_name}
+                  </p>
+                  <p className={`text-[10px] uppercase font-bold tracking-widest truncate ${activeUser?.id === contact.id ? 'text-white/70' : 'text-muted-foreground'
+                    }`}>
+                    {contact.role}
+                  </p>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* Chat Area */}
-        <div className="lg:col-span-3 bg-card border border-border rounded-2xl overflow-hidden flex flex-col shadow-md">
-          {user ? (
+        {/* Chat Interface */}
+        <div className="lg:col-span-3 bg-card border border-border rounded-3xl overflow-hidden flex flex-col shadow-2xl relative">
+          {activeUser ? (
             <>
-              {/* Header */}
-              <div className="p-4 border-b border-border flex items-center justify-between bg-gradient-to-r from-card/50 to-background/30 backdrop-blur-sm">
-                <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${getRoleColor(user.role)} flex items-center justify-center text-xl shadow-md`}>
-                    {user.avatar}
+              {/* Chat Header */}
+              <div className="p-6 border-b border-border bg-muted/10 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-primary text-white flex items-center justify-center font-black text-xl shadow-lg shadow-primary/20">
+                    {activeUser.full_name.charAt(0)}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-foreground">{user.name}</p>
-                    <p className="text-xs flex items-center gap-1">
-                      <span className={`inline-block w-2 h-2 rounded-full ${getStatusColor(user.status)}`} />
-                      <span className="text-muted-foreground capitalize">{user.status === 'online' ? 'Active now' : `Last seen ${user.lastSeen}`}</span>
-                    </p>
+                    <h3 className="text-lg font-black text-foreground">{activeUser.full_name}</h3>
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2 h-2 rounded-full ${getStatusColor(activeUser.status)}`} />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                        {activeUser.status === 'online' ? 'Secure Node Online' : `Last sync ${activeUser.last_seen || 'recently'}`}
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <button className="p-2 hover:bg-background rounded-lg transition-all hover:shadow-sm" title="Voice call">
-                    <Phone size={18} className="text-muted-foreground hover:text-foreground transition-colors" />
-                  </button>
-                  <button className="p-2 hover:bg-background rounded-lg transition-all hover:shadow-sm" title="Video call">
-                    <Video size={18} className="text-muted-foreground hover:text-foreground transition-colors" />
-                  </button>
-                  <button className="p-2 hover:bg-background rounded-lg transition-all hover:shadow-sm" title="More options">
-                    <MoreVertical size={18} className="text-muted-foreground hover:text-foreground transition-colors" />
-                  </button>
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="icon" className="rounded-xl h-11 w-11 hover:bg-primary/5 hover:text-primary"><Phone size={20} /></Button>
+                  <Button variant="ghost" size="icon" className="rounded-xl h-11 w-11 hover:bg-primary/5 hover:text-primary"><Video size={20} /></Button>
+                  <Button variant="ghost" size="icon" className="rounded-xl h-11 w-11 hover:bg-primary/5 hover:text-primary"><MoreVertical size={20} /></Button>
                 </div>
               </div>
 
-              {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gradient-to-b from-background/50 to-background/30">
-                {msgs.length === 0 ? (
-                  <div className="flex items-center justify-center h-full">
-                    <div className="text-center">
-                      <MessageSquare size={40} className="mx-auto text-muted-foreground/30 mb-2" />
-                      <p className="text-sm text-muted-foreground">Start a conversation</p>
-                    </div>
+              {/* Chat Body */}
+              <div className="flex-1 overflow-y-auto p-8 space-y-6 bg-gradient-to-b from-transparent to-muted/5">
+                {messages.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center opacity-30 text-center space-y-4">
+                    <MessageSquare size={64} />
+                    <p className="font-black uppercase tracking-[0.2em] text-sm">Channel Initialized</p>
                   </div>
                 ) : (
-                  msgs.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.type === 'sent' ? 'justify-end' : 'justify-start'} animate-in fade-in duration-300`}
-                    >
-                      <div
-                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl shadow-sm ${
-                          message.type === 'sent'
-                            ? `bg-gradient-to-br ${CARDLECT_COLORS.primary.darker.startsWith('#') ? 'custom-sent' : CARDLECT_COLORS.primary.darker} text-white rounded-br-none`
-                            : 'bg-muted text-foreground border border-border/50 rounded-bl-none'
-                        }`}
-                        style={message.type === 'sent' ? { backgroundColor: CARDLECT_COLORS.primary.darker } : {}}
-                      >
-                        <p className="text-sm break-words">{message.text}</p>
-                        <p className={`text-xs mt-1 ${message.type === 'sent' ? 'text-white/70' : 'text-muted-foreground'}`}>
-                          {message.timestamp}
+                  messages.map((m) => (
+                    <div key={m.id} className={`flex ${m.type === 'sent' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}>
+                      <div className={`max-w-[70%] px-6 py-4 rounded-3xl shadow-sm ${m.type === 'sent'
+                          ? 'bg-primary text-white rounded-br-none shadow-primary/20'
+                          : 'bg-muted/50 text-foreground border border-border rounded-bl-none'
+                        }`}>
+                        <p className="text-sm font-medium leading-relaxed">{m.content}</p>
+                        <p className={`text-[10px] font-bold mt-2 uppercase flex items-center gap-1 ${m.type === 'sent' ? 'text-white/60' : 'text-muted-foreground'
+                          }`}>
+                          {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • AES-256
                         </p>
                       </div>
                     </div>
                   ))
                 )}
-                <div ref={messagesRef} />
+                <div ref={messagesEndRef} />
               </div>
 
-              {/* Input */}
-              <div className="p-4 border-t border-border bg-gradient-to-t from-background/50 to-transparent">
-                <div className="flex items-end gap-3">
-                  <button className="p-2 hover:bg-muted rounded-lg transition-all hover:shadow-sm" title="Attach file">
-                    <Paperclip size={18} className="text-muted-foreground hover:text-foreground transition-colors" />
-                  </button>
-                  <div className="flex-1 flex items-end gap-2 bg-muted border border-border rounded-2xl px-3 py-2 focus-within:ring-2 transition-all" style={{ '--tw-ring-color': CARDLECT_COLORS.primary.darker } as any}>
-                    <input
-                      type="text"
-                      placeholder="Type a message..."
-                      value={txt}
-                      onChange={(e) => setTxt(e.target.value)}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault()
-                          sendMessage()
-                        }
-                      }}
-                      className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none resize-none max-h-24"
-                    />
-                    <button className="p-1 hover:bg-background rounded-lg transition-all hover:shadow-sm" title="Emoji">
-                      <Smile size={18} className="text-muted-foreground hover:text-foreground transition-colors" />
-                    </button>
-                  </div>
-                  <button
-                    onClick={sendMessage}
-                    disabled={!txt.trim()}
-                    className="p-3 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md hover:scale-105 disabled:hover:scale-100"
-                    style={{ backgroundColor: txt.trim() ? CARDLECT_COLORS.primary.darker : CARDLECT_COLORS.primary.darker + '60' }}
-                    title="Send message (Enter)"
+              {/* Chat Input */}
+              <div className="p-6 bg-card border-t border-border">
+                <div className="flex items-center gap-4 bg-muted/40 rounded-2xl p-2 px-4 border border-border group focus-within:border-primary/50 transition-all">
+                  <Button variant="ghost" size="icon" className="rounded-xl text-muted-foreground hover:text-primary"><Paperclip size={20} /></Button>
+                  <input
+                    type="text"
+                    placeholder="Type an encrypted message..."
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                    className="flex-1 bg-transparent border-none outline-none py-3 text-sm font-medium text-foreground placeholder:text-muted-foreground"
+                  />
+                  <Button variant="ghost" size="icon" className="rounded-xl text-muted-foreground hover:text-primary"><Smile size={20} /></Button>
+                  <Button
+                    onClick={handleSendMessage}
+                    disabled={!text.trim() || sending}
+                    className="bg-primary hover:bg-primary-darker text-white rounded-xl h-11 px-6 font-black shadow-lg shadow-primary/20 active:scale-95 transition-all"
                   >
-                    <Send size={18} />
-                  </button>
+                    {sending ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
+                  </Button>
                 </div>
               </div>
             </>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center bg-gradient-to-br from-background/50 to-background/30">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center mx-auto mb-4">
-                <MessageSquare size={32} className="text-muted-foreground/50" />
+            <div className="flex-1 flex flex-col items-center justify-center p-20 text-center">
+              <div className="w-24 h-24 rounded-full bg-primary/5 flex items-center justify-center text-primary mb-8 animate-pulse">
+                <MessageSquare size={48} />
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-1">No contact selected</h3>
-              <p className="text-sm text-muted-foreground">Select someone from the list to start messaging</p>
+              <h3 className="text-2xl font-black text-foreground mb-3">Institutional Dispatch</h3>
+              <p className="text-muted-foreground max-w-sm font-medium">Select a secure node from the registry to initiate end-to-end encrypted communication.</p>
             </div>
           )}
         </div>
       </div>
-    </>
+    </div>
   )
 }
