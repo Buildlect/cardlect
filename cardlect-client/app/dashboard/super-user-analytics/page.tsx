@@ -1,10 +1,11 @@
-'use client'
+"use client"
 
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import DashboardLayout from "@/components/DashboardLayout/layout"
-import { Download, TrendingUp, Users, DollarSign, Calendar, Clock, Plus } from 'lucide-react'
+import { Download, TrendingUp, Users, DollarSign, Calendar, Clock, Plus, Loader2, Globe, BarChart3, PieChartIcon, Activity } from 'lucide-react'
 import { CARDLECT_COLORS, SEMANTIC_COLORS } from '@/lib/cardlect-colors'
+import api from '@/lib/api-client'
 import {
   LineChart,
   Line,
@@ -21,373 +22,221 @@ import {
   Cell
 } from 'recharts'
 
-const attendanceData = [
-  { month: 'Jan', present: 85, absent: 15 },
-  { month: 'Feb', present: 88, absent: 12 },
-  { month: 'Mar', present: 82, absent: 18 },
-  { month: 'Apr', present: 90, absent: 10 },
-  { month: 'May', present: 87, absent: 13 },
-  { month: 'Jun', present: 86, absent: 14 },
-  { month: 'Jul', present: 89, absent: 11 },
-  { month: 'Aug', present: 84, absent: 16 },
-  { month: 'Sep', present: 91, absent: 9 },
-  { month: 'Oct', present: 88, absent: 12 },
-  { month: 'Nov', present: 90, absent: 10 },
-  { month: 'Dec', present: 92, absent: 8 }
-]
-
-const walletData = [
-  { month: 'Jan', transactions: 2400 },
-  { month: 'Feb', transactions: 2210 },
-  { month: 'Mar', transactions: 2290 },
-  { month: 'Apr', transactions: 2000 },
-  { month: 'May', transactions: 2181 },
-  { month: 'Jun', transactions: 2300 },
-  { month: 'Jul', transactions: 2500 },
-  { month: 'Aug', transactions: 2100 },
-  { month: 'Sep', transactions: 2650 },
-  { month: 'Oct', transactions: 2400 },
-  { month: 'Nov', transactions: 2550 },
-  { month: 'Dec', transactions: 2700 }
-]
-
-const behaviorData = [
-  { name: 'Excellent', value: 45 },
-  { name: 'Good', value: 35 },
-  { name: 'Average', value: 15 },
-  { name: 'Poor', value: 5 }
-]
-
-const COLORS = ['#ff5c1c', '#ffa145', '#ffc87a', '#ffe5c8']
-
-function formatCSVRow(cols: (string | number | null | undefined)[]) {
-  return cols
-    .map((c) => {
-      const v = c ?? ''
-      const s = String(v)
-      if (/[,"\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`
-      return s
-    })
-    .join(',')
-}
-
-function buildCSVContent({
-  attendance,
-  wallet,
-  behavior,
-  filters
-}: {
-  attendance: typeof attendanceData
-  wallet: typeof walletData
-  behavior: typeof behaviorData
-  filters: { school: string; period: string }
-}) {
-  const rows: string[] = []
-  rows.push(formatCSVRow([`Report (School: ${filters.school}, Period: last ${filters.period} months)`]))
-  rows.push('')
-
-  rows.push(formatCSVRow(['Attendance Trends']))
-  rows.push(formatCSVRow(['Month', 'Present', 'Absent']))
-  attendance.forEach((r) => {
-    rows.push(formatCSVRow([r.month, r.present, r.absent]))
-  })
-  rows.push('')
-
-  rows.push(formatCSVRow(['Wallet Transactions Over Time']))
-  rows.push(formatCSVRow(['Month', 'Transactions']))
-  wallet.forEach((r) => {
-    rows.push(formatCSVRow([r.month, r.transactions]))
-  })
-  rows.push('')
-
-  rows.push(formatCSVRow(['Behavior Distribution']))
-  rows.push(formatCSVRow(['Name', 'Value']))
-  behavior.forEach((r) => {
-    rows.push(formatCSVRow([r.name, r.value]))
-  })
-
-  return rows.join('\r\n')
-}
-
 export default function AnalyticsPage() {
-  const router = useRouter()
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-
-  // Filters
+  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState<'3' | '6' | '12'>('6')
-  const [school, setSchool] = useState<'All' | 'School A' | 'School B'>('All')
-  const [showOnlyActive, setShowOnlyActive] = useState(false)
 
-  // simulate school multipliers
-  const schoolMultiplier = useMemo(() => {
-    switch (school) {
-      case 'School A':
-        return { present: 1.02, transactions: 1.15, users: 1.1 }
-      case 'School B':
-        return { present: 0.98, transactions: 0.9, users: 0.9 }
-      default:
-        return { present: 1, transactions: 1, users: 1 }
+  const fetchAnalytics = async () => {
+    setLoading(true)
+    try {
+      const response = await api.get('/analytics/global-overview')
+      setData(response.data.data)
+    } catch (err) {
+      console.error('Failed to fetch global analytics:', err)
+    } finally {
+      setLoading(false)
     }
-  }, [school])
-
-  // Filtered datasets (slice last N months and apply multipliers)
-  const monthsCount = Number(period)
-  const filteredAttendance = useMemo(() => {
-    const slice = attendanceData.slice(-monthsCount).map((r) => {
-      const present = Math.min(100, Math.max(0, Math.round(r.present * schoolMultiplier.present)))
-      const absent = Math.max(0, 100 - present)
-      return { ...r, present, absent }
-    })
-    return slice
-  }, [monthsCount, schoolMultiplier])
-
-  const filteredWallet = useMemo(() => {
-    return walletData.slice(-monthsCount).map((r) => {
-      return { ...r, transactions: Math.round(r.transactions * schoolMultiplier.transactions) }
-    })
-  }, [monthsCount, schoolMultiplier])
-
-  const filteredBehavior = useMemo(() => {
-    // keep behavior static but could be adjusted similarly
-    return behaviorData
-  }, [])
-
-  // Derived metrics
-  const avgAttendance = useMemo(() => {
-    if (filteredAttendance.length === 0) return 0
-    return filteredAttendance.reduce((s, r) => s + r.present, 0) / filteredAttendance.length
-  }, [filteredAttendance])
-
-  const totalTransactions = useMemo(() => {
-    return filteredWallet.reduce((s, r) => s + r.transactions, 0)
-  }, [filteredWallet])
-
-  const activeUsers = useMemo(() => {
-    // simulated base active users per month
-    const base = 1250
-    const avgMultiplier = schoolMultiplier.users
-    return Math.round(base * avgMultiplier)
-  }, [schoolMultiplier])
-
-  const avgLateness = useMemo(() => {
-    // derive lateness from absent percentage (simulated)
-    if (filteredAttendance.length === 0) return 0
-    const avgAbsent = filteredAttendance.reduce((s, r) => s + r.absent, 0) / filteredAttendance.length
-    // assume a proportion of absent are late instead of absent
-    return +(avgAbsent * 0.35).toFixed(1)
-  }, [filteredAttendance])
-
-  const newRegistrations = useMemo(() => {
-    // simulate: a small portion of transactions are new registrations
-    return Math.round(totalTransactions * 0.02)
-  }, [totalTransactions])
-
-  const monthlyRevenue = useMemo(() => {
-    // simulate revenue: transactions * avg fee
-    const avgFee = 2.5
-    return +(totalTransactions * avgFee).toFixed(2)
-  }, [totalTransactions])
-
-  const handleExportCSV = () => {
-    const csv = buildCSVContent({
-      attendance: filteredAttendance,
-      wallet: filteredWallet,
-      behavior: filteredBehavior,
-      filters: { school, period }
-    })
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    const now = new Date()
-    const timestamp = now.toISOString().replace(/[:.]/g, '-')
-    a.href = url
-    a.download = `cardlect-report-${school.toLowerCase().replace(/\s+/g, '-')}-${period}m-${timestamp}.csv`
-    document.body.appendChild(a)
-    a.click()
-    a.remove()
-    URL.revokeObjectURL(url)
   }
 
-  // Optionally filter the metric cards (e.g., show only active)
+  useEffect(() => {
+    fetchAnalytics()
+  }, [])
+
+  if (loading) {
+    return (
+      <DashboardLayout currentPage="analytics" role="super_admin">
+        <div className="flex items-center justify-center p-20 min-h-[60vh]">
+          <Loader2 className="w-12 h-12 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  const stats = data || {
+    ecosystem: { total_schools: 0, active_schools: 0 },
+    demographics: { total_users: 0, total_students: 0, total_partners: 0 },
+    finance_total: 0,
+    top_performing_schools: []
+  }
+
   const metricCards = [
     {
-      title: 'Avg Attendance',
-      value: `${avgAttendance.toFixed(1)}%`,
-      icon: <TrendingUp size={24} style={{ color: CARDLECT_COLORS.primary.main }} />,
-      bg: `bg-[${CARDLECT_COLORS.primary.main}]/10 text-[${CARDLECT_COLORS.primary.main}]`
+      title: 'Global Volume (30d)',
+      value: `₦${Number(stats.finance_total).toLocaleString()}`,
+      icon: <DollarSign size={24} />,
+      color: CARDLECT_COLORS.primary.darker,
+      sub: 'Across all nodes'
     },
     {
-      title: 'Total Transactions',
-      value: totalTransactions.toLocaleString(),
-      icon: <DollarSign size={24} style={{ color: CARDLECT_COLORS.success.main }} />,
-      bg: `bg-[${CARDLECT_COLORS.success.main}]/10 text-[${CARDLECT_COLORS.success.main}]`
+      title: 'Active Schools',
+      value: stats.ecosystem.active_schools,
+      icon: <Globe size={24} />,
+      color: SEMANTIC_COLORS.status.online,
+      sub: `${stats.ecosystem.total_schools} total registered`
     },
     {
-      title: 'Active Users',
-      value: activeUsers.toLocaleString(),
-      icon: <Users size={24} style={{ color: CARDLECT_COLORS.info.main }} />,
-      bg: `bg-[${CARDLECT_COLORS.info.main}]/10 text-[${CARDLECT_COLORS.info.main}]`
+      title: 'Total Students',
+      value: stats.demographics.total_students.toLocaleString(),
+      icon: <Users size={24} />,
+      color: CARDLECT_COLORS.primary.main,
+      sub: 'Ecosystem-wide population'
     },
     {
-      title: 'Period',
-      value: `${period} months`,
-      icon: <Calendar size={24} style={{ color: CARDLECT_COLORS.secondary.main }} />,
-      bg: `bg-[${CARDLECT_COLORS.secondary.main}]/10 text-[${CARDLECT_COLORS.secondary.main}]`
-    },
-    {
-      title: 'Avg Lateness',
-      value: `${avgLateness}%`,
-      icon: <Clock size={20} style={{ color: CARDLECT_COLORS.warning.main }} />,
-      bg: `bg-[${CARDLECT_COLORS.warning.main}]/10 text-[${CARDLECT_COLORS.warning.main}]`
-    },
-    {
-      title: 'New Registrations',
-      value: newRegistrations.toLocaleString(),
-      icon: <Plus size={20} style={{ color: CARDLECT_COLORS.success.darker }} />,
-      bg: `bg-[${CARDLECT_COLORS.success.darker}]/10 text-[${CARDLECT_COLORS.success.darker}]`
-    },
-    {
-      title: 'Monthly Revenue',
-      value: `N${Number(monthlyRevenue).toLocaleString()}`,
-      icon: <DollarSign size={20} style={{ color: CARDLECT_COLORS.danger.main }} />,
-      bg: `bg-[${CARDLECT_COLORS.danger.main}]/10 text-[${CARDLECT_COLORS.danger.main}]`
+      title: 'Partner Density',
+      value: stats.demographics.total_partners,
+      icon: <Activity size={24} />,
+      color: CARDLECT_COLORS.warning.main,
+      sub: 'Integrated merchants'
     }
-  ].filter((_, i) => {
-    if (!showOnlyActive) return true
-    // a simple "active" heuristic: keep cards 0..3
-    return i < 4
-  })
+  ]
+
+  const COLORS = [CARDLECT_COLORS.primary.darker, CARDLECT_COLORS.primary.main, CARDLECT_COLORS.warning.main, CARDLECT_COLORS.danger.main]
+
+  const pieData = [
+    { name: 'Students', value: stats.demographics.total_students },
+    { name: 'Partners', value: stats.demographics.total_partners },
+    { name: 'Other', value: stats.demographics.total_users - stats.demographics.total_students - stats.demographics.total_partners }
+  ].filter(d => d.value > 0)
 
   return (
-    <DashboardLayout currentPage="analytics" role="super-user">
-      <div className="mb-8">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                  <h1 className="text-3xl font-bold text-foreground">Analytics & Reports</h1>
-                </div>
-
-                <div className="flex flex-wrap gap-3 items-center">
-                  <select
-                    value={school}
-                    onChange={(e) => setSchool(e.target.value as any)}
-                    className="px-3 py-2 rounded-lg border border-border bg-card"
-                  >
-                    <option>All</option>
-                    <option>School A</option>
-                    <option>School B</option>
-                  </select>
-                  
-                  <select
-                    value={period}
-                    onChange={(e) => setPeriod(e.target.value as any)}
-                    className="px-3 py-2 rounded-lg border border-border bg-card"
-                  >
-                    <option value="3">Last 3 months</option>
-                    <option value="6">Last 6 months</option>
-                    <option value="12">Last 12 months</option>
-                  </select>
-
-                  <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <input
-                      type="checkbox"
-                      checked={showOnlyActive}
-                      onChange={(e) => setShowOnlyActive(e.target.checked)}
-                      className="accent-primary"
-                    />
-                    Only core metrics
-                  </label>
-
-                  <button
-                    onClick={handleExportCSV}
-                    className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-xl shadow-md hover:bg-primary/90 transition-all"
-                  >
-                    <Download size={18} />
-                    Export Report
-                  </button>
-                </div>
-              </div>
-
-              {/* Metric Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
-                {metricCards.map((c) => (
-                  <div
-                    key={c.title}
-                    className="rounded-2xl p-6 border border-border bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="text-muted-foreground text-sm mb-2">{c.title}</p>
-                        <p className="text-3xl sm:text-4xl font-bold text-foreground">{c.value}</p>
-                      </div>
-                      <div className={`p-3 rounded-xl ${c.bg}`}>{c.icon}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Charts Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                {/* Attendance */}
-                <div className="rounded-2xl p-6 border border-border bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold text-foreground">Attendance Trends</h3>
-                    <p className="text-sm text-muted-foreground">{school} · Last {period} months</p>
-                  </div>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={filteredAttendance}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                      <XAxis dataKey="month" stroke="var(--color-muted-foreground)" />
-                      <YAxis stroke="var(--color-muted-foreground)" />
-                      <Tooltip contentStyle={{ backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)' }} />
-                      <Legend />
-                      <Line type="monotone" dataKey="present" stroke={CARDLECT_COLORS.success.main} strokeWidth={3} />
-                      <Line type="monotone" dataKey="absent" stroke="#999" strokeWidth={2} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {/* Behavior Chart */}
-                <div className="rounded-2xl p-6 border border-border bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
-                  <h3 className="text-lg font-semibold text-foreground mb-4">Behavior Distribution</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={filteredBehavior}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {filteredBehavior.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip contentStyle={{ backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)' }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Wallet */}
-              <div className="rounded-2xl p-6 border border-border bg-card/60 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-foreground">Wallet Transactions Over Time</h3>
-                  <p className="text-sm text-muted-foreground">Est. revenue: ${monthlyRevenue.toLocaleString()}</p>
-                </div>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={filteredWallet}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-                    <XAxis dataKey="month" stroke="var(--color-muted-foreground)" />
-                    <YAxis stroke="var(--color-muted-foreground)" />
-                    <Tooltip contentStyle={{ backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)' }} />
-                    <Legend />
-                    <Bar dataKey="transactions" fill={CARDLECT_COLORS.primary.darker} radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+    <DashboardLayout currentPage="analytics" role="super_admin">
+      <div className="space-y-10 pb-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <h2 className="text-4xl font-black text-foreground tracking-tighter">Longitudinal Intelligence</h2>
+            <p className="text-muted-foreground mt-1 font-medium italic">Ecosystem-wide data auditing and performance analysis.</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <select
+              value={period}
+              onChange={(e) => setPeriod(e.target.value as any)}
+              className="bg-card border border-border rounded-2xl h-14 px-6 font-black outline-none focus:border-primary/50 transition-all text-sm uppercase tracking-widest"
+            >
+              <option value="3">Quarterly Audit</option>
+              <option value="6">Semiannual Logic</option>
+              <option value="12">Annual Retrospective</option>
+            </select>
+            <button
+              className="bg-primary hover:bg-primary-darker text-white rounded-2xl h-14 px-8 font-black shadow-lg shadow-primary/20 active:scale-95 transition-all flex items-center gap-2"
+              onClick={() => window.print()}
+            >
+              <Download size={20} /> Export Audit
+            </button>
+          </div>
         </div>
+
+        {/* Metric Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {metricCards.map((c, i) => (
+            <div key={i} className="bg-card border border-border rounded-3xl p-8 shadow-sm group hover:border-primary/50 transition-all">
+              <div className="flex items-center justify-between mb-6">
+                <div className="p-3 rounded-2xl bg-muted group-hover:bg-primary/10 transition-all" style={{ color: c.color }}>
+                  {c.icon}
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{c.sub}</span>
+              </div>
+              <p className="text-3xl font-black text-foreground mb-1 tracking-tighter">{c.value}</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">{c.title}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Demographic Distribution */}
+          <div className="bg-card border border-border rounded-[3rem] p-10 shadow-sm">
+            <div className="flex items-center gap-3 mb-10">
+              <PieChartIcon className="text-primary" size={24} />
+              <h3 className="text-xl font-black text-foreground tracking-tight">Ecosystem Composition</h3>
+            </div>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={8}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '20px', padding: '12px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="grid grid-cols-1 gap-3 mt-10">
+              {pieData.map((d, i) => (
+                <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 border border-border/50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                    <span className="text-xs font-black uppercase text-muted-foreground">{d.name}</span>
+                  </div>
+                  <span className="text-sm font-black text-foreground">{d.value.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Performance Ranking */}
+          <div className="lg:col-span-2 bg-card border border-border rounded-[3rem] p-10 shadow-sm group">
+            <div className="flex items-center justify-between mb-10">
+              <div className="flex items-center gap-3">
+                <BarChart3 className="text-primary" size={24} />
+                <h3 className="text-2xl font-black text-foreground tracking-tight">Node Transaction Volume</h3>
+              </div>
+              <div className="flex items-center gap-2 bg-primary/5 text-primary px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest">
+                <TrendingUp size={14} /> Top 5 Nodes
+              </div>
+            </div>
+
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stats.top_performing_schools}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" opacity={0.5} />
+                  <XAxis
+                    dataKey="name"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 11, fontWeight: 900 }}
+                  />
+                  <YAxis hide />
+                  <Tooltip
+                    contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '20px', padding: '12px' }}
+                    cursor={{ fill: 'var(--primary)', opacity: 0.05 }}
+                  />
+                  <Bar
+                    dataKey="tx_count"
+                    fill={CARDLECT_COLORS.primary.darker}
+                    radius={[12, 12, 0, 0]}
+                    barSize={40}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div className="mt-10 p-8 rounded-3xl bg-primary/5 border border-primary/10 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white dark:bg-card rounded-2xl shadow-sm">
+                  <Globe className="text-primary" size={24} />
+                </div>
+                <div>
+                  <p className="font-black text-foreground text-sm uppercase tracking-tighter">Aggregated Network Intensity</p>
+                  <p className="text-xs text-muted-foreground font-bold">Volume distributed across {stats.ecosystem.active_schools} active institutional nodes.</p>
+                </div>
+              </div>
+              <button className="whitespace-nowrap bg-white dark:bg-card border border-border px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-primary transition-all">
+                Inspect Global Hierarchy
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </DashboardLayout>
   )
 }

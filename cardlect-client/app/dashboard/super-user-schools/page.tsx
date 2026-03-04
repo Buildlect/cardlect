@@ -1,772 +1,349 @@
-'use client'
+"use client"
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import DashboardLayout from "@/components/DashboardLayout/layout"
-import { Plus, Eye, Pause, Play, X, Users, UserCheck, BookOpen, Settings, Activity, TrendingUp, Edit2, Trash2, Check, Server, Zap, ChevronRight, ChevronLeft } from 'lucide-react'
-import { useCardlect, School } from '@/contexts/cardlect-context'
-import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
-
-interface SchoolDetailsModal extends School {
-  staffList: Array<{ id: string; name: string; role: string; email: string }>
-  studentList: Array<{ id: string; name: string; class: string; cardStatus: string }>
-  parentList: Array<{ id: string; name: string; contact: string; email: string }>
-  recentActivities: Array<{ id: string; type: string; description: string; time: string }>
-}
+import { Plus, Eye, Pause, Play, X, Users, Activity, TrendingUp, Edit2, Trash2, Check, ChevronRight, ChevronLeft, Loader2, Globe, Building2, MapPin, Mail, Phone, ShieldCheck } from "lucide-react"
+import { CARDLECT_COLORS } from "@/lib/cardlect-colors"
+import api from "@/lib/api-client"
+import { Button } from "@/components/ui/button"
 
 export default function SchoolsPage() {
   const router = useRouter()
-  const { schools, addSchool, updateSchool, deleteSchool, getSchoolStudents, getSchoolStaff, getSchoolParents } = useCardlect()
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [selectedSchool, setSelectedSchool] = useState<SchoolDetailsModal | null>(null)
+  const [schools, setSchools] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [showAddForm, setShowAddForm] = useState(false)
-  const [formData, setFormData] = useState({
-    name: '',
-    subdomain: '',
-    email: '',
-    phone: '',
-    address: '',
-    principalName: '',
-    principalEmail: '',
-    subscriptionPlan: 'basic' as const,
-  })
-
-  // SchoolOnboardingWizard component inline
   const [currentStep, setCurrentStep] = useState(0)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [wizardFormData, setWizardFormData] = useState({
-    name: '',
-    subdomain: '',
-    address: '',
-    email: '',
-    phone: '',
-    principalName: '',
-    principalEmail: '',
-    subscriptionPlan: 'basic' as const,
+    name: "", subdomain: "", address: "", email: "", phone: "", principal_name: "", principal_email: "", plan: "basic"
   })
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setShowAddForm(false)
+  const fetchSchools = async () => {
+    setLoading(true)
+    try {
+      const response = await api.get("/schools")
+      setSchools(response.data.data)
+    } catch (err) {
+      console.error("Failed to fetch schools:", err)
+    } finally {
+      setLoading(false)
     }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
+  }
+
+  useEffect(() => {
+    fetchSchools()
   }, [])
 
   const wizardSteps = [
-    { title: 'Basic Information', description: 'School name and location' },
-    { title: 'Contact Details', description: 'Email and phone number' },
-    { title: 'Principal Information', description: 'Principal details' },
-    { title: 'Plan & Review', description: 'Subscription plan and confirmation' },
+    { title: "Foundational Identity", description: "School designation and localization" },
+    { title: "Communication Node", description: "Integrated contact channels" },
+    { title: "Executive Leadership", description: "Principal & administrative authority" },
+    { title: "Service Tier", description: "Subscription architecture & deployment" },
   ]
 
   const validateWizardStep = (step: number) => {
     const newErrors: Record<string, string> = {}
-
     if (step === 0) {
-      if (!wizardFormData.name.trim()) newErrors.name = 'School name is required'
-      if (!wizardFormData.subdomain.trim()) newErrors.subdomain = 'Subdomain is required'
-      if (wizardFormData.subdomain && !/^[a-z0-9-]+$/.test(wizardFormData.subdomain)) {
-        newErrors.subdomain = 'Subdomain can only contain lowercase letters, numbers, and hyphens'
-      }
-      if (!wizardFormData.address.trim()) newErrors.address = 'Address is required'
+      if (!wizardFormData.name.trim()) newErrors.name = "Designation is required"
+      if (!wizardFormData.subdomain.trim()) newErrors.subdomain = "Node ID required"
+      if (!wizardFormData.address.trim()) newErrors.address = "Geolocation required"
     } else if (step === 1) {
-      if (!wizardFormData.email.trim()) newErrors.email = 'Email is required'
-      if (wizardFormData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(wizardFormData.email)) {
-        newErrors.email = 'Invalid email format'
-      }
-      if (!wizardFormData.phone.trim()) newErrors.phone = 'Phone number is required'
-    } else if (step === 2) {
-      if (!wizardFormData.principalName.trim()) newErrors.principalName = 'Principal name is required'
-      if (!wizardFormData.principalEmail.trim()) newErrors.principalEmail = 'Principal email is required'
-      if (wizardFormData.principalEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(wizardFormData.principalEmail)) {
-        newErrors.principalEmail = 'Invalid email format'
-      }
+      if (!wizardFormData.email.trim()) newErrors.email = "Primary email required"
     }
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleWizardNext = () => {
-    if (validateWizardStep(currentStep)) {
-      if (currentStep < wizardSteps.length - 1) {
-        setCurrentStep(currentStep + 1)
-      }
-    }
-  }
-
-  const handleWizardPrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1)
-      setErrors({})
-    }
-  }
-
-  const handleWizardComplete = () => {
-    if (validateWizardStep(currentStep)) {
-      addSchool({
-        ...wizardFormData,
-        status: 'pending',
-        students: 0,
-        staff: 0,
-        parents: 0,
-        cardUsage: 0,
-        walletActivity: 'low',
-        totalTransactions: 0,
-        attendance: 0,
-        lastActivity: 'Just now',
-        establishedDate: new Date().toISOString().split('T')[0],
-        features: {
-          fastScan: false, liveVerification: false, usbCamera: false, qrCode: false, nfcReader: false,
-          attendance: false, wallet: false, library: false, clinic: false, events: false, notifications: false, analytics: false
-        }
-      })
+  const handleCreateSchool = async () => {
+    if (!validateWizardStep(currentStep)) return
+    try {
+      await api.post("/schools", wizardFormData)
       setShowAddForm(false)
-      setCurrentStep(0)
-      setWizardFormData({
-        name: '', subdomain: '', address: '', email: '', phone: '', principalName: '', principalEmail: '', subscriptionPlan: 'basic'
-      })
+      fetchSchools()
+    } catch (err) {
+      alert("Deployment failed. Verify network connectivity.")
     }
   }
 
-  const updateWizardField = (field: string, value: string) => {
-    setWizardFormData(prev => ({ ...prev, [field]: value }))
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }))
+  const toggleStatus = async (id: string, currentStatus: string) => {
+    try {
+      const newStatus = currentStatus === 'active' ? 'disabled' : 'active'
+      await api.put(`/schools/${id}/status`, { status: newStatus })
+      fetchSchools()
+    } catch (err) {
+      console.error('Status sync failed.')
     }
   }
 
-  const openSchoolDetails = (school: School) => {
-    const staffList = getSchoolStaff(school.id)
-    const studentList = getSchoolStudents(school.id)
-    const parentList = getSchoolParents(school.id)
-
-    const schoolDetails: SchoolDetailsModal = {
-      ...school,
-      staffList: staffList.map(s => ({ id: s.id, name: s.name, role: s.role, email: s.email })),
-      studentList: studentList.map(s => ({ id: s.id, name: s.name, class: s.class, cardStatus: s.cardStatus })),
-      parentList: parentList.map(p => ({ id: p.id, name: p.name, contact: p.phone, email: p.email })),
-      recentActivities: [
-        { id: '1', type: 'gate', description: `${school.students} students scanned at gate`, time: '2 mins ago' },
-        { id: '2', type: 'wallet', description: `Wallet transaction: $${school.totalTransactions}`, time: '5 mins ago' },
-        { id: '3', type: 'attendance', description: `Attendance recorded: ${school.attendance}%`, time: '8 mins ago' },
-      ],
-    }
-    setSelectedSchool(schoolDetails)
-  }
-
-  const toggleStatus = (id: string) => {
-    const school = schools.find(s => s.id === id)
-    if (school) {
-      updateSchool(id, { status: school.status === 'active' ? 'disabled' : 'active' })
-    }
-  }
-
-  const handleAddSchool = () => {
-    if (!formData.name || !formData.subdomain || !formData.email) {
-      alert('Please fill in all required fields')
-      return
-    }
-    
-    addSchool({
-      ...formData,
-      status: 'pending',
-      students: 0,
-      staff: 0,
-      parents: 0,
-      cardUsage: 0,
-      walletActivity: 'low',
-      totalTransactions: 0,
-      attendance: 0,
-      lastActivity: 'Just now',
-      establishedDate: new Date().toISOString().split('T')[0],
-      features: {
-        fastScan: false, liveVerification: false, usbCamera: false, qrCode: false, nfcReader: false,
-        attendance: false, wallet: false, library: false, clinic: false, events: false, notifications: false, analytics: false
-      }
-    })
-
-    setFormData({
-      name: '', subdomain: '', email: '', phone: '', address: '', principalName: '', principalEmail: '', subscriptionPlan: 'basic'
-    })
-    setShowAddForm(false)
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return { backgroundColor: `${CARDLECT_COLORS.primary.darker}15`, color: CARDLECT_COLORS.primary.darker }
-      case 'disabled': return { backgroundColor: `${CARDLECT_COLORS.danger.main}15`, color: CARDLECT_COLORS.danger.main }
-      case 'pending': return { backgroundColor: `${CARDLECT_COLORS.warning.main}15`, color: CARDLECT_COLORS.warning.main }
-      default: return { backgroundColor: '#F3F4F6', color: '#6B7280' }
-    }
+  if (loading) {
+    return (
+      <DashboardLayout currentPage="schools" role="super_admin">
+        <div className="flex items-center justify-center p-20 min-h-[60vh]">
+          <Loader2 className="w-12 h-12 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    )
   }
 
   return (
-    <DashboardLayout currentPage="schools" role="super-user">
-    <div className="flex h-screen bg-background">
-        <main className="flex-1 overflow-auto">
-          <div className="p-8">
-            <div className="flex justify-between items-center mb-8">
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">Schools Management</h1>
-                <p className="text-muted-foreground">Manage all schools in the Cardlect ecosystem</p>
-              </div>
-              <button onClick={() => setShowAddForm(true)} style={{ backgroundColor: CARDLECT_COLORS.primary.darker }} className="flex items-center gap-2 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-all">
-                <Plus size={18} />
-                Add School
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-card border border-border rounded-lg p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-muted-foreground text-sm">Total Schools</p>
-                  <Activity size={20} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                </div>
-                <p className="text-3xl font-bold text-foreground">{schools.length}</p>
-                <p style={{ color: CARDLECT_COLORS.primary.darker }} className="text-xs mt-2">{schools.filter(s => s.status === 'active').length} active</p>
-              </div>
-              <div className="bg-card border border-border rounded-lg p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-muted-foreground text-sm">Total Students</p>
-                  <Users size={20} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                </div>
-                <p className="text-3xl font-bold text-foreground">{schools.reduce((sum, s) => sum + s.students, 0).toLocaleString()}</p>
-                <p style={{ color: CARDLECT_COLORS.primary.darker }} className="text-xs mt-2">Across all schools</p>
-              </div>
-              <div className="bg-card border border-border rounded-lg p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-muted-foreground text-sm">Avg Card Usage</p>
-                  <TrendingUp size={20} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                </div>
-                <p className="text-3xl font-bold text-foreground">{Math.round(schools.filter(s => s.status === 'active').reduce((sum, s) => sum + s.cardUsage, 0) / Math.max(schools.filter(s => s.status === 'active').length, 1))}%</p>
-                <p style={{ color: CARDLECT_COLORS.primary.darker }} className="text-xs mt-2">System-wide average</p>
-              </div>
-              <div className="bg-card border border-border rounded-lg p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-muted-foreground text-sm">Transactions Today</p>
-                  <Activity size={20} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                </div>
-                <p className="text-3xl font-bold text-foreground">{schools.reduce((sum, s) => sum + s.totalTransactions, 0).toLocaleString()}</p>
-                <p style={{ color: CARDLECT_COLORS.primary.darker }} className="text-xs mt-2">All activity</p>
-              </div>
-            </div>
-
-            {showAddForm && (
-              <div
-                role="dialog"
-                aria-modal="true"
-                className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6"
-              >
-                {/* Backdrop */}
-                <div
-                  onClick={() => setShowAddForm(false)}
-                  className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
-                />
-
-                {/* Modal */}
-                <div className="relative w-full max-w-lg md:max-w-6xl bg-background border border-border rounded-xl shadow-2xl overflow-hidden z-10 flex flex-col md:grid md:grid-cols-12 max-h-[90vh]">
-                  {/* Left sidebar: Steps */}
-                  <aside className="col-span-12 md:col-span-4 lg:col-span-3 bg-secondary/5 p-4 md:p-6 flex md:flex-col flex-row md:gap-6 gap-2 items-center md:items-start">
-                    <div className="flex items-center justify-between w-full md:block">
-                      <div>
-                        <h2 className="text-base md:text-lg font-bold text-foreground">School Onboarding</h2>
-                        <p className="text-xs md:text-sm text-muted-foreground mt-1">Guided setup to get you started</p>
-                      </div>
-
-                      {/* close button for small screens */}
-                      <button
-                        onClick={() => setShowAddForm(false)}
-                        className="md:hidden p-2 rounded-md text-muted-foreground hover:bg-secondary/50 ml-2"
-                        aria-label="Close onboarding"
-                      >
-                        <X size={18} />
-                      </button>
-                    </div>
-
-                    <nav className="flex-1 flex md:flex-col flex-row gap-3 pt-2 overflow-auto w-full">
-                      {wizardSteps.map((s, idx) => {
-                        const isActive = idx === currentStep
-                        const done = idx < currentStep
-                        return (
-                          <button
-                            key={s.title}
-                            onClick={() => {
-                              if (done || isActive) setCurrentStep(idx)
-                            }}
-                            className={`shrink-0 min-w-[150px] md:w-full text-left flex items-center gap-3 p-3 rounded-lg transition ${
-                              isActive ? 'bg-primary/10 border border-primary' : 'hover:bg-secondary/50'
-                            } ${done ? 'opacity-90' : ''}`}
-                          >
-                            <div className={`w-8 h-8 flex items-center justify-center rounded-full ${done ? 'bg-primary text-white' : isActive ? 'bg-primary/80 text-white' : 'bg-secondary/50 text-muted-foreground'}`}>
-                              {done ? <Check size={16} /> : <span className="text-sm font-medium">{idx + 1}</span>}
-                            </div>
-                            <div className="truncate">
-                              <div className={`text-sm font-medium truncate ${isActive ? 'text-foreground' : 'text-muted-foreground'}`}>{s.title}</div>
-                              <div className="text-xs text-muted-foreground truncate">{s.description}</div>
-                            </div>
-                          </button>
-                        )
-                      })}
-                    </nav>
-
-                    <div className="text-xs text-muted-foreground w-full md:mt-auto md:block hidden">
-                      <div>Step {currentStep + 1} of {wizardSteps.length}</div>
-                    </div>
-                  </aside>
-
-                  {/* Right content */}
-                  <div className="col-span-12 md:col-span-8 lg:col-span-9 p-4 md:p-8 overflow-auto flex flex-col min-h-[420px]">
-                    <div className="flex-1">
-                      {currentStep === 0 && (
-                        <div className="space-y-6">
-                          <div>
-                            <h3 className="text-lg font-semibold text-foreground mb-1">{wizardSteps[0].title}</h3>
-                            <p className="text-sm text-muted-foreground mb-6">{wizardSteps[0].description}</p>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-foreground mb-2">
-                              School Name *
-                            </label>
-                            <input
-                              type="text"
-                              placeholder="e.g., lagos international school"
-                              value={wizardFormData.name}
-                              onChange={(e) => updateWizardField('name', e.target.value)}
-                              className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none  ${
-                                errors.name ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary'
-                              }`}
-                            />
-                            {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name}</p>}
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-foreground mb-2">
-                                Subdomain * <span className="text-muted-foreground">.cardlect.io</span>
-                              </label>
-                              <input
-                                type="text"
-                                placeholder="e.g., lagosinternationalschool"
-                                value={wizardFormData.subdomain}
-                                onChange={(e) => updateWizardField('subdomain', e.target.value.toLowerCase())}
-                                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none ${
-                                  errors.subdomain ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary'
-                                }`}
-                              />
-                              {errors.subdomain && <p className="text-xs text-red-600 mt-1">{errors.subdomain}</p>}
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-medium text-foreground mb-2">
-                                Address *
-                              </label>
-                              <input
-                                type="text"
-                                placeholder="123 Main Street, Lagos, Nigeria"
-                                value={wizardFormData.address}
-                                onChange={(e) => updateWizardField('address', e.target.value)}
-                                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none  ${
-                                  errors.address ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary'
-                                }`}
-                              />
-                              {errors.address && <p className="text-xs text-red-600 mt-1">{errors.address}</p>}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {currentStep === 1 && (
-                        <div className="space-y-6">
-                          <div>
-                            <h3 className="text-lg font-semibold text-foreground mb-1">{wizardSteps[1].title}</h3>
-                            <p className="text-sm text-muted-foreground mb-6">{wizardSteps[1].description}</p>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-foreground mb-2">
-                                School Email *
-                              </label>
-                              <input
-                                type="email"
-                                placeholder="admin@school.edu"
-                                value={wizardFormData.email}
-                                onChange={(e) => updateWizardField('email', e.target.value)}
-                                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none  ${
-                                  errors.email ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary'
-                                }`}
-                              />
-                              {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-medium text-foreground mb-2">
-                                School Phone *
-                              </label>
-                              <input
-                                type="tel"
-                                placeholder="+234 (555) 000-0000"
-                                value={wizardFormData.phone}
-                                onChange={(e) => updateWizardField('phone', e.target.value)}
-                                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none  ${
-                                  errors.phone ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary'
-                                }`}
-                              />
-                              {errors.phone && <p className="text-xs text-red-600 mt-1">{errors.phone}</p>}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {currentStep === 2 && (
-                        <div className="space-y-6">
-                          <div>
-                            <h3 className="text-lg font-semibold text-foreground mb-1">{wizardSteps[2].title}</h3>
-                            <p className="text-sm text-muted-foreground mb-6">{wizardSteps[2].description}</p>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <label className="block text-sm font-medium text-foreground mb-2">
-                                Principal Name *
-                              </label>
-                              <input
-                                type="text"
-                                placeholder="Dr. John Smith"
-                                value={wizardFormData.principalName}
-                                onChange={(e) => updateWizardField('principalName', e.target.value)}
-                                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none  ${
-                                  errors.principalName ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary'
-                                }`}
-                              />
-                              {errors.principalName && <p className="text-xs text-red-600 mt-1">{errors.principalName}</p>}
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-medium text-foreground mb-2">
-                                Principal Email *
-                              </label>
-                              <input
-                                type="email"
-                                placeholder="principal@school.edu"
-                                value={wizardFormData.principalEmail}
-                                onChange={(e) => updateWizardField('principalEmail', e.target.value)}
-                                className={`w-full px-4 py-3 bg-secondary border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none  ${
-                                  errors.principalEmail ? 'border-destructive focus:ring-destructive' : 'border-border focus:ring-primary'
-                                }`}
-                              />
-                              {errors.principalEmail && <p className="text-xs text-red-600 mt-1">{errors.principalEmail}</p>}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {currentStep === 3 && (
-                        <div className="space-y-6">
-                          <div>
-                            <h3 className="text-lg font-semibold text-foreground mb-1">{wizardSteps[3].title}</h3>
-                            <p className="text-sm text-muted-foreground mb-6">{wizardSteps[3].description}</p>
-                          </div>
-
-                          <div>
-                            <label className="block text-sm font-medium text-foreground mb-2">
-                              Subscription Plan
-                            </label>
-                            <select
-                              value={wizardFormData.subscriptionPlan}
-                              onChange={(e) => updateWizardField('subscriptionPlan', e.target.value)}
-                              className="w-full px-4 py-3 bg-secondary border border-border rounded-lg text-foreground focus:outline-none  focus:ring-primary"
-                            >
-                              <option value="basic">Basic - Core features (NFC, Attendance, Wallet)</option>
-                              <option value="premium">Premium - Basic + Live Verification & Analytics</option>
-                              <option value="enterprise">Enterprise - All features including advanced modules</option>
-                            </select>
-                          </div>
-
-                          <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
-                            <h4 className="text-sm font-semibold text-foreground mb-3">Review Information</h4>
-                            <div className="space-y-2 text-sm">
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">School Name:</span>
-                                <span className="text-foreground font-medium">{wizardFormData.name}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Subdomain:</span>
-                                <span className="text-foreground font-medium">{wizardFormData.subdomain}.cardlect.io</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Principal:</span>
-                                <span className="text-foreground font-medium">{wizardFormData.principalName}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Plan:</span>
-                                <span className="text-foreground font-medium capitalize">{wizardFormData.subscriptionPlan}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Footer */}
-                    <div className="mt-4 pt-4 border-t border-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <div className="w-full flex justify-between sm:justify-start gap-3">
-                        <button
-                          onClick={() => setShowAddForm(false)}
-                          className="px-4 py-2 text-foreground hover:bg-secondary/50 rounded-lg transition-all w-full sm:w-auto"
-                        >
-                          Cancel
-                        </button>
-
-                        <button
-                          onClick={handleWizardPrevious}
-                          disabled={currentStep === 0}
-                          className="flex items-center justify-center gap-2 px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-                        >
-                          <ChevronLeft size={18} />
-                          Previous
-                        </button>
-                      </div>
-
-                      <div className="w-full sm:w-auto flex gap-3">
-                        {currentStep < wizardSteps.length - 1 ? (
-                          <button
-                            onClick={handleWizardNext}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all w-full"
-                          >
-                            Next
-                            <ChevronRight size={18} />
-                          </button>
-                        ) : (
-                          <button
-                            onClick={handleWizardComplete}
-                            className="flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all w-full"
-                          >
-                            <Check size={18} />
-                            Create School
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="bg-card border border-border rounded-lg overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-border bg-secondary/30">
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">School</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Subdomain</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Status</th>
-                      <th className="px-6 py-4 text-center text-sm font-semibold text-foreground">Students</th>
-                      <th className="px-6 py-4 text-center text-sm font-semibold text-foreground">Staff</th>
-                      <th className="px-6 py-4 text-center text-sm font-semibold text-foreground">Parents</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Card Usage</th>
-                      <th className="px-6 py-4 text-center text-sm font-semibold text-foreground">Attendance</th>
-                      <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {schools.length === 0 ? (
-                      <tr>
-                        <td colSpan={9} className="px-6 py-12 text-center text-muted-foreground">
-                          No schools added yet. Create your first school to get started.
-                        </td>
-                      </tr>
-                    ) : (
-                      schools.map((school, idx) => (
-                        <tr key={school.id} className={`${idx % 2 === 0 ? 'bg-secondary/20' : ''} border-b border-border hover:bg-secondary/40 transition-all`}>
-                          <td className="px-6 py-4 text-sm text-foreground font-medium">
-                              {school.name}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-muted-foreground">{school.subdomain}.cardlect.io</td>
-                          <td className="px-6 py-4">
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(school.status)}`}>
-                              {school.status.charAt(0).toUpperCase() + school.status.slice(1)}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-center text-foreground">{school.students}</td>
-                          <td className="px-6 py-4 text-sm text-center text-foreground">{school.staff}</td>
-                          <td className="px-6 py-4 text-sm text-center text-foreground">{school.parents}</td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                              <div className="w-20 bg-secondary rounded-full h-2">
-                                <div className="bg-primary h-2 rounded-full" style={{ width: `${school.cardUsage}%` }} />
-                              </div>
-                              <span className="text-xs text-foreground">{school.cardUsage}%</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 text-sm text-center text-foreground font-medium">{school.attendance}%</td>
-                          <td className="px-6 py-4 text-sm">
-                            <div className="flex items-center gap-1">
-                              <button onClick={() => router.push(`/super-user/school-details/${school.id}`)} className="p-1 hover:bg-secondary/50 rounded transition-all" title="View Details">
-                                <Eye size={16} className="text-primary" />
-                              </button>
-                              <button onClick={() => router.push(`/super-user/school-details/${school.id}?tab=settings`)} className="p-1 hover:bg-secondary/50 rounded transition-all" title="Settings">
-                                <Settings size={16} className="text-purple-600" />
-                              </button>
-                              <button onClick={() => toggleStatus(school.id)} className="p-1 hover:bg-secondary/50 rounded transition-all" title={school.status === 'active' ? 'Deactivate' : 'Activate'}>
-                                {school.status === 'active' ? <Pause size={16} className="text-yellow-600" /> : <Play size={16} className="text-green-600" />}
-                              </button>
-                              <button onClick={() => deleteSchool(school.id)} className="p-1 hover:bg-secondary/50 rounded transition-all" title="Delete">
-                                <Trash2 size={16} className="text-destructive" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+    <DashboardLayout currentPage="schools" role="super_admin">
+      <div className="space-y-10 pb-12">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <h2 className="text-4xl font-black text-foreground tracking-tighter">School Infrastructure</h2>
+            <p className="text-muted-foreground mt-1 font-medium italic">Global node management and institutional deployment.</p>
           </div>
-        </main>
-      </div>
+          <Button
+            className="bg-primary hover:bg-primary-darker text-white rounded-2xl h-14 px-8 font-black shadow-lg shadow-primary/20 active:scale-95 transition-all"
+            onClick={() => setShowAddForm(true)}
+          >
+            <Plus size={20} className="mr-2" /> Deploy New School
+          </Button>
+        </div>
 
-      {selectedSchool && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background border border-border rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-background border-b border-border p-6 flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-foreground">{selectedSchool.name}</h2>
-              <button onClick={() => setSelectedSchool(null)} className="p-1 hover:bg-secondary/50 rounded">
-                <X size={24} />
-              </button>
+        {/* Global Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[
+            { label: 'Active Nodes', val: schools.filter(s => s.status === 'active').length, icon: Globe, sub: `${schools.length} Total` },
+            { label: 'Total Enrollment', val: (schools.reduce((s, c) => s + (c.student_count || 0), 0)).toLocaleString(), icon: Users, sub: 'Across Ecosystem' },
+            { label: 'Network Integrity', val: '99.9%', icon: ShieldCheck, sub: 'All Nodes Verified' },
+            { label: 'Global Volume', val: '₦4.2M', icon: TrendingUp, sub: 'Last 24 Hours' }
+          ].map((stat, i) => (
+            <div key={i} className="bg-card border border-border rounded-3xl p-8 shadow-sm group hover:border-primary/50 transition-all">
+              <div className="flex items-center justify-between mb-6">
+                <div className="p-3 rounded-2xl bg-muted group-hover:bg-primary/10 group-hover:text-primary transition-all">
+                  <stat.icon size={24} />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">{stat.sub}</span>
+              </div>
+              <p className="text-3xl font-black text-foreground mb-1">{stat.val}</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-tighter">{stat.label}</p>
             </div>
+          ))}
+        </div>
 
-            <div className="p-6 space-y-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-card border border-border rounded-lg p-4">
-                  <p className="text-muted-foreground text-xs mb-1">Total Students</p>
-                  <p className="text-2xl font-bold text-foreground">{selectedSchool.students}</p>
-                </div>
-                <div className="bg-card border border-border rounded-lg p-4">
-                  <p className="text-muted-foreground text-xs mb-1">Staff Members</p>
-                  <p className="text-2xl font-bold text-foreground">{selectedSchool.staff}</p>
-                </div>
-                <div className="bg-card border border-border rounded-lg p-4">
-                  <p className="text-muted-foreground text-xs mb-1">Attendance Rate</p>
-                  <p className="text-2xl font-bold text-primary">{selectedSchool.attendance}%</p>
-                </div>
-                <div className="bg-card border border-border rounded-lg p-4">
-                  <p className="text-muted-foreground text-xs mb-1">Card Usage</p>
-                  <p className="text-2xl font-bold text-primary">{selectedSchool.cardUsage}%</p>
-                </div>
-              </div>
-
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <UserCheck size={20} className="text-primary" />
-                  Staff Members ({selectedSchool.staffList.length})
-                </h3>
-                {selectedSchool.staffList.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No staff members added yet.</p>
-                ) : (
-                  <div className="space-y-3">
-                    {selectedSchool.staffList.map(staff => (
-                      <div key={staff.id} className="flex justify-between items-start p-3 bg-secondary/20 rounded-lg">
-                        <div>
-                          <p className="font-medium text-foreground">{staff.name}</p>
-                          <p className="text-xs text-muted-foreground">{staff.role}</p>
-                        </div>
-                        <p className="text-xs text-muted-foreground">{staff.email}</p>
+        {/* School Registry Table */}
+        <div className="bg-card border border-border rounded-[2.5rem] shadow-xl overflow-hidden overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-muted/30 border-b border-border">
+                <th className="p-8 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Institutional Node</th>
+                <th className="p-8 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Subdomain</th>
+                <th className="p-8 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Network Status</th>
+                <th className="p-8 text-[11px] font-black uppercase tracking-widest text-muted-foreground text-center">Population</th>
+                <th className="p-8 text-[11px] font-black uppercase tracking-widest text-muted-foreground">Deployment</th>
+                <th className="p-8 text-[11px] font-black uppercase tracking-widest text-muted-foreground text-right">Operations</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {schools.map((school) => (
+                <tr key={school.id} className="hover:bg-muted/10 transition-colors group">
+                  <td className="p-8">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-primary/5 text-primary flex items-center justify-center font-black text-xl border border-primary/10 group-hover:bg-primary group-hover:text-white transition-all">
+                        {school.name.charAt(0)}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <Users size={20} className="text-primary" />
-                  Recent Students ({selectedSchool.studentList.length})
-                </h3>
-                {selectedSchool.studentList.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No students registered yet.</p>
-                ) : (
-                  <div className="space-y-3">
-                    {selectedSchool.studentList.map(student => (
-                      <div key={student.id} className="flex justify-between items-center p-3 bg-secondary/20 rounded-lg">
-                        <div>
-                          <p className="font-medium text-foreground">{student.name}</p>
-                          <p className="text-xs text-muted-foreground">Class: {student.class}</p>
-                        </div>
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${student.cardStatus === 'active' || student.cardStatus === 'issued' ? 'bg-green-500/10 text-green-600' : 'bg-yellow-500/10 text-yellow-600'}`}>
-                          {student.cardStatus}
-                        </span>
+                      <div>
+                        <p className="font-black text-foreground text-lg tracking-tight">{school.name}</p>
+                        <p className="text-xs text-muted-foreground font-medium italic">{school.address}</p>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+                    </div>
+                  </td>
+                  <td className="p-8">
+                    <code className="bg-muted rounded-xl px-3 py-1.5 text-xs font-black text-primary border border-border">
+                      {school.subdomain}.cardlect.io
+                    </code>
+                  </td>
+                  <td className="p-8">
+                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${school.status === 'active' ? 'bg-green-500/10 text-green-600 border-green-500/20' : 'bg-red-500/10 text-red-600 border-red-500/20'
+                      }`}>
+                      {school.status}
+                    </span>
+                  </td>
+                  <td className="p-8 text-center">
+                    <p className="text-lg font-black text-foreground">{school.student_count || 0}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase italic dark:text-gray-400">Total Enrolled</p>
+                  </td>
+                  <td className="p-8">
+                    <div className="flex items-center gap-2">
+                      <Activity className="text-green-500" size={14} />
+                      <span className="text-sm font-bold text-foreground">{new Date(school.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </td>
+                  <td className="p-8 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button variant="outline" size="icon" className="rounded-xl hover:bg-primary hover:text-white border-2" title="Inspect Node">
+                        <Eye size={18} />
+                      </Button>
+                      <Button
+                        variant="outline" size="icon" className="rounded-xl border-2 hover:bg-amber-500 hover:text-white"
+                        title={school.status === 'active' ? 'Decommission' : 'Restore'}
+                        onClick={() => toggleStatus(school.id, school.status)}
+                      >
+                        {school.status === 'active' ? <Pause size={18} /> : <Play size={18} />}
+                      </Button>
+                      <Button variant="outline" size="icon" className="rounded-xl border-2 hover:bg-red-500 hover:text-white" title="Decommission Permanently">
+                        <Trash2 size={18} />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <Users size={20} className="text-primary" />
-                  Linked Parents ({selectedSchool.parentList.length})
-                </h3>
-                {selectedSchool.parentList.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No parents linked yet.</p>
-                ) : (
-                  <div className="space-y-3">
-                    {selectedSchool.parentList.map(parent => (
-                      <div key={parent.id} className="flex justify-between items-start p-3 bg-secondary/20 rounded-lg">
-                        <div>
-                          <p className="font-medium text-foreground">{parent.name}</p>
-                          <p className="text-xs text-muted-foreground">{parent.contact}</p>
-                        </div>
-                        <p className="text-xs text-muted-foreground">{parent.email}</p>
+        {/* Deployment Wizard Modal */}
+        {showAddForm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-background/80 backdrop-blur-xl animate-in fade-in duration-300">
+            <div className="bg-card border border-border rounded-[3rem] shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row h-[700px]">
+              <aside className="w-full md:w-80 bg-muted/30 p-10 border-r border-border flex flex-col">
+                <h3 className="text-2xl font-black text-foreground mb-2">Node Wizard</h3>
+                <p className="text-xs text-muted-foreground font-black uppercase tracking-widest mb-10 italic">Initializing School Infrastructure</p>
+                <div className="space-y-6 flex-1">
+                  {wizardSteps.map((step, i) => (
+                    <div key={i} className={`flex items-start gap-4 transition-all ${i === currentStep ? 'opacity-100' : 'opacity-40'}`}>
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-black ${i <= currentStep ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-muted'
+                        }`}>
+                        {i < currentStep ? <Check size={16} /> : i + 1}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <Activity size={20} className="text-primary" />
-                  Recent Activities
-                </h3>
-                <div className="space-y-3">
-                  {selectedSchool.recentActivities.map(activity => (
-                    <div key={activity.id} className="flex justify-between items-start p-3 bg-secondary/20 rounded-lg">
-                      <p className="text-sm text-foreground">{activity.description}</p>
-                      <p className="text-xs text-muted-foreground">{activity.time}</p>
+                      <div>
+                        <p className="text-sm font-black text-foreground">{step.title}</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter leading-tight mt-0.5">{step.description}</p>
+                      </div>
                     </div>
                   ))}
                 </div>
-              </div>
-
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                  <Settings size={20} className="text-primary" />
-                  Management Actions
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <button onClick={() => router.push(`/student-registration?schoolId=${selectedSchool.id}`)} className="px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-all text-sm font-medium">
-                    Register Students
-                  </button>
-                  <button onClick={() => router.push(`/staff-management?schoolId=${selectedSchool.id}`)} className="px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-all text-sm font-medium">
-                    Manage Staff
-                  </button>
-                  <button onClick={() => router.push(`/parent-management?schoolId=${selectedSchool.id}`)} className="px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-all text-sm font-medium">
-                    Manage Parents
-                  </button>
-                  <button onClick={() => router.push(`/school-config?schoolId=${selectedSchool.id}`)} className="px-4 py-2 bg-secondary text-foreground rounded-lg hover:bg-secondary/80 transition-all text-sm font-medium">
-                    School Settings
-                  </button>
+              </aside>
+              <div className="flex-1 p-16 flex flex-col">
+                <div className="flex-1">
+                  {currentStep === 0 && (
+                    <div className="space-y-8 animate-in slide-in-from-right-4 duration-300">
+                      <div className="space-y-6">
+                        <div className="relative group">
+                          <Building2 className="absolute left-6 top-6 text-muted-foreground group-focus-within:text-primary transition-all" size={24} />
+                          <input
+                            className="w-full bg-muted/40 border-2 border-transparent focus:border-primary/30 rounded-3xl p-6 pl-16 text-xl font-black outline-none transition-all placeholder:text-muted-foreground/30"
+                            placeholder="Legal Designation (School Name)"
+                            value={wizardFormData.name}
+                            onChange={(e) => setWizardFormData({ ...wizardFormData, name: e.target.value })}
+                          />
+                        </div>
+                        <div className="relative group">
+                          <Globe className="absolute left-6 top-6 text-muted-foreground group-focus-within:text-primary transition-all" size={24} />
+                          <input
+                            className="w-full bg-muted/40 border-2 border-transparent focus:border-primary/30 rounded-3xl p-6 pl-16 text-xl font-black outline-none transition-all placeholder:text-muted-foreground/30"
+                            placeholder="Autonomous Subdomain ID"
+                            value={wizardFormData.subdomain}
+                            onChange={(e) => setWizardFormData({ ...wizardFormData, subdomain: e.target.value.toLowerCase() })}
+                          />
+                          <span className="absolute right-8 top-8 font-black text-muted-foreground/30">.cardlect.io</span>
+                        </div>
+                        <div className="relative group">
+                          <MapPin className="absolute left-6 top-6 text-muted-foreground group-focus-within:text-primary transition-all" size={24} />
+                          <input
+                            className="w-full bg-muted/40 border-2 border-transparent focus:border-primary/30 rounded-3xl p-6 pl-16 text-xl font-black outline-none transition-all placeholder:text-muted-foreground/30"
+                            placeholder="Physical Localization Geocode"
+                            value={wizardFormData.address}
+                            onChange={(e) => setWizardFormData({ ...wizardFormData, address: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {currentStep === 1 && (
+                    <div className="space-y-8 animate-in slide-in-from-right-4 duration-300">
+                      <div className="space-y-6">
+                        <div className="relative group">
+                          <Mail className="absolute left-6 top-6 text-muted-foreground group-focus-within:text-primary transition-all" size={24} />
+                          <input
+                            className="w-full bg-muted/40 border-2 border-transparent focus:border-primary/30 rounded-3xl p-6 pl-16 text-xl font-black outline-none transition-all placeholder:text-muted-foreground/30"
+                            placeholder="Infrastructure Admin Email"
+                            value={wizardFormData.email}
+                            onChange={(e) => setWizardFormData({ ...wizardFormData, email: e.target.value })}
+                          />
+                        </div>
+                        <div className="relative group">
+                          <Phone className="absolute left-6 top-6 text-muted-foreground group-focus-within:text-primary transition-all" size={24} />
+                          <input
+                            className="w-full bg-muted/40 border-2 border-transparent focus:border-primary/30 rounded-3xl p-6 pl-16 text-xl font-black outline-none transition-all placeholder:text-muted-foreground/30"
+                            placeholder="Unified Emergency Contact"
+                            value={wizardFormData.phone}
+                            onChange={(e) => setWizardFormData({ ...wizardFormData, phone: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {currentStep === 2 && (
+                    <div className="space-y-8 animate-in slide-in-from-right-4 duration-300">
+                      <div className="space-y-6">
+                        <div className="relative group">
+                          <Users className="absolute left-6 top-6 text-muted-foreground group-focus-within:text-primary transition-all" size={24} />
+                          <input
+                            className="w-full bg-muted/40 border-2 border-transparent focus:border-primary/30 rounded-3xl p-6 pl-16 text-xl font-black outline-none transition-all placeholder:text-muted-foreground/30"
+                            placeholder="Principal Full Identity"
+                            value={wizardFormData.principal_name}
+                            onChange={(e) => setWizardFormData({ ...wizardFormData, principal_name: e.target.value })}
+                          />
+                        </div>
+                        <div className="relative group">
+                          <Mail className="absolute left-6 top-6 text-muted-foreground group-focus-within:text-primary transition-all" size={24} />
+                          <input
+                            className="w-full bg-muted/40 border-2 border-transparent focus:border-primary/30 rounded-3xl p-6 pl-16 text-xl font-black outline-none transition-all placeholder:text-muted-foreground/30"
+                            placeholder="Principal Direct Channel"
+                            value={wizardFormData.principal_email}
+                            onChange={(e) => setWizardFormData({ ...wizardFormData, principal_email: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {currentStep === 3 && (
+                    <div className="space-y-8 animate-in slide-in-from-right-4 duration-300">
+                      <div>
+                        <h4 className="text-sm font-black uppercase tracking-widest text-muted-foreground mb-6 italic">Configuration Review</h4>
+                        <div className="bg-muted/30 rounded-4xl p-8 border border-border space-y-4">
+                          <div className="flex justify-between items-center"><span className="text-xs font-black uppercase text-muted-foreground">Entity</span><span className="font-black text-foreground">{wizardFormData.name}</span></div>
+                          <div className="flex justify-between items-center"><span className="text-xs font-black uppercase text-muted-foreground">Gateway</span><span className="font-black text-primary italic">{wizardFormData.subdomain}.cardlect.io</span></div>
+                          <div className="flex justify-between items-center"><span className="text-xs font-black uppercase text-muted-foreground">Principal</span><span className="font-black text-foreground">{wizardFormData.principal_name}</span></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="flex justify-between items-center mt-12 gap-4">
+                  <Button
+                    variant="ghost"
+                    className="rounded-2xl h-14 px-8 font-black hover:bg-muted"
+                    onClick={() => setShowAddForm(false)}
+                  >
+                    Abort
+                  </Button>
+                  <div className="flex gap-4">
+                    {currentStep > 0 && (
+                      <Button
+                        variant="outline"
+                        className="rounded-2xl h-14 px-8 font-black border-2"
+                        onClick={() => setCurrentStep(currentStep - 1)}
+                      >
+                        Revert
+                      </Button>
+                    )}
+                    <Button
+                      className="bg-primary hover:bg-primary-darker text-white rounded-2xl h-14 px-10 font-black shadow-xl shadow-primary/20 active:scale-95 transition-all"
+                      onClick={currentStep === 3 ? handleCreateSchool : () => setCurrentStep(currentStep + 1)}
+                    >
+                      {currentStep === 3 ? 'Execute Deployment' : 'Continue Integration'}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </DashboardLayout>
   )
 }

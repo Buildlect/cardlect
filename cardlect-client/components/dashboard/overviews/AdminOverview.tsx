@@ -1,6 +1,7 @@
 "use client"
 
-import { Users, BookOpen, Clock, Wallet, CreditCard, FileText, UserPlus } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Users, BookOpen, Clock, Wallet, CreditCard, FileText, UserPlus, Loader2, LogIn, ShoppingCart, MessageSquare } from "lucide-react"
 import {
     ResponsiveContainer,
     AreaChart,
@@ -13,6 +14,7 @@ import {
 } from "recharts"
 import { CARDLECT_COLORS } from "@/lib/cardlect-colors"
 import { useRouter } from "next/navigation"
+import api from "@/lib/api-client"
 
 type Metric = {
     icon: any
@@ -57,92 +59,96 @@ function CustomTooltip({ active, payload, label, color, unit }: any) {
 
 export default function AdminOverview() {
     const router = useRouter()
+    const [data, setData] = useState<any>(null)
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchOverview = async () => {
+            try {
+                const response = await api.get('/analytics/overview')
+                setData(response.data.data)
+            } catch (err) {
+                console.error('Failed to fetch admin overview:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchOverview()
+    }, [])
 
     const handleNavigate = (href: string) => {
         router.push(href)
     }
 
-    // Sample sparkline data
-    const sampleSeries = [
-        { name: "Mon", value: 60 },
-        { name: "Tue", value: 75 },
-        { name: "Wed", value: 68 },
-        { name: "Thu", value: 82 },
-        { name: "Fri", value: 71 },
-        { name: "Sat", value: 85 },
-        { name: "Sun", value: 78 },
+    if (loading || !data) {
+        return (
+            <div className="flex items-center justify-center p-20">
+                <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            </div>
+        )
+    }
+
+    // Sample sparkline data Fallback
+    const fallbackSeries = [
+        { name: "Mon", value: 10 },
+        { name: "Tue", value: 15 },
+        { name: "Wed", value: 12 },
+        { name: "Thu", value: 20 },
+        { name: "Fri", value: 18 },
+        { name: "Sat", value: 25 },
+        { name: "Sun", value: 22 },
     ]
+
+    const volumeData = data.finance.volume_trend_7d.length > 0
+        ? data.finance.volume_trend_7d.map((d: any) => ({ name: d.date, value: parseFloat(d.daily_volume) }))
+        : fallbackSeries;
 
     const metrics: Metric[] = [
         {
             icon: Users,
             label: "Total Students",
-            value: "1,248",
-            change: "+12%",
+            value: data.attendance.total_students.toLocaleString(),
+            change: "Live",
             colorClass: "from-cyan-400 to-cyan-600",
             colorHex: CARDLECT_COLORS.primary.darker,
-            data: sampleSeries,
-        },
-        {
-            icon: Users,
-            label: "Total Staff",
-            value: "45",
-            change: "+2%",
-            colorClass: "from-emerald-400 to-emerald-600",
-            colorHex: CARDLECT_COLORS.primary.darker,
-            data: sampleSeries.map((d) => ({ ...d, value: Math.round(d.value / 4) })),
-        },
-        {
-            icon: BookOpen,
-            label: "Active Classes",
-            value: "24",
-            change: "0%",
-            colorClass: "from-orange-400 to-orange-600",
-            colorHex: CARDLECT_COLORS.primary.darker,
-            data: sampleSeries.map((d, i) => ({ ...d, value: 20 + (i % 3) * 2 })),
-        },
-        {
-            icon: CreditCard,
-            label: "Active Cards",
-            value: "1,180",
-            change: "+8%",
-            colorClass: "from-amber-400 to-amber-600",
-            colorHex: CARDLECT_COLORS.primary.darker,
-            data: sampleSeries.map((d) => ({ ...d, value: d.value + 20 })),
+            data: fallbackSeries,
         },
         {
             icon: Clock,
-            label: "Attendance Today",
-            value: "92%",
-            change: "+4%",
+            label: "Attendance Rate",
+            value: data.attendance.attendance_rate,
+            change: `${data.attendance.present_today} Present`,
             colorClass: "from-emerald-400 to-emerald-600",
             colorHex: CARDLECT_COLORS.primary.darker,
-            data: sampleSeries.map((d) => ({ ...d, value: Math.round((d.value / 100) * 92) })),
+            data: fallbackSeries,
         },
         {
             icon: Wallet,
-            label: "Wallet Balance",
-            value: "₦45,230",
-            change: "+15%",
+            label: "Today Volume",
+            value: `₦${data.finance.today_transaction_volume.toLocaleString()}`,
+            change: `${data.finance.today_transaction_count} Txns`,
             colorClass: "from-blue-400 to-blue-600",
             colorHex: CARDLECT_COLORS.primary.darker,
-            data: sampleSeries.map((d, i) => ({ ...d, value: 300 + i * 20 })),
+            data: volumeData,
         },
-    ]
-
-    const overviewData = [
-        { name: "Jan", students: 1000, cards: 900 },
-        { name: "Feb", students: 1050, cards: 920 },
-        { name: "Mar", students: 1075, cards: 940 },
-        { name: "Apr", students: 1100, cards: 980 },
-        { name: "May", students: 1120, cards: 1020 },
-        { name: "Jun", students: 1150, cards: 1080 },
-        { name: "Jul", students: 1170, cards: 1100 },
-        { name: "Aug", students: 1200, cards: 1120 },
-        { name: "Sep", students: 1225, cards: 1140 },
-        { name: "Oct", students: 1248, cards: 1160 },
-        { name: "Nov", students: 1260, cards: 1170 },
-        { name: "Dec", students: 1280, cards: 1180 },
+        {
+            icon: LogIn,
+            label: "Gate Access",
+            value: data.safety.gate_access_today.toString(),
+            change: "Today",
+            colorClass: "from-amber-400 to-amber-600",
+            colorHex: CARDLECT_COLORS.primary.darker,
+            data: fallbackSeries,
+        },
+        {
+            icon: CreditCard,
+            label: "Active Pickups",
+            value: data.safety.active_pickups.toString(),
+            change: "Authorized",
+            colorClass: "from-orange-400 to-orange-600",
+            colorHex: CARDLECT_COLORS.primary.darker,
+            data: fallbackSeries,
+        },
     ]
 
     return (
@@ -151,7 +157,7 @@ export default function AdminOverview() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 {metrics.map((metric, idx) => {
                     const Icon = metric.icon
-                    const positive = metric.change.startsWith("+")
+                    const positive = !metric.change.includes("Down")
                     const gradientId = `sparkline-grad-${idx}`
 
                     return (
@@ -164,7 +170,7 @@ export default function AdminOverview() {
                                     <p className="text-sm text-muted-foreground mb-2">{metric.label}</p>
                                     <p className="text-2xl font-extrabold text-foreground">{metric.value}</p>
                                     <p className={`text-sm mt-2 ${positive ? "text-green-500" : "text-red-500"}`}>
-                                        {metric.change} from last month
+                                        {metric.change}
                                     </p>
                                 </div>
 
@@ -190,7 +196,7 @@ export default function AdminOverview() {
                                         <Tooltip
                                             wrapperStyle={{ outline: "none" }}
                                             cursor={false}
-                                            content={<CustomTooltip color={metric.colorHex} unit={metric.label === "Wallet Balance" ? "₦" : ""} />}
+                                            content={<CustomTooltip color={metric.colorHex} unit={metric.label === "Today Volume" ? "₦" : ""} />}
                                         />
 
                                         <Area
@@ -218,23 +224,18 @@ export default function AdminOverview() {
             <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 bg-card p-6 rounded-xl border border-border shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-bold text-foreground">Overview</h2>
-                        <div className="text-sm text-muted-foreground">Monthly trend</div>
+                        <h2 className="text-xl font-bold text-foreground">Transaction Volume</h2>
+                        <div className="text-sm text-muted-foreground">7-Day Trend</div>
                     </div>
 
                     <div className="h-60">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={overviewData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
+                            <AreaChart data={volumeData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
                                 <defs>
-                                    <linearGradient id="gradStudents" x1="0" y1="0" x2="0" y2="1">
+                                    <linearGradient id="gradVolume" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="0%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.28} />
                                         <stop offset="60%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.08} />
                                         <stop offset="100%" stopColor={CARDLECT_COLORS.primary.darker} stopOpacity={0.02} />
-                                    </linearGradient>
-                                    <linearGradient id="gradCards" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor={CARDLECT_COLORS.primary.main} stopOpacity={0.26} />
-                                        <stop offset="60%" stopColor={CARDLECT_COLORS.primary.main} stopOpacity={0.07} />
-                                        <stop offset="100%" stopColor={CARDLECT_COLORS.primary.main} stopOpacity={0.02} />
                                     </linearGradient>
                                 </defs>
 
@@ -249,39 +250,20 @@ export default function AdminOverview() {
                                     tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
                                     axisLine={false}
                                     tickLine={false}
-                                    tickFormatter={(v) => numberFormatter(v as number)}
+                                    tickFormatter={(v) => `₦${numberFormatter(v as number)}`}
                                 />
-                                <Tooltip content={<CustomTooltip color={CARDLECT_COLORS.primary.darker} />} />
-                                <Legend
-                                    verticalAlign="top"
-                                    align="right"
-                                    wrapperStyle={{ color: "var(--muted-foreground)", fontSize: 13 }}
-                                    iconType="circle"
-                                />
+                                <Tooltip content={<CustomTooltip color={CARDLECT_COLORS.primary.darker} unit="₦" />} />
 
                                 <Area
                                     type="monotone"
-                                    dataKey="students"
+                                    dataKey="value"
                                     stroke={CARDLECT_COLORS.primary.darker}
-                                    fill="url(#gradStudents)"
+                                    fill="url(#gradVolume)"
                                     strokeWidth={2.5}
-                                    name="Students"
+                                    name="Revenue"
                                     activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff", fill: CARDLECT_COLORS.primary.darker }}
                                     isAnimationActive
                                     animationDuration={900}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="cards"
-                                    stroke={CARDLECT_COLORS.primary.main}
-                                    fill="url(#gradCards)"
-                                    strokeWidth={2.5}
-                                    name="Active Cards"
-                                    activeDot={{ r: 5, strokeWidth: 2, stroke: "#fff", fill: CARDLECT_COLORS.primary.main }}
-                                    isAnimationActive
-                                    animationDuration={900}
-                                    animationEasing="ease-in-out"
-                                    opacity={0.98}
                                 />
                             </AreaChart>
                         </ResponsiveContainer>
@@ -289,101 +271,41 @@ export default function AdminOverview() {
                 </div>
 
                 {/* Quick Actions */}
-                <div className="bg-card p-6 rounded-xl border border-border shadow-sm">
-                    <h3 className="text-lg font-bold text-foreground mb-2">Quick Actions</h3>
-                    <p className="text-sm text-muted-foreground mb-4">Common admin tasks</p>
+                <div className="bg-card p-6 rounded-xl border border-border shadow-sm overflow-hidden">
+                    <h3 className="text-lg font-bold text-foreground mb-2">Recent Partners</h3>
+                    <p className="text-sm text-muted-foreground mb-4">Transactions today</p>
 
-                    <div className="grid grid-cols-1 gap-3">
-                        <button
-                            onClick={() => handleNavigate("/dashboard/admin-students")}
-                            className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="font-semibold text-foreground">Manage Students</p>
-                                    <p className="text-xs text-muted-foreground">Add, edit, or view records</p>
+                    <div className="space-y-4">
+                        {data.partners.length === 0 ? (
+                            <p className="text-xs text-muted-foreground italic">No partner activity recorded today.</p>
+                        ) : (
+                            data.partners.map((p: any, i: number) => (
+                                <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-border/10">
+                                    <div>
+                                        <p className="text-sm font-bold text-foreground">{p.name}</p>
+                                        <p className="text-xs text-muted-foreground">{p.txn_count} transactions</p>
+                                    </div>
+                                    <div className="p-2 rounded-full bg-primary/10">
+                                        <ShoppingCart size={14} className="text-primary" />
+                                    </div>
                                 </div>
-                                <Users size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                            </div>
-                        </button>
+                            ))
+                        )}
 
-                        <button
-                            onClick={() => handleNavigate("/dashboard/admin-staffs")}
-                            className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="font-semibold text-foreground">Manage Staff</p>
-                                    <p className="text-xs text-muted-foreground">Add or edit staff profiles</p>
-                                </div>
-                                <UserPlus size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
+                        <div className="pt-4 border-t border-border/50">
+                            <h4 className="text-xs font-bold uppercase text-muted-foreground mb-3">Quick Links</h4>
+                            <div className="grid grid-cols-1 gap-2">
+                                <button onClick={() => handleNavigate("/dashboard/admin-students")} className="flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors">
+                                    <Users size={14} /> <span>Manage Students</span>
+                                </button>
+                                <button onClick={() => handleNavigate("/dashboard/admin-wallet")} className="flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors">
+                                    <Wallet size={14} /> <span>Wallet Operations</span>
+                                </button>
+                                <button onClick={() => handleNavigate("/dashboard/communication")} className="flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors">
+                                    <MessageSquare size={14} /> <span>Announcements</span>
+                                </button>
                             </div>
-                        </button>
-
-                        <button
-                            onClick={() => handleNavigate("/dashboard/admin-classes")}
-                            className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="font-semibold text-foreground">Manage Classes</p>
-                                    <p className="text-xs text-muted-foreground">Create or modify class schedules</p>
-                                </div>
-                                <BookOpen size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                            </div>
-                        </button>
-
-                        <button
-                            onClick={() => handleNavigate("/dashboard/admin-attendance")}
-                            className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="font-semibold text-foreground">View Attendance</p>
-                                    <p className="text-xs text-muted-foreground">Track daily attendance</p>
-                                </div>
-                                <Clock size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                            </div>
-                        </button>
-
-                        <button
-                            onClick={() => handleNavigate("/dashboard/admin-reports")}
-                            className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="font-semibold text-foreground">View Reports</p>
-                                    <p className="text-xs text-muted-foreground">Export or view analytics</p>
-                                </div>
-                                <FileText size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                            </div>
-                        </button>
-
-                        <button
-                            onClick={() => handleNavigate("/dashboard/admin-wallet")}
-                            className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="font-semibold text-foreground">Manage Wallet</p>
-                                    <p className="text-xs text-muted-foreground">Balances & transactions (₦)</p>
-                                </div>
-                                <Wallet size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                            </div>
-                        </button>
-
-                        <button
-                            onClick={() => handleNavigate("/dashboard/admin-cards")}
-                            className="w-full p-3 text-left rounded-lg bg-border/20 hover:scale-[1.01] transition transform"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="font-semibold text-foreground">Manage Cards</p>
-                                    <p className="text-xs text-muted-foreground">View or lock cards</p>
-                                </div>
-                                <CreditCard size={18} style={{ color: CARDLECT_COLORS.primary.darker }} />
-                            </div>
-                        </button>
+                        </div>
                     </div>
                 </div>
             </div>

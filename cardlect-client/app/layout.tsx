@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter, Montserrat } from 'next/font/google'
 import { ThemeProvider } from '@/components/theme-provider'
 import { CardlectProvider } from '@/contexts/cardlect-context'
+import { AuthProvider } from '@/contexts/auth-context'
 import MobilePopup from '@/components/mobile-checker'
 import './globals.css'
 
@@ -33,10 +34,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         style={{ fontFamily: 'var(--font-inter), var(--font-montserrat), sans-serif' }}
       >
         <ThemeProvider>
-          <CardlectProvider>
-          <MobilePopup />
-          {children}
-          </CardlectProvider>
+          <AuthProvider>
+            <CardlectProvider>
+              <MobilePopup />
+              {children}
+            </CardlectProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
