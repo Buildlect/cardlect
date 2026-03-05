@@ -56,7 +56,7 @@ export default function AttendancePage() {
   }
 
   return (
-    <DashboardLayout currentPage="attendance" role="teacher">
+    <DashboardLayout currentPage="attendance" role="staff" customRole="teacher">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -137,9 +137,9 @@ export default function AttendancePage() {
         </Card>
 
         {/* Search */}
-        <Input 
-          placeholder="Search student..." 
-          value={searchTerm} 
+        <Input
+          placeholder="Search student..."
+          value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-xs"
         />

@@ -52,7 +52,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <DashboardLayout currentPage="notifications" role="parents">
+    <DashboardLayout currentPage="notifications" role="parent">
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Notifications</h1>

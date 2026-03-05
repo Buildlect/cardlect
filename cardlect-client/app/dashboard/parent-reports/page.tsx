@@ -48,7 +48,7 @@ export default function ReportsPage() {
   )
 
   return (
-    <DashboardLayout currentPage="reports" role="parents">
+    <DashboardLayout currentPage="reports" role="parent">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>

@@ -18,7 +18,7 @@ export default function SalesPage() {
   const totalCustomers = salesData.reduce((sum, d) => sum + d.customers, 0)
 
   return (
-    <DashboardLayout currentPage="sales" role="approved-stores">
+    <DashboardLayout currentPage="sales" role="partner">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Sales Overview</h1>
         <p className="text-muted-foreground">Track your store sales performance</p>

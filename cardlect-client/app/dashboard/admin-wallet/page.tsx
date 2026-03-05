@@ -85,7 +85,7 @@ export default function WalletPage() {
   }
 
   return (
-    <DashboardLayout currentPage="wallet">
+    <DashboardLayout currentPage="wallet" role={["school_admin", "staff"]} customRole="finance">
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>

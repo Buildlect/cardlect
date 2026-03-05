@@ -39,7 +39,7 @@ export default function StudentsWalletPage() {
   const [searchTerm, setSearchTerm] = useState('')
 
   const filteredStudents = students.filter(s =>
-    s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     s.admissionNo.includes(searchTerm) ||
     s.school.toLowerCase().includes(searchTerm.toLowerCase())
   )
@@ -52,7 +52,7 @@ export default function StudentsWalletPage() {
   }
 
   const getStatusColor = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'active': return { color: CARDLECT_COLORS.success.main, backgroundColor: `${CARDLECT_COLORS.success.main}20` }
       case 'low-balance': return { color: CARDLECT_COLORS.warning.main, backgroundColor: `${CARDLECT_COLORS.warning.main}20` }
       case 'inactive': return { color: CARDLECT_COLORS.danger.main, backgroundColor: `${CARDLECT_COLORS.danger.main}20` }
@@ -61,7 +61,7 @@ export default function StudentsWalletPage() {
   }
 
   return (
-    <DashboardLayout currentPage="students" role="finance">
+    <DashboardLayout currentPage="students" role="staff" customRole="finance">
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Student Wallets</h1>
@@ -160,9 +160,9 @@ export default function StudentsWalletPage() {
         <div className="flex gap-4">
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-3 top-3 text-muted-foreground" size={18} />
-            <Input 
-              placeholder="Search student..." 
-              value={searchTerm} 
+            <Input
+              placeholder="Search student..."
+              value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
             />

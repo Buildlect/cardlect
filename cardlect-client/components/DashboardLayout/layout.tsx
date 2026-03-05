@@ -3,14 +3,15 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Sidebar, defaultMenuItems, type MenuItem } from "@/components/DashboardLayout/sidebar"
+import { Sidebar, defaultMenuItems, type MenuItem, staffSpecificMenuItems } from "@/components/DashboardLayout/sidebar"
 import { Header } from "@/components/DashboardLayout/header"
 import { useProtectedRoute, getAuthUser, type UserRole } from "@/contexts/auth-context"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
   currentPage?: string
-  role?: UserRole
+  role?: UserRole | UserRole[]
+  customRole?: string
   menuItems?: MenuItem[]
 }
 
@@ -18,16 +19,17 @@ export default function DashboardLayout({
   children,
   currentPage = "dashboard",
   role,
+  customRole,
   menuItems,
 }: DashboardLayoutProps) {
-  const { isLoading, isAuthorized, user } = useProtectedRoute(role as any)
+  const { isLoading, isAuthorized, user } = useProtectedRoute(role, customRole)
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
 
   // Determine effective role: use authenticated user's role if available, otherwise use prop
-  const effectiveRole = (user?.role || role || "school_admin") as UserRole
+  const effectiveRole = (user?.role || (Array.isArray(role) ? role[0] : role) || "staff") as UserRole
 
   useEffect(() => {
     const checkMobile = () => {
@@ -78,12 +80,28 @@ export default function DashboardLayout({
     })
   })
 
-  // If the authenticated user has explicit allowedPages, filter the global list by it.
-  const finalMenuItems =
-    menuItems ||
-    (user && (user as any).allowedPages
-      ? allItems.filter((it) => (user as any).allowedPages.includes(it.href))
-      : defaultMenuItems[effectiveRole as keyof typeof defaultMenuItems] || defaultMenuItems.admin)
+  // Determine menu items
+  let finalMenuItems = menuItems || defaultMenuItems[effectiveRole] || defaultMenuItems.staff
+
+  // If user is staff, append specific items for their customRole
+  if (user?.role === "staff" && user.customRole && staffSpecificMenuItems[user.customRole]) {
+    const specificItems = staffSpecificMenuItems[user.customRole]
+    // Filter out duplicates (though there shouldn't be many with basic staff)
+    const baseIds = new Set(finalMenuItems.map(m => m.id))
+    const uniqueSpecific = specificItems.filter(m => !baseIds.has(m.id))
+
+    // Insert after "Dashboard" (id: dashboard) or at the start
+    const dashboardIndex = finalMenuItems.findIndex(m => m.id === 'dashboard')
+    const start = finalMenuItems.slice(0, dashboardIndex + 1)
+    const end = finalMenuItems.slice(dashboardIndex + 1)
+    finalMenuItems = [...start, ...uniqueSpecific, ...end]
+  }
+
+  // Handle allowedPages filter if exists
+  if (user && (user as any).allowedPages) {
+    const allowed = (user as any).allowedPages
+    finalMenuItems = allItems.filter((it) => allowed.includes(it.href))
+  }
 
   const handleMobileMenuToggle = () => {
     setMobileMenuOpen(!mobileMenuOpen)

@@ -122,7 +122,7 @@ export default function TeacherExamsDashboard() {
   }
 
   return (
-    <DashboardLayout currentPage="exams" role="teacher">
+    <DashboardLayout currentPage="exams" role="staff" customRole="teacher">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">

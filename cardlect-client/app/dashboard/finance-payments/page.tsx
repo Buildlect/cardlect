@@ -60,7 +60,7 @@ export default function PaymentsPage() {
   }
 
   return (
-    <DashboardLayout currentPage="payments" role="finance">
+    <DashboardLayout currentPage="payments" role="staff">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>

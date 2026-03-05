@@ -48,7 +48,7 @@ export default function OrdersPage() {
   const pendingOrders = mockOrders.filter(o => o.status === 'pending').length
 
   return (
-    <DashboardLayout currentPage="orders" role="approved-stores">
+    <DashboardLayout currentPage="orders" role="partner">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Orders</h1>
         <p className="text-muted-foreground">Manage school orders and shipments</p>

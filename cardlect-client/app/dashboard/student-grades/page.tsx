@@ -59,7 +59,7 @@ export default function StudentGradesPage() {
   )
 
   return (
-    <DashboardLayout currentPage="grades" role="students">
+    <DashboardLayout currentPage="grades" role="student">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Academic Grades</h1>
         <p className="text-muted-foreground">Track your subject grades and academic performance</p>

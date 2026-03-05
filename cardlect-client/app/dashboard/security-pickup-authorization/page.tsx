@@ -179,7 +179,7 @@ export default function PickupAuthorization() {
   }
 
   return (
-    <DashboardLayout currentPage="pickup-authorization" role="security">
+    <DashboardLayout currentPage="pickup-authorization" role="staff">
       <div className="min-h-screen bg-background text-foreground">
         <div className="p-6 md:p-8">
           {/* Header */}

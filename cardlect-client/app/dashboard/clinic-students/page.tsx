@@ -48,7 +48,7 @@ export default function ClinicStudentsPage() {
   const needsAttention = mockStudents.filter(s => s.healthStatus === 'needs-attention').length
 
   return (
-    <DashboardLayout currentPage="students" role="clinic">
+    <DashboardLayout currentPage="students" role="staff">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Student Health Records</h1>
         <p className="text-muted-foreground">Manage student health and medical information</p>

@@ -33,7 +33,7 @@ export default function PartnersPage() {
   const activePartners = mockPartners.filter(p => p.status === 'active').length
 
   return (
-    <DashboardLayout currentPage="partners" role="approved-stores">
+    <DashboardLayout currentPage="partners" role="partner">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Partners</h1>
         <p className="text-muted-foreground">Manage your supply chain partners</p>

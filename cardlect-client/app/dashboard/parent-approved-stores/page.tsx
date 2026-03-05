@@ -142,7 +142,7 @@ export default function ParentsDashboard() {
   ]
 
   return (
-    <DashboardLayout currentPage="dashboard" role="parents">
+    <DashboardLayout currentPage="dashboard" role="parent">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Parent Portal</h1>
         <p className="text-muted-foreground">Monitor your children's activities and school updates in real-time.</p>

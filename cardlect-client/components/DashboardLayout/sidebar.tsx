@@ -103,11 +103,10 @@ export const defaultMenuItems: Record<string, MenuItem[]> = {
   ],
   partner: [
     { icon: LayoutDashboard, label: "Dashboard", href: "/dashboard/overview", id: "dashboard" },
-    { icon: Store, label: "Stores", href: "/dashboard/approved-stores/stores", id: "stores" },
+    { icon: Store, label: "My Stores", href: "/dashboard/approved-stores-stores", id: "stores" },
+    { icon: ShoppingCart, label: "Orders", href: "/dashboard/approved-stores-orders", id: "orders" },
+    { icon: BarChart3, label: "Partner Sales", href: "/dashboard/approved-stores-sales", id: "sales" },
     { icon: MessageSquare, label: "Communication", href: "/dashboard/communication", id: "communication" },
-    { icon: ShoppingCart, label: "Orders", href: "/dashboard/approved-stores/orders", id: "orders" },
-    { icon: BarChart3, label: "Sales", href: "/dashboard/approved-stores/sales", id: "sales" },
-    { icon: Users, label: "Merchants", href: "/dashboard/approved-stores/merchants", id: "merchants" },
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
   ],
   staff: [
@@ -121,6 +120,35 @@ export const defaultMenuItems: Record<string, MenuItem[]> = {
     { icon: Settings, label: "Settings", href: "/dashboard/settings", id: "settings" },
   ],
 }
+
+export const staffSpecificMenuItems: Record<string, MenuItem[]> = {
+  exam_officer: [
+    { icon: Award, label: "Manage Exams", href: "/dashboard/admin-exams", id: "exams" },
+    { icon: Book, label: "Academic Records", href: "/dashboard/admin-classes", id: "classes" },
+  ],
+  finance: [
+    { icon: DollarSign, label: "Financials", href: "/dashboard/admin-wallet", id: "wallet" },
+    { icon: FileText, label: "Invoices", href: "/dashboard/finance-invoices", id: "invoices" },
+  ],
+  librarian: [
+    { icon: BookMarked, label: "Catalog", href: "/dashboard/librarian-catalog", id: "catalog" },
+    { icon: Clock, label: "Borrowals", href: "/dashboard/librarian-borrowals", id: "borrowals" },
+  ],
+  security: [
+    { icon: DoorOpen, label: "Gate Logs", href: "/dashboard/admin-gate-logs", id: "gate-logs" },
+    { icon: Activity, label: "Security Alerts", href: "/dashboard/security-alerts", id: "alerts" },
+  ],
+  clinic: [
+    { icon: Stethoscope, label: "Medical Records", href: "/dashboard/clinic-medical-records", id: "medical-records" },
+    { icon: Activity, label: "Visits", href: "/dashboard/clinic-visits", id: "visits" },
+  ],
+  store: [
+    { icon: Package, label: "Inventory", href: "/dashboard/store-inventory", id: "inventory" },
+    { icon: ShoppingCart, label: "Sales History", href: "/dashboard/store-sales", id: "sales" },
+    { icon: Users, label: "Customers", href: "/dashboard/store-customers", id: "customers" },
+  ],
+}
+
 
 function Tooltip({ text }: { text: string }) {
   return (

@@ -137,7 +137,7 @@ export default function StudentApprovedStoresPage() {
   }
 
   return (
-    <DashboardLayout currentPage="approved-stores" role="students">
+    <DashboardLayout currentPage="approved-stores" role="student">
       <div className="mb-8">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Approved Stores Near You</h1>

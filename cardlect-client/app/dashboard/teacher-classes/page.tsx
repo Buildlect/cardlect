@@ -46,7 +46,7 @@ export default function ClassesPage() {
   }
 
   return (
-    <DashboardLayout currentPage="classes" role="teacher">
+    <DashboardLayout currentPage="classes" role="staff" customRole="teacher">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -103,9 +103,9 @@ export default function ClassesPage() {
         </Card>
 
         {/* Search */}
-        <Input 
-          placeholder="Search classes..." 
-          value={searchTerm} 
+        <Input
+          placeholder="Search classes..."
+          value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-xs"
         />

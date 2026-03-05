@@ -102,7 +102,7 @@ export default function SuperUserApprovedStoresPage() {
   ]
 
   return (
-    <DashboardLayout currentPage="approved-stores" role="super-user">
+    <DashboardLayout currentPage="approved-stores" role="super_admin">
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>

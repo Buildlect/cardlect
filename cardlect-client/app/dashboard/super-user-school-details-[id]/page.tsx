@@ -11,10 +11,10 @@ export default function SchoolDetailsPage() {
   const router = useRouter()
   const params = useParams()
   const { schools, getSchoolStudents, getSchoolStaff, getSchoolParents, updateSchool, addDevice } = useCardlect()
-  
+
   const schoolId = params?.id as string
   const school = schools.find(s => s.id === schoolId)
-  
+
   const [isEditing, setIsEditing] = useState(false)
   const [editData, setEditData] = useState(school || {})
   const [activeTab, setActiveTab] = useState<'overview' | 'people' | 'hardware' | 'features' | 'settings'>('overview')
@@ -36,19 +36,19 @@ export default function SchoolDetailsPage() {
 
   if (!school) {
     return (
-      <DashboardLayout currentPage="schools" role="super-user">
-      <div className="flex h-screen bg-background">
-        <div className="flex-1 flex flex-col">
-          <main className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-muted-foreground mb-4">School not found</p>
-              <button onClick={() => router.push('/super-user/schools')} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90">
-                Back to Schools
-              </button>
-            </div>
-          </main>
+      <DashboardLayout currentPage="schools" role="super_admin">
+        <div className="flex h-screen bg-background">
+          <div className="flex-1 flex flex-col">
+            <main className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-muted-foreground mb-4">School not found</p>
+                <button onClick={() => router.push('/super-user/schools')} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90">
+                  Back to Schools
+                </button>
+              </div>
+            </main>
+          </div>
         </div>
-      </div>
       </DashboardLayout>
     )
   }
@@ -98,8 +98,8 @@ export default function SchoolDetailsPage() {
   const disabledFeatures = allFeatures.filter(f => !f.enabled)
 
   return (
-    <DashboardLayout currentPage="schools" role="super-user">
-    <div className="flex h-screen bg-background">
+    <DashboardLayout currentPage="schools" role="super_admin">
+      <div className="flex h-screen bg-background">
         <main className="flex-1 overflow-auto">
           <div className="p-8">
             {/* Header Section */}
@@ -188,11 +188,10 @@ export default function SchoolDetailsPage() {
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab as any)}
-                  className={`px-4 py-3 font-medium text-sm transition-all border-b-2 whitespace-nowrap ${
-                    activeTab === tab
+                  className={`px-4 py-3 font-medium text-sm transition-all border-b-2 whitespace-nowrap ${activeTab === tab
                       ? 'text-primary border-primary'
                       : 'text-muted-foreground border-transparent hover:text-foreground'
-                  }`}
+                    }`}
                 >
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
                 </button>
@@ -372,7 +371,7 @@ export default function SchoolDetailsPage() {
                       <Server size={20} className="text-primary" />
                       Hardware Devices ({school.hardware?.length || 0})
                     </h3>
-                    <button 
+                    <button
                       onClick={() => setShowDeviceForm(!showDeviceForm)}
                       className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-all"
                     >
@@ -489,7 +488,7 @@ export default function SchoolDetailsPage() {
                               </div>
                             )}
                           </div>
-                          <button 
+                          <button
                             onClick={() => {
                               const updated = { ...school, hardware: school.hardware?.filter((d: any) => d.id !== device.id) }
                               updateSchool(schoolId, updated)
@@ -506,8 +505,8 @@ export default function SchoolDetailsPage() {
                               fontWeight: '500',
                               transition: 'background-color 0.2s'
                             }}
-                            onMouseEnter={(e) => {e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.danger.main}30`}}
-                            onMouseLeave={(e) => {e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.danger.main}20`}}
+                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.danger.main}30` }}
+                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.danger.main}20` }}
                           >
                             Remove Device
                           </button>
@@ -532,7 +531,7 @@ export default function SchoolDetailsPage() {
                     Feature Management
                   </h3>
                   <div className="mb-6 flex gap-2">
-                    <button 
+                    <button
                       onClick={() => {
                         const allEnabled = Object.values(school.features).every(f => f)
                         if (!allEnabled) {
@@ -550,13 +549,13 @@ export default function SchoolDetailsPage() {
                         border: `1px solid`,
                         transition: 'all 0.2s'
                       }}
-                      onMouseEnter={(e) => {e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.success.main}30`}}
-                      onMouseLeave={(e) => {e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.success.main}20`}}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.success.main}30` }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.success.main}20` }}
                       className="text-sm font-medium"
                     >
                       Enable All
                     </button>
-                    <button 
+                    <button
                       onClick={() => {
                         const allDisabled = Object.values(school.features).every(f => !f)
                         if (!allDisabled) {
@@ -574,14 +573,14 @@ export default function SchoolDetailsPage() {
                         border: `1px solid`,
                         transition: 'all 0.2s'
                       }}
-                      onMouseEnter={(e) => {e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.danger.main}30`}}
-                      onMouseLeave={(e) => {e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.danger.main}20`}}
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.danger.main}30` }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = `${CARDLECT_COLORS.danger.main}20` }}
                       className="text-sm font-medium"
                     >
                       Disable All
                     </button>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {allFeatures.map(feature => (
                       <div key={feature.key} className={`flex items-center justify-between p-4 rounded-lg border transition-all`} style={{
@@ -765,8 +764,8 @@ export default function SchoolDetailsPage() {
                         border: 'none',
                         transition: 'opacity 0.2s'
                       }}
-                        onMouseEnter={(e) => {e.currentTarget.style.opacity = '0.8'}}
-                        onMouseLeave={(e) => {e.currentTarget.style.opacity = '1'}}
+                        onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.8' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.opacity = '1' }}
                       >
                         <Trash2 size={18} />
                         Delete School

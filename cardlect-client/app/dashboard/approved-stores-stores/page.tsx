@@ -36,7 +36,7 @@ export default function StoresPage() {
   const totalStaff = mockStores.reduce((sum, s) => sum + s.staff, 0)
 
   return (
-    <DashboardLayout currentPage="stores" role="approved-stores">
+    <DashboardLayout currentPage="stores" role="partner">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Store Locations</h1>
         <p className="text-muted-foreground">Manage your store branches and locations</p>

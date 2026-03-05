@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/DashboardLayout/layout"
 
 export default function Page() {
   return (
-    <DashboardLayout currentPage="sales" role="store">
+    <DashboardLayout currentPage="sales" role="staff">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Sales</h1>
         <p className="text-muted-foreground">Manage your sales.</p>

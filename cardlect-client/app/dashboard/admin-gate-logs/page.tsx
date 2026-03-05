@@ -50,7 +50,7 @@ export default function GateLogsPage() {
   )
 
   return (
-    <DashboardLayout currentPage="gate-logs" role="school_admin">
+    <DashboardLayout currentPage="gate-logs" role={["school_admin", "staff"]} customRole="security">
       <div className="space-y-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
