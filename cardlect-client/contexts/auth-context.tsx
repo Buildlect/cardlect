@@ -28,6 +28,9 @@ export interface AuthUser {
     permissions: UserPermission[]
 }
 
+export let setAuthUser: (user: AuthUser | null) => void = () => { }
+export let getAuthUser: () => AuthUser | null = () => null
+
 interface AuthContextType {
     user: AuthUser | null
     token: string | null
@@ -44,6 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [token, setToken] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
+    setAuthUser = setUser
+    getAuthUser = () => user
 
     useEffect(() => {
         const initializeAuth = async () => {

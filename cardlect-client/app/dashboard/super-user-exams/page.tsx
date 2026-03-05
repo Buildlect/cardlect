@@ -1,14 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
-import { Award, Users, TrendingUp, Plus, Search, BarChart3, Download, CheckCircle, Clock } from 'lucide-react'
-import { CARDLECT_COLORS, SEMANTIC_COLORS } from '@/lib/cardlect-colors'
+import { Award, Users, Plus, Search, Download, CheckCircle, Clock, Loader2, FileText, LayoutGrid } from 'lucide-react'
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
+import api from '@/lib/api-client'
 import {
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
   BarChart,
   Bar,
   XAxis,
@@ -17,218 +14,203 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 interface CBTExam {
   id: string
   title: string
-  school: string
-  totalStudents: number
-  completed: number
-  avgScore: number
-  status: 'completed' | 'in-progress' | 'pending'
-  date: string
+  school_name: string
+  term: string
+  session: string
+  start_date: string
+  status: string
+  total_students?: number
+  avg_score?: number
 }
 
-const examData: CBTExam[] = [
-  { id: '1', title: 'WAEC Mathematics CBT', school: 'Oxford International School', totalStudents: 245, completed: 245, avgScore: 68, status: 'completed', date: '2024-02-15' },
-  { id: '2', title: 'NECO English CBT', school: 'Trinity Academy', totalStudents: 250, completed: 248, avgScore: 72, status: 'completed', date: '2024-02-16' },
-  { id: '3', title: 'Mock Biology CBT', school: "St. Mary's Secondary", totalStudents: 180, completed: 175, avgScore: 65, status: 'in-progress', date: '2024-02-17' },
-  { id: '4', title: 'Physics Practical CBT', school: 'Oxford International School', totalStudents: 200, completed: 0, avgScore: 0, status: 'pending', date: '2024-02-20' },
-]
-
-const schoolPerformance = [
-  { school: 'Oxford International', exams: 8, avgScore: 70 },
-  { school: 'Trinity Academy', exams: 6, avgScore: 72 },
-  { school: "St. Mary's Secondary", exams: 5, avgScore: 68 },
-  { school: 'Federal College', exams: 4, avgScore: 71 },
-  { school: 'Covenant School', exams: 3, avgScore: 69 },
-]
-
 export default function SuperUserExamsDashboard() {
-  const [exams, setExams] = useState<CBTExam[]>(examData)
+  const [exams, setExams] = useState<CBTExam[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+
+  const fetchExams = async () => {
+    setLoading(true)
+    try {
+      const response = await api.get('/academic/exams')
+      setExams(response.data.data)
+    } catch (err) {
+      console.error('Failed to fetch global exams registry:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchExams()
+  }, [])
 
   const stats = {
     totalExams: exams.length,
-    activeExams: exams.filter(e => e.status === 'in-progress').length,
+    activeExams: exams.filter(e => new Date(e.start_date) > new Date()).length, // Simplified logic for mock-like data
     completedExams: exams.filter(e => e.status === 'completed').length,
-    totalStudents: exams.reduce((sum, e) => sum + e.totalStudents, 0),
+    totalStudents: exams.reduce((sum, e) => sum + (e.total_students || 0), 0),
   }
 
   const filteredExams = exams.filter(exam =>
     exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    exam.school.toLowerCase().includes(searchTerm.toLowerCase())
+    exam.school_name.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return { bg: `${CARDLECT_COLORS.success.main}20`, text: CARDLECT_COLORS.success.main }
-      case 'in-progress': return { bg: `${CARDLECT_COLORS.info.main}20`, text: CARDLECT_COLORS.info.main }
-      case 'pending': return { bg: `${CARDLECT_COLORS.warning.main}20`, text: CARDLECT_COLORS.warning.main }
-      default: return { bg: '#f3f4f6', text: '#6b7280' }
+  const schoolPerformance = Array.from(new Set(exams.map(e => e.school_name))).map(name => {
+    const schoolExams = exams.filter(e => e.school_name === name)
+    return {
+      school: name,
+      exams: schoolExams.length,
+      avgScore: Math.round(schoolExams.reduce((sum, e) => sum + (e.avg_score || 0), 0) / schoolExams.length) || 0
     }
+  }).slice(0, 5)
+
+  if (loading) {
+    return (
+      <DashboardLayout currentPage="exams" role="super_admin">
+        <div className="flex items-center justify-center p-20 min-h-[60vh]">
+          <Loader2 className="w-12 h-12 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    )
   }
 
   return (
-    <DashboardLayout currentPage="exams" role="super-user">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
+    <DashboardLayout currentPage="exams" role="super_admin">
+      <div className="space-y-10 pb-12">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">All CBT Exams</h1>
-            <p className="text-muted-foreground">Monitor CBT exams across all schools</p>
+            <h2 className="text-4xl font-black text-foreground tracking-tighter">Global CBT Registry</h2>
+            <p className="text-muted-foreground mt-1 font-medium italic">Ecosystem-wide assessment monitoring and institutional performance audits.</p>
           </div>
-          <button
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-white transition-colors hover:shadow-lg"
-            style={{ backgroundColor: CARDLECT_COLORS.primary.darker }}
-          >
-            <Download size={18} />
-            <span className="text-sm font-medium">Export Report</span>
-          </button>
-        </div>
-
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-card border border-border rounded-xl p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Total Exams</p>
-                <p className="text-2xl font-bold text-foreground">{stats.totalExams}</p>
-              </div>
-              <div className="p-3 rounded-lg" style={{ backgroundColor: CARDLECT_COLORS.primary.darker + '15' }}>
-                <Award size={20} style={{ color: CARDLECT_COLORS.primary.darker }} />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-card border border-border rounded-xl p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Active</p>
-                <p className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.info.main }}>{stats.activeExams}</p>
-              </div>
-              <div className="p-3 rounded-lg" style={{ backgroundColor: CARDLECT_COLORS.info.main + '15' }}>
-                <Clock size={20} style={{ color: CARDLECT_COLORS.info.main }} />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-card border border-border rounded-xl p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Completed</p>
-                <p className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.success.main }}>{stats.completedExams}</p>
-              </div>
-              <div className="p-3 rounded-lg" style={{ backgroundColor: CARDLECT_COLORS.success.main + '15' }}>
-                <CheckCircle size={20} style={{ color: CARDLECT_COLORS.success.main }} />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-card border border-border rounded-xl p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground mb-1">Students</p>
-                <p className="text-2xl font-bold text-foreground">{stats.totalStudents}</p>
-              </div>
-              <div className="p-3 rounded-lg" style={{ backgroundColor: CARDLECT_COLORS.info.main + '15' }}>
-                <Users size={20} style={{ color: CARDLECT_COLORS.info.main }} />
-              </div>
-            </div>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" className="rounded-2xl border-2 font-black uppercase tracking-widest text-[10px] h-12 px-6">
+              <Download size={16} className="mr-2" /> Global Audit Report
+            </Button>
           </div>
         </div>
 
-        {/* School Performance Chart */}
-        <div className="bg-card border border-border rounded-xl p-6">
-          <h3 className="text-lg font-bold text-foreground mb-4">School Performance</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={schoolPerformance}>
-              <XAxis dataKey="school" stroke="var(--muted-foreground)" angle={-45} textAnchor="end" height={80} />
-              <YAxis stroke="var(--muted-foreground)" />
-              <Tooltip
-                contentStyle={{
-                  background: 'var(--card)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '8px',
-                  color: 'var(--foreground)'
-                }}
-              />
-              <Legend />
-              <Bar dataKey="avgScore" fill={CARDLECT_COLORS.primary.darker} name="Avg Score %" />
-              <Bar dataKey="exams" fill={CARDLECT_COLORS.secondary.main} name="No. of Exams" />
-            </BarChart>
-          </ResponsiveContainer>
+        {/* Global Key Metrics */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[
+            { label: 'System Assessments', val: stats.totalExams, icon: Award, color: CARDLECT_COLORS.primary.main },
+            { label: 'Upcoming sessions', val: stats.activeExams, icon: Clock, color: '#3b82f6' },
+            { label: 'Mastery Validated', val: stats.completedExams, icon: CheckCircle, color: '#10b981' },
+            { label: 'Participating students', val: stats.totalStudents, icon: Users, color: '#a855f7' }
+          ].map((s, i) => (
+            <div key={i} className="bg-card border border-border rounded-[2rem] p-8 shadow-sm group hover:border-primary/40 transition-all">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 rounded-2xl group-hover:scale-110 transition-transform" style={{ backgroundColor: s.color + '15' }}>
+                  <s.icon size={24} style={{ color: s.color }} />
+                </div>
+              </div>
+              <p className="text-3xl font-black text-foreground">{s.val}</p>
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">{s.label}</p>
+            </div>
+          ))}
         </div>
 
-        {/* Exams List */}
-        <div className="bg-card border border-border rounded-xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-foreground">All Exams</h3>
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-background">
-              <Search size={16} className="text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search exams or schools..."
+        {/* Analytical Intelligence */}
+        <div className="bg-card border border-border rounded-[2.5rem] p-10 shadow-sm">
+          <h3 className="text-2xl font-black text-foreground mb-10 tracking-tight flex items-center gap-3">
+            <LayoutGrid className="text-primary" /> Institutional Performance Intelligence
+          </h3>
+          <div className="h-[400px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={schoolPerformance}>
+                <XAxis dataKey="school" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900 }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
+                <Tooltip
+                  cursor={{ fill: 'rgba(0,0,0,0.02)' }}
+                  contentStyle={{ borderRadius: '20px', border: 'none', boxShadow: '0 20px 50px rgba(0,0,0,0.1)' }}
+                />
+                <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase' }} />
+                <Bar dataKey="avgScore" fill={CARDLECT_COLORS.primary.main} radius={[10, 10, 0, 0]} name="Organizational Mastery %" barSize={40} />
+                <Bar dataKey="exams" fill="#3b82f6" radius={[10, 10, 0, 0]} name="Deployment Volume" barSize={40} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Universal Examination Ledger */}
+        <div className="bg-card border border-border rounded-[2.5rem] p-10 shadow-sm overflow-hidden">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+            <h3 className="text-2xl font-black text-foreground tracking-tight">Deployment Ledger</h3>
+            <div className="relative w-full md:w-96">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+              <Input
+                className="w-full bg-muted/40 border-none rounded-2xl h-12 pl-12 font-bold"
+                placeholder="Search by assessment or node..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="bg-transparent border-none outline-none text-sm text-foreground placeholder:text-muted-foreground"
               />
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="px-4 py-3 text-left font-semibold text-foreground">Exam Title</th>
-                  <th className="px-4 py-3 text-left font-semibold text-foreground">School</th>
-                  <th className="px-4 py-3 text-center font-semibold text-foreground">Total Students</th>
-                  <th className="px-4 py-3 text-center font-semibold text-foreground">Completed</th>
-                  <th className="px-4 py-3 text-center font-semibold text-foreground">Avg Score</th>
-                  <th className="px-4 py-3 text-center font-semibold text-foreground">Status</th>
-                  <th className="px-4 py-3 text-left font-semibold text-foreground">Date</th>
+                <tr className="border-b border-border text-left">
+                  <th className="pb-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Assessment Information</th>
+                  <th className="pb-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Institutional Node</th>
+                  <th className="pb-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">Enrollment</th>
+                  <th className="pb-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">Phase</th>
+                  <th className="pb-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Synchronization Date</th>
                 </tr>
               </thead>
-              <tbody>
-                {filteredExams.map((exam) => {
-                  const statusColor = getStatusColor(exam.status)
-                  const completionPercent = Math.round((exam.completed / exam.totalStudents) * 100)
-                  return (
-                    <tr key={exam.id} className="border-b border-border hover:bg-secondary/50 transition-colors">
-                      <td className="px-4 py-3 text-foreground font-medium">{exam.title}</td>
-                      <td className="px-4 py-3 text-muted-foreground">{exam.school}</td>
-                      <td className="px-4 py-3 text-center text-foreground">{exam.totalStudents}</td>
-                      <td className="px-4 py-3 text-center">
-                        <span className="text-foreground font-medium">{exam.completed}/{exam.totalStudents}</span>
-                        <div className="w-16 bg-border rounded-full h-1 mt-1 mx-auto" style={{ background: 'var(--border)' }}>
-                          <div
-                            className="h-full rounded-full transition-all"
-                            style={{
-                              width: `${completionPercent}%`,
-                              backgroundColor: CARDLECT_COLORS.primary.darker
-                            }}
-                          />
+              <tbody className="divide-y divide-border">
+                {filteredExams.map((exam) => (
+                  <tr key={exam.id} className="group hover:bg-muted/10 transition-colors">
+                    <td className="py-6">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
+                          <FileText size={20} />
                         </div>
-                      </td>
-                      <td className="px-4 py-3 text-center text-foreground font-medium">{exam.avgScore}%</td>
-                      <td className="px-4 py-3 text-center">
-                        <span
-                          className="px-3 py-1 rounded-full text-xs font-medium"
-                          style={{
-                            backgroundColor: statusColor.bg,
-                            color: statusColor.text
-                          }}
-                        >
-                          {exam.status.charAt(0).toUpperCase() + exam.status.slice(1)}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">{exam.date}</td>
-                    </tr>
-                  )
-                })}
+                        <div>
+                          <p className="text-sm font-black text-foreground leading-tight">{exam.title}</p>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">{exam.term} | {exam.session}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-6">
+                      <p className="text-xs font-black text-foreground">{exam.school_name}</p>
+                      <p className="text-[9px] font-bold text-muted-foreground uppercase mt-0.5 tracking-tight">Verified Node</p>
+                    </td>
+                    <td className="py-6 text-center">
+                      <p className="text-sm font-black text-foreground">{exam.total_students || 0}</p>
+                      <p className="text-[9px] font-bold text-muted-foreground uppercase mt-0.5">Enrolled</p>
+                    </td>
+                    <td className="py-6 text-center">
+                      <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase border-2 ${exam.status === 'completed'
+                          ? 'bg-green-500/10 text-green-600 border-green-500/20'
+                          : 'bg-blue-500/10 text-blue-600 border-blue-500/20'
+                        }`}>
+                        {exam.status || 'Active'}
+                      </span>
+                    </td>
+                    <td className="py-6 text-right">
+                      <p className="text-xs font-black text-foreground">{new Date(exam.start_date).toLocaleDateString()}</p>
+                      <p className="text-[9px] font-bold text-muted-foreground uppercase mt-0.5">Automated Sync</p>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
+
+          {filteredExams.length === 0 && (
+            <div className="py-32 text-center">
+              <Award size={64} className="mx-auto text-muted-foreground opacity-10 mb-6" />
+              <p className="text-sm font-black uppercase tracking-widest text-muted-foreground italic">Zero assessment protocols found in global registry.</p>
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import DashboardLayout from "@/components/DashboardLayout/layout"
-import { Award, Users, TrendingUp, BarChart3, Plus, Search, Download, CheckCircle, Clock, Loader2, AlertCircle, FileText } from 'lucide-react'
+import { Award, Users, TrendingUp, BarChart3, Plus, Search, Download, CheckCircle, Clock, Loader2, AlertCircle, FileText, PieChart as PieChartIcon } from 'lucide-react'
 import { CARDLECT_COLORS, SEMANTIC_COLORS } from '@/lib/cardlect-colors'
 import api from "@/lib/api-client"
 import {
@@ -19,6 +19,7 @@ import {
 } from 'recharts'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 
 interface Exam {
   id: string
@@ -163,7 +164,7 @@ export default function AdminExamsDashboard() {
             <CardHeader className="bg-muted/30 border-b border-border">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg font-black italic">Aggregate Grade Distribution</CardTitle>
-                <PieChart size={18} className="text-primary opacity-50" />
+                <PieChartIcon size={18} className="text-primary opacity-50" />
               </div>
             </CardHeader>
             <CardContent className="p-8">
