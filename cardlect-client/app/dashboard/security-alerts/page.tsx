@@ -219,7 +219,7 @@ export default function AlertsPage() {
   }
 
   return (
-    <DashboardLayout currentPage="alerts" role="security">
+    <DashboardLayout currentPage="alerts" role="staff" customRole="security">
       <div className="min-h-screen bg-background text-foreground">
         <div className="p-6 md:p-8">
           {/* Header */}
@@ -328,11 +328,11 @@ export default function AlertsPage() {
                   {/* Severity */}
                   <div className="col-span-2">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium" style={getSeverityColor(alert.severity)}>
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ 
-                        backgroundColor: alert.severity === 'critical' ? CARDLECT_COLORS.danger.main : 
-                                       alert.severity === 'warning' ? CARDLECT_COLORS.warning.main : 
-                                       alert.severity === 'system' ? CARDLECT_COLORS.warning.main : 
-                                       CARDLECT_COLORS.info.main 
+                      <div className="w-1.5 h-1.5 rounded-full" style={{
+                        backgroundColor: alert.severity === 'critical' ? CARDLECT_COLORS.danger.main :
+                          alert.severity === 'warning' ? CARDLECT_COLORS.warning.main :
+                            alert.severity === 'system' ? CARDLECT_COLORS.warning.main :
+                              CARDLECT_COLORS.info.main
                       }} />
                       {alert.severity.toUpperCase()}
                     </div>

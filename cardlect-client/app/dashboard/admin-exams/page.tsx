@@ -86,7 +86,7 @@ export default function AdminExamsDashboard() {
   }
 
   return (
-    <DashboardLayout currentPage="exams" role="school_admin">
+    <DashboardLayout currentPage="exams" role={["school_admin", "staff"]} customRole="exam_officer">
       <div className="space-y-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

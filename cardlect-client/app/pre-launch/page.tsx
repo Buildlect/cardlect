@@ -27,6 +27,7 @@ export default function PreLaunchPage() {
       fullName: user.name,
       email: user.email,
       role: user.role as any,
+      customRole: user.customRole,
       schoolId: user.schoolId,
       permissions: [], // Default empty for mock
     })

@@ -27,7 +27,7 @@ export default function StoreReportsPage() {
   const avgOrderValue = Math.round(totalSales / totalOrders)
 
   return (
-    <DashboardLayout currentPage="reports" role="store">
+    <DashboardLayout currentPage="reports" role="staff">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Sales Reports</h1>
         <p className="text-muted-foreground">Analyze sales performance and trends</p>

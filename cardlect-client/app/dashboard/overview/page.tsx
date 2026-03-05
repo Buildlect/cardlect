@@ -34,13 +34,24 @@ export default function OverviewPage() {
             case 'school_admin':
                 return <AdminOverview />
             case 'staff':
-                return <TeacherOverview /> // Defaulting to teacher for general staff for now
+                // Check for specific sub-roles in staff
+                switch (user.customRole) {
+                    case 'finance': return <FinanceOverview />
+                    case 'store': return <StoreOverview />
+                    case 'librarian': return <LibrarianOverview />
+                    case 'exam_officer': return <ExamOfficerOverview />
+                    case 'security': return <SecurityOverview />
+                    case 'clinic': return <ClinicOverview />
+                    default: return <TeacherOverview /> // Defaulting to teacher for general staff
+                }
             case 'parent':
                 return <ParentOverview />
             case 'student':
                 return <StudentOverview />
             case 'partner':
                 return <ApprovedStoresOverview />
+            case 'visitor':
+                return <div>Welcome to Cardlect Model School visitor portal.</div>
             default:
                 return <div>Unauthorized Role: {user.role}</div>
         }

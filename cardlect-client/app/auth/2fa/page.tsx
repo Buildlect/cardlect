@@ -25,9 +25,9 @@ export default function TwoFAPage() {
   useEffect(() => {
     // Simulate getting user role from session - in production, get from auth context
     const storedRole = localStorage.getItem("userRole")
-    
+
     // If there's no role or an invalid role, redirect to login page
-    if (!storedRole || !["super_admin", "school_admin", "security_staff", "parent", "teacher", "librarian", "clinic_staff"].includes(storedRole)) {
+    if (!storedRole || !["super_admin", "school_admin", "staff", "parent", "student", "partner", "visitor"].includes(storedRole)) {
       router.push("/")
       return
     }

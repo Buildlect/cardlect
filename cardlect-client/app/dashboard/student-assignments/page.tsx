@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/DashboardLayout/layout"
 
 export default function Page() {
   return (
-    <DashboardLayout currentPage="assignments" role="students">
+    <DashboardLayout currentPage="assignments" role="student">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Assignments</h1>
         <p className="text-muted-foreground">Manage your assignments.</p>

@@ -25,6 +25,7 @@ export interface AuthUser {
     email: string
     role: UserRole
     schoolId?: string
+    customRole?: string | null
     permissions: UserPermission[]
 }
 
@@ -113,7 +114,7 @@ export function useAuth() {
     return context
 }
 
-export function useProtectedRoute(requiredRole?: UserRole) {
+export function useProtectedRoute(allowedRoles?: UserRole | UserRole[], requiredCustomRole?: string) {
     const { user, isLoading, isAuthenticated } = useAuth()
     const router = useRouter()
     const pathname = usePathname()
@@ -122,11 +123,18 @@ export function useProtectedRoute(requiredRole?: UserRole) {
         if (!isLoading) {
             if (!isAuthenticated) {
                 router.push('/')
-            } else if (requiredRole && user?.role !== requiredRole) {
+            } else if (allowedRoles) {
+                const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles]
+                if (user && !roles.includes(user.role)) {
+                    router.push('/dashboard/overview')
+                } else if (user?.role === 'staff' && requiredCustomRole && user?.customRole !== requiredCustomRole) {
+                    router.push('/dashboard/overview')
+                }
+            } else if (user?.role === 'staff' && requiredCustomRole && user?.customRole !== requiredCustomRole) {
                 router.push('/dashboard/overview')
             }
         }
-    }, [user, isLoading, isAuthenticated, router, requiredRole])
+    }, [user, isLoading, isAuthenticated, router, allowedRoles, requiredCustomRole])
 
     return { user, isLoading, isAuthorized: isAuthenticated }
 }

@@ -53,7 +53,7 @@ export default function InvoicesPage() {
   }
 
   const getStatusColor = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'paid': return { color: CARDLECT_COLORS.success.main, backgroundColor: `${CARDLECT_COLORS.success.main}20` }
       case 'pending': return { color: CARDLECT_COLORS.warning.main, backgroundColor: `${CARDLECT_COLORS.warning.main}20` }
       case 'overdue': return { color: CARDLECT_COLORS.danger.main, backgroundColor: `${CARDLECT_COLORS.danger.main}20` }
@@ -62,7 +62,7 @@ export default function InvoicesPage() {
   }
 
   return (
-    <DashboardLayout currentPage="invoices" role="finance">
+    <DashboardLayout currentPage="invoices" role="staff" customRole="finance">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -132,14 +132,14 @@ export default function InvoicesPage() {
 
         {/* Filters & Search */}
         <div className="flex gap-4 flex-wrap">
-          <Input 
-            placeholder="Search invoices..." 
-            value={searchTerm} 
+          <Input
+            placeholder="Search invoices..."
+            value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="max-w-xs"
           />
-          <select 
-            value={statusFilter} 
+          <select
+            value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-3 py-2 border border-border rounded-md text-sm bg-background"
           >

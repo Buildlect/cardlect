@@ -70,7 +70,7 @@ export default function GradesPage() {
       alert('Grade must be between 0 and 100')
       return
     }
-    
+
     setGrades(grades.map(g => {
       if (g.studentId === editingGrade.studentId) {
         const updated = { ...g, [editingGrade.type]: value }
@@ -86,7 +86,7 @@ export default function GradesPage() {
   }
 
   return (
-    <DashboardLayout currentPage="grades" role="teacher">
+    <DashboardLayout currentPage="grades" role="staff" customRole="teacher">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -157,9 +157,9 @@ export default function GradesPage() {
         </Card>
 
         {/* Search */}
-        <Input 
-          placeholder="Search student..." 
-          value={searchTerm} 
+        <Input
+          placeholder="Search student..."
+          value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-xs"
         />
@@ -208,11 +208,11 @@ export default function GradesPage() {
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Grade (0-100)</label>
-                  <input 
-                    type="number" 
-                    min="0" 
-                    max="100" 
-                    value={editValue} 
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
                     className="w-full border rounded px-3 py-2 text-foreground bg-background text-lg font-semibold text-center"
                     autoFocus

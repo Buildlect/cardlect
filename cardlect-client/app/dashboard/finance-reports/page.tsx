@@ -28,7 +28,7 @@ export default function ReportsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState('6months')
 
   return (
-    <DashboardLayout currentPage="reports" role="finance">
+    <DashboardLayout currentPage="reports" role="staff">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>

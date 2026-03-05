@@ -38,7 +38,7 @@ export default function AssignmentsPage() {
   }
 
   const getStatusIcon = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'open': return <Clock style={{ color: CARDLECT_COLORS.primary.darker }} size={16} />
       case 'closing': return <AlertCircle style={{ color: CARDLECT_COLORS.warning.main }} size={16} />
       case 'closed': return <CheckCircle style={{ color: CARDLECT_COLORS.success.main }} size={16} />
@@ -77,7 +77,7 @@ export default function AssignmentsPage() {
   }
 
   return (
-    <DashboardLayout currentPage="assignments" role="teacher">
+    <DashboardLayout currentPage="assignments" role="staff" customRole="teacher">
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <div>
@@ -133,20 +133,20 @@ export default function AssignmentsPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">Title *</label>
-                <input type="text" placeholder="Assignment title" value={newAssignmentForm.title} onChange={(e) => setNewAssignmentForm({...newAssignmentForm, title: e.target.value})} className="w-full border border-border rounded px-3 py-2 bg-background text-foreground" />
+                <input type="text" placeholder="Assignment title" value={newAssignmentForm.title} onChange={(e) => setNewAssignmentForm({ ...newAssignmentForm, title: e.target.value })} className="w-full border border-border rounded px-3 py-2 bg-background text-foreground" />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Description</label>
-                <textarea placeholder="Assignment description" value={newAssignmentForm.description} onChange={(e) => setNewAssignmentForm({...newAssignmentForm, description: e.target.value})} className="w-full border border-border rounded px-3 py-2 bg-background text-foreground h-20" />
+                <textarea placeholder="Assignment description" value={newAssignmentForm.description} onChange={(e) => setNewAssignmentForm({ ...newAssignmentForm, description: e.target.value })} className="w-full border border-border rounded px-3 py-2 bg-background text-foreground h-20" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Due Date *</label>
-                  <input type="date" value={newAssignmentForm.dueDate} onChange={(e) => setNewAssignmentForm({...newAssignmentForm, dueDate: e.target.value})} className="w-full border border-border rounded px-3 py-2 bg-background text-foreground" />
+                  <input type="date" value={newAssignmentForm.dueDate} onChange={(e) => setNewAssignmentForm({ ...newAssignmentForm, dueDate: e.target.value })} className="w-full border border-border rounded px-3 py-2 bg-background text-foreground" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">Class</label>
-                  <select value={newAssignmentForm.class} onChange={(e) => setNewAssignmentForm({...newAssignmentForm, class: e.target.value})} className="w-full border border-border rounded px-3 py-2 bg-background text-foreground">
+                  <select value={newAssignmentForm.class} onChange={(e) => setNewAssignmentForm({ ...newAssignmentForm, class: e.target.value })} className="w-full border border-border rounded px-3 py-2 bg-background text-foreground">
                     <option>10A</option>
                     <option>10B</option>
                     <option>11</option>
@@ -198,7 +198,7 @@ export default function AssignmentsPage() {
                       <span className="font-semibold">{assignment.submitted}/{assignment.total} ({submissionPct}%)</span>
                     </div>
                     <div className="w-full bg-secondary rounded-full h-2 overflow-hidden">
-                      <div 
+                      <div
                         className="h-full rounded-full transition-all"
                         style={{ width: `${submissionPct}%`, backgroundColor: CARDLECT_COLORS.success.main }}
                       />

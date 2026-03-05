@@ -62,7 +62,7 @@ export default function InventoryPage() {
   }))
 
   return (
-    <DashboardLayout currentPage="inventory">
+    <DashboardLayout currentPage="inventory" role="staff" customRole="store">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Inventory Management</h1>

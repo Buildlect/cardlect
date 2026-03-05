@@ -29,7 +29,7 @@ const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
 
 export default function SchedulePage() {
   return (
-    <DashboardLayout currentPage="schedule" role="students">
+    <DashboardLayout currentPage="schedule" role="student">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Class Schedule</h1>
         <p className="text-muted-foreground">Your weekly class timetable and schedule</p>

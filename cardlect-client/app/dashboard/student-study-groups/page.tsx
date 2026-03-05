@@ -100,7 +100,7 @@ export default function StudentsDashboard() {
   ]
 
   return (
-    <DashboardLayout currentPage="dashboard" role="students">
+    <DashboardLayout currentPage="dashboard" role="student">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Student Dashboard</h1>
         <p className="text-muted-foreground">Track your academic performance and stay updated with school activities.</p>

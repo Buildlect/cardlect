@@ -26,7 +26,7 @@ export default function ClinicReportsPage() {
   const uniqueStudents = new Set(visitData.map(d => d.students)).size
 
   return (
-    <DashboardLayout currentPage="reports" role="clinic">
+    <DashboardLayout currentPage="reports" role="staff">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Health Reports</h1>
         <p className="text-muted-foreground">Clinic statistics and health analytics</p>

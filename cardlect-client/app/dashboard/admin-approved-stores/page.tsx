@@ -152,7 +152,7 @@ export default function AdminDashboard() {
   ]
 
   return (
-    <DashboardLayout currentPage="dashboard" role="admin">
+    <DashboardLayout currentPage="dashboard" role="school_admin">
       <div className="space-y-8">
         {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">

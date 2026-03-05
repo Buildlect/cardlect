@@ -48,7 +48,7 @@ export default function CustomersPage() {
   const totalRevenue = mockCustomers.reduce((sum, c) => sum + c.totalSpent, 0)
 
   return (
-    <DashboardLayout currentPage="customers" role="store">
+    <DashboardLayout currentPage="customers" role="staff">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Customers</h1>
         <p className="text-muted-foreground">Manage and track your customers</p>

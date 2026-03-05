@@ -100,7 +100,7 @@ export default function ClinicDashboard() {
   ]
 
   return (
-    <DashboardLayout currentPage="dashboard" role="clinic">
+    <DashboardLayout currentPage="dashboard" role="staff" customRole="clinic">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground mb-2">Clinic Dashboard</h1>
         <p className="text-muted-foreground">Monitor student health, clinic visits, and medical records.</p>

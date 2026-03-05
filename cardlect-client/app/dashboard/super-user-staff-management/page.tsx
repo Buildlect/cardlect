@@ -54,7 +54,7 @@ export default function StaffManagementPage() {
   }
 
   return (
-    <DashboardLayout currentPage="staff-management" role="super-user">
+    <DashboardLayout currentPage="staff-management" role="super_admin">
     <div className="flex h-screen bg-background">
       <div className="flex-1 flex flex-col">
         <main className="flex-1 overflow-auto">

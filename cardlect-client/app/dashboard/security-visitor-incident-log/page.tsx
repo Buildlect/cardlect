@@ -211,7 +211,7 @@ export default function VisitorIncidentLog() {
   }
 
   return (
-    <DashboardLayout currentPage="visitor-incident-log" role="security">
+    <DashboardLayout currentPage="visitor-incident-log" role="staff">
       <div className="min-h-screen bg-background text-foreground">
         <div className="p-6 md:p-8">
           {/* Header */}
