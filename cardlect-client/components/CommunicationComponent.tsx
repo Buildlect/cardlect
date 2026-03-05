@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Send, Search, Phone, Video, Paperclip, Smile, MoreVertical, MessageSquare, Bell, X, Loader2 } from 'lucide-react'
 import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 import api from '@/lib/api-client'
+import { Button } from '@/components/ui/button'
 
 interface User {
   id: string
@@ -71,15 +72,28 @@ export function CommunicationComponent({
 
   const loadChat = async (user: User) => {
     setActiveUser(user)
-    setMessages([]) // In a real app, fetch history from /communications/history/:userId
+    try {
+      const response = await api.get(`/communications/history/${user.id}`)
+      setMessages(response.data.data.map((m: any) => ({
+        id: m.id,
+        sender_id: m.sender_id,
+        content: m.body,
+        created_at: m.created_at,
+        type: m.type,
+        is_read: true
+      })))
+    } catch (err) {
+      console.error('Failed to load chat history:', err)
+    }
   }
 
   const handleSendMessage = async () => {
     if (!text.trim() || !activeUser || sending) return
 
     setSending(true)
+    const tempId = Date.now().toString()
     const newMessage: Message = {
-      id: Date.now().toString(),
+      id: tempId,
       sender_id: 'me',
       content: text,
       created_at: new Date().toISOString(),
@@ -93,12 +107,14 @@ export function CommunicationComponent({
 
     try {
       await api.post('/communications/send', {
-        recipient_id: activeUser.id,
-        content: oldText
+        recipientIds: [activeUser.id],
+        body: oldText,
+        subject: 'Chat Message'
       })
     } catch (err) {
       console.error('Failed to send message:', err)
       alert('Message failed to deliver.')
+      setMessages(prev => prev.filter(m => m.id !== tempId))
     } finally {
       setSending(false)
     }
@@ -224,8 +240,8 @@ export function CommunicationComponent({
                   messages.map((m) => (
                     <div key={m.id} className={`flex ${m.type === 'sent' ? 'justify-end' : 'justify-start'} animate-in slide-in-from-bottom-2 duration-300`}>
                       <div className={`max-w-[70%] px-6 py-4 rounded-3xl shadow-sm ${m.type === 'sent'
-                          ? 'bg-primary text-white rounded-br-none shadow-primary/20'
-                          : 'bg-muted/50 text-foreground border border-border rounded-bl-none'
+                        ? 'bg-primary text-white rounded-br-none shadow-primary/20'
+                        : 'bg-muted/50 text-foreground border border-border rounded-bl-none'
                         }`}>
                         <p className="text-sm font-medium leading-relaxed">{m.content}</p>
                         <p className={`text-[10px] font-bold mt-2 uppercase flex items-center gap-1 ${m.type === 'sent' ? 'text-white/60' : 'text-muted-foreground'
