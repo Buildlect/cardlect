@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Bell, Mail, MessageSquare, Smartphone } from 'lucide-react'
 import { ROLE_COLORS, CARDLECT_COLORS } from '@/lib/cardlect-colors'
+import api from '@/lib/api-client'
 
 interface Notification {
   id: string
@@ -16,12 +17,13 @@ interface Notification {
   type: 'entry' | 'purchase' | 'alert' | 'update'
 }
 
-const mockNotifications: Notification[] = [
-  { id: '1', title: 'Sarah Entry', message: 'Sarah arrived at school', time: '8:00 AM', read: false, type: 'entry' },
-  { id: '2', title: 'Store Purchase', message: 'Sarah made a purchase - ₦1,500', time: '12:30 PM', read: false, type: 'purchase' },
-  { id: '3', title: 'Low Balance Alert', message: 'Michael\'s wallet balance is below ₦5,000', time: '2:15 PM', read: true, type: 'alert' },
-  { id: '4', title: 'Exam Score', message: 'Emma\'s exam results are ready to view', time: 'Yesterday', read: true, type: 'update' },
-]
+interface AnnouncementRow {
+  id: string
+  title?: string
+  content?: string
+  priority?: string
+  created_at?: string
+}
 
 const getNotificationColor = (type: string) => {
   switch(type) {
@@ -34,7 +36,8 @@ const getNotificationColor = (type: string) => {
 }
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState(mockNotifications)
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [loading, setLoading] = useState(true)
   const [preferences, setPreferences] = useState({
     entries: true,
     purchases: true,
@@ -44,6 +47,34 @@ export default function NotificationsPage() {
     sms: false,
     push: true,
   })
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const res = await api.get('/announcements')
+        const rows: AnnouncementRow[] = Array.isArray(res.data?.data) ? res.data.data : []
+        setNotifications(rows.map((row) => {
+          const priority = (row.priority || '').toLowerCase()
+          const type: Notification['type'] = priority === 'high' ? 'alert' : priority === 'normal' ? 'update' : 'entry'
+          return {
+            id: row.id,
+            title: row.title || 'Notification',
+            message: row.content || '',
+            time: row.created_at ? new Date(row.created_at).toLocaleString() : 'N/A',
+            read: false,
+            type,
+          }
+        }))
+      } catch (error) {
+        console.error('Failed to load notifications:', error)
+        setNotifications([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchNotifications()
+  }, [])
 
   const unreadCount = notifications.filter(n => !n.read).length
 
@@ -59,7 +90,6 @@ export default function NotificationsPage() {
           <p className="text-muted-foreground">Manage notifications and preferences</p>
         </div>
 
-        {/* Unread Count */}
         <Card style={{ borderColor: ROLE_COLORS.parents.main + '30', backgroundColor: ROLE_COLORS.parents.main + '05' }}>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
@@ -74,29 +104,22 @@ export default function NotificationsPage() {
           </CardContent>
         </Card>
 
-        {/* Notification Preferences */}
         <div>
           <h2 className="text-xl font-semibold mb-4">Notification Preferences</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Event Types */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Event Types</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="text-lg">Event Types</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 {[
-                  { key: 'entries', label: 'School Entries & Exits', icon: '🚪' },
-                  { key: 'purchases', label: 'Store Purchases', icon: '🛒' },
-                  { key: 'alerts', label: 'Alerts & Warnings', icon: '⚠️' },
-                  { key: 'updates', label: 'Academic Updates', icon: '📚' },
+                  { key: 'entries', label: 'School Entries & Exits', icon: 'Door' },
+                  { key: 'purchases', label: 'Store Purchases', icon: 'Cart' },
+                  { key: 'alerts', label: 'Alerts & Warnings', icon: 'Alert' },
+                  { key: 'updates', label: 'Academic Updates', icon: 'Book' },
                 ].map(event => (
                   <div key={event.key} className="flex items-center justify-between">
-                    <label className="text-sm font-medium flex items-center gap-2 cursor-pointer">
-                      <span>{event.icon}</span>
-                      <span>{event.label}</span>
-                    </label>
-                    <input 
-                      type="checkbox" 
+                    <label className="text-sm font-medium cursor-pointer">{event.label}</label>
+                    <input
+                      type="checkbox"
                       checked={preferences[event.key as keyof typeof preferences] as boolean}
                       onChange={() => togglePreference(event.key)}
                       className="w-4 h-4 rounded"
@@ -106,11 +129,8 @@ export default function NotificationsPage() {
               </CardContent>
             </Card>
 
-            {/* Delivery Methods */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Delivery Methods</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="text-lg">Delivery Methods</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 {[
                   { key: 'email', label: 'Email Notifications', icon: <Mail size={18} /> },
@@ -122,8 +142,8 @@ export default function NotificationsPage() {
                       {method.icon}
                       <span>{method.label}</span>
                     </label>
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       checked={preferences[method.key as keyof typeof preferences] as boolean}
                       onChange={() => togglePreference(method.key)}
                       className="w-4 h-4 rounded"
@@ -139,32 +159,32 @@ export default function NotificationsPage() {
           </Button>
         </div>
 
-        {/* Recent Notifications */}
         <div>
           <h2 className="text-xl font-semibold mb-4">Recent Notifications</h2>
           <Card>
             <CardContent className="pt-6">
-              <div className="space-y-4">
-                {notifications.map((notification) => (
-                  <div key={notification.id} className={`p-4 rounded-lg border ${notification.read ? 'bg-muted/30 border-border' : 'bg-primary/5 border-primary'}`}>
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-sm">{notification.title}</h3>
-                        <p className="text-sm text-muted-foreground mt-1">{notification.message}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">{notification.time}</span>
-                      <span 
-                        className="px-2 py-1 rounded text-xs font-semibold"
-                        style={getNotificationColor(notification.type)}
-                      >
-                          {notification.type.charAt(0).toUpperCase() + notification.type.slice(1)}
-                        </span>
+              {loading ? (
+                <p className="text-sm text-muted-foreground">Loading notifications...</p>
+              ) : (
+                <div className="space-y-4">
+                  {notifications.map((notification) => (
+                    <div key={notification.id} className={`p-4 rounded-lg border ${notification.read ? 'bg-muted/30 border-border' : 'bg-primary/5 border-primary'}`}>
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-sm">{notification.title}</h3>
+                          <p className="text-sm text-muted-foreground mt-1">{notification.message}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">{notification.time}</span>
+                          <span className="px-2 py-1 rounded text-xs font-semibold" style={getNotificationColor(notification.type)}>
+                            {notification.type.charAt(0).toUpperCase() + notification.type.slice(1)}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

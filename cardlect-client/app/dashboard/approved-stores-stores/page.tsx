@@ -1,39 +1,66 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Search, Store, MapPin, Phone } from 'lucide-react'
 import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
+import api from '@/lib/api-client'
 
 interface StoreLocation {
   id: string
   name: string
   address: string
   phone: string
-  city: string
+  email: string
   status: 'open' | 'closed'
-  staff: number
 }
 
-const mockStores: StoreLocation[] = [
-  { id: '1', name: 'Downtown Branch', address: '123 Main Street', phone: '08012345678', city: 'Lagos', status: 'open', staff: 8 },
-  { id: '2', name: 'Lekki Store', address: '456 Lekki Road', phone: '08087654321', city: 'Lagos', status: 'open', staff: 6 },
-  { id: '3', name: 'Victoria Island Hub', address: '789 VI Road', phone: '08098765432', city: 'Lagos', status: 'open', staff: 10 },
-  { id: '4', name: 'Ibadan Branch', address: '321 Ring Road', phone: '08055555555', city: 'Ibadan', status: 'closed', staff: 4 },
-]
+interface PartnerSchoolRow {
+  id: string
+  name?: string
+  address?: string
+  phone_number?: string
+  contact_email?: string
+  status?: string
+}
 
 export default function StoresPage() {
+  const [stores, setStores] = useState<StoreLocation[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [loading, setLoading] = useState(true)
 
-  const filteredStores = mockStores.filter(s =>
+  useEffect(() => {
+    const fetchStores = async () => {
+      try {
+        const res = await api.get('/partners/schools')
+        const rows: PartnerSchoolRow[] = Array.isArray(res.data?.data) ? res.data.data : []
+        setStores(rows.map((row) => ({
+          id: row.id,
+          name: row.name || 'Unnamed School',
+          address: row.address || 'No address',
+          phone: row.phone_number || 'N/A',
+          email: row.contact_email || 'N/A',
+          status: row.status === 'active' ? 'open' : 'closed',
+        })))
+      } catch (error) {
+        console.error('Failed to load store locations:', error)
+        setStores([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchStores()
+  }, [])
+
+  const filteredStores = stores.filter(s =>
     s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.city.toLowerCase().includes(searchQuery.toLowerCase())
+    s.address.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const openStores = mockStores.filter(s => s.status === 'open').length
-  const totalStaff = mockStores.reduce((sum, s) => sum + s.staff, 0)
+  const openStores = stores.filter(s => s.status === 'open').length
+  const totalContacts = stores.filter(s => s.phone !== 'N/A').length
 
   return (
     <DashboardLayout currentPage="stores" role="partner">
@@ -49,7 +76,7 @@ export default function StoresPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Total Stores</p>
-                <p className="text-3xl font-bold text-foreground">{mockStores.length}</p>
+                <p className="text-3xl font-bold text-foreground">{stores.length}</p>
               </div>
               <Store size={24} style={{ color: CARDLECT_COLORS.primary.darker }} />
             </div>
@@ -69,8 +96,8 @@ export default function StoresPage() {
         <Card>
           <CardContent className="pt-6">
             <div>
-              <p className="text-xs text-muted-foreground mb-1">Total Staff</p>
-              <p className="text-3xl font-bold text-foreground">{totalStaff}</p>
+              <p className="text-xs text-muted-foreground mb-1">Contactable Stores</p>
+              <p className="text-3xl font-bold text-foreground">{totalContacts}</p>
             </div>
           </CardContent>
         </Card>
@@ -93,6 +120,9 @@ export default function StoresPage() {
           </div>
         </CardHeader>
         <CardContent>
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Loading store locations...</p>
+          ) : (
           <div className="space-y-3">
             {filteredStores.map((store) => (
               <div key={store.id} className="border border-border rounded-lg p-4">
@@ -108,19 +138,20 @@ export default function StoresPage() {
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <MapPin size={16} />
-                    <span>{store.address}, {store.city}</span>
+                    <span>{store.address}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone size={16} />
                     <span>{store.phone}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-foreground">{store.staff} staff members</span>
+                    <span className="font-semibold text-foreground">{store.email}</span>
                   </div>
                 </div>
               </div>
             ))}
           </div>
+          )}
         </CardContent>
       </Card>
     </DashboardLayout>
