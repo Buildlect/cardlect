@@ -196,20 +196,11 @@ export function Sidebar({
 
   return (
     <>
-      {/* Mobile backdrop: click to close */}
-      {isMobile && open && (
-        <div
-          className="fixed inset-0 bg-black/40 z-40"
-          onClick={onToggle}
-          aria-hidden="true"
-        />
-      )}
-
       <aside
         className={`
           ${isMobile ? "fixed inset-y-0 left-0 z-50 transform transition-transform duration-300" : "h-screen"}
           ${isMobile ? (open ? "translate-x-0 w-64" : "-translate-x-full w-64") : open ? "w-64" : "w-20"}
-          bg-background text-foreground border-r border-border
+          bg-sidebar text-sidebar-foreground border-r border-[color:var(--sidebar-border)]
           flex flex-col overflow-hidden min-h-0
           shadow-sm
         `}
@@ -225,22 +216,20 @@ export function Sidebar({
 
           <button
             onClick={onToggle}
-            className="group relative p-1 hover:bg-orange-50 rounded-lg dark:hover:bg-white/5"
+            className="group relative p-1 hover:bg-primary/10 rounded-lg"
             aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
           >
             {open ? (
-              <X className="h-5 w-5 text-gray-500 group-hover:text-orange-600 dark:text-gray-200 dark:group-hover:text-orange-400" />
+              <X className="h-5 w-5 text-sidebar-foreground/80 group-hover:text-primary" />
             ) : (
-              <Menu className="h-5 w-5 text-gray-500 group-hover:text-orange-600 dark:text-gray-200 dark:group-hover:text-orange-400" />
+              <Menu className="h-5 w-5 text-sidebar-foreground/80 group-hover:text-primary" />
             )}
 
-            {/* Toggle tooltip */}
-            <Tooltip text={open ? "Collapse sidebar" : "Expand sidebar"} />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-3 space-y-2 overflow-y-auto overflow-x-hidden min-h-0">
+        <nav className="dashboard-sidebar-scroll flex-1 px-3 py-3 space-y-2 overflow-y-auto overflow-x-hidden min-h-0">
           {menuItems.map(({ icon: Icon, label, href, id }) => {
             const isActive = pathname === href || pathname.startsWith(`${href}/`)
             return (
@@ -258,15 +247,15 @@ export function Sidebar({
                   group relative flex items-center gap-3 px-4 py-3 rounded-lg
                   transition-all
                   ${isActive
-                    ? "bg-orange-50 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300"
-                    : "text-gray-700 hover:bg-orange-50 dark:text-gray-200 dark:hover:bg-orange-500/10"}
+                    ? "bg-primary/15 text-primary"
+                    : "text-sidebar-foreground hover:bg-primary/10 hover:text-primary"}
                 `}
               >
                 <Icon
                   className={`h-5 w-5 flex-shrink-0 transition-colors ${
                     isActive
-                      ? "text-orange-600 dark:text-orange-300"
-                      : "text-gray-500 group-hover:text-orange-600 dark:text-gray-300 dark:group-hover:text-orange-400"
+                      ? "text-primary"
+                      : "text-sidebar-foreground/80 group-hover:text-primary"
                   }`}
                 />
 
@@ -274,7 +263,7 @@ export function Sidebar({
                 {open && (
                   <span
                     className={`text-sm font-medium ${
-                      isActive ? "text-orange-700 dark:text-orange-300" : "group-hover:text-orange-600 dark:group-hover:text-orange-400"
+                      isActive ? "text-primary" : "group-hover:text-primary"
                     }`}
                   >
                     {label}
@@ -288,11 +277,11 @@ export function Sidebar({
           })}
         </nav>
 
-        <div className="mt-auto p-3 border-t border-border">
+        <div className="mt-auto p-3 border-t border-[color:var(--sidebar-border)]">
           <button
             onClick={handleLogout}
             aria-label="Logout"
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-orange-50 transition-all dark:text-gray-200 dark:hover:bg-orange-500/10"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-primary/10 transition-all"
           >
             <LogOut className="h-5 w-5 flex-shrink-0" />
             {open && <span className="text-sm font-medium">Logout</span>}

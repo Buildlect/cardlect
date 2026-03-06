@@ -14,6 +14,7 @@ interface HeaderProps {
   sidebarOpen: boolean
   onMenuClick: () => void
   role?: UserRole
+  showMenuButton?: boolean
 }
 
 interface AnnouncementRow {
@@ -38,7 +39,7 @@ const priorityStyles: Record<HeaderNotification['priority'], { marker: string; b
   low: { marker: CARDLECT_COLORS.info.main, border: 'border-l-blue-500' },
 }
 
-export function Header({ onMenuClick, role = "school_admin" }: HeaderProps) {
+export function Header({ onMenuClick, role = "school_admin", showMenuButton = false }: HeaderProps) {
   const { logout, user } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
@@ -149,15 +150,17 @@ export function Header({ onMenuClick, role = "school_admin" }: HeaderProps) {
   return (
     <header className="bg-card border-b border-border sticky top-0 z-40">
       <div className="px-4 md:px-8 py-4 flex items-center justify-between gap-4">
-        <button
-          onClick={onMenuClick}
-          className="md:hidden p-2 hover:bg-secondary rounded-lg transition-all"
-          aria-label="Menu"
-        >
-          <Menu size={20} />
-        </button>
+        {showMenuButton && (
+          <button
+            onClick={onMenuClick}
+            className="p-2 hover:bg-secondary rounded-lg transition-all"
+            aria-label="Menu"
+          >
+            <Menu size={20} />
+          </button>
+        )}
 
-        <div className="hidden md:flex flex-1 max-w-md">
+        <div className="hidden lg:flex flex-1 max-w-md">
           <div className="relative w-full">
             <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
             <input
@@ -173,14 +176,14 @@ export function Header({ onMenuClick, role = "school_admin" }: HeaderProps) {
         <div className="flex items-center gap-2 md:gap-4 ml-auto">
           <button
             onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-            className="md:hidden p-2 hover:bg-secondary rounded-lg transition-all"
+            className="lg:hidden p-2 hover:bg-secondary rounded-lg transition-all"
             aria-label="Search"
           >
             {mobileSearchOpen ? <X size={20} /> : <Search size={20} />}
           </button>
 
-          <div className="hidden md:flex"><ThemeToggle /></div>
-          <div className="md:hidden"><ThemeToggleMobile /></div>
+          <div className="hidden lg:flex"><ThemeToggle /></div>
+          <div className="lg:hidden"><ThemeToggleMobile /></div>
 
           <div className="relative" ref={notifRef}>
             <button
@@ -296,7 +299,7 @@ export function Header({ onMenuClick, role = "school_admin" }: HeaderProps) {
       </div>
 
       {mobileSearchOpen && (
-        <div className="md:hidden px-4 pb-4">
+        <div className="lg:hidden px-4 pb-4">
           <div className="relative w-full">
             <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
             <input

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Users, BookOpen, Clock, Wallet, CreditCard, FileText, UserPlus, Loader2, LogIn, ShoppingCart, MessageSquare } from "lucide-react"
+import { Users, Clock, Wallet, CreditCard, Loader2, LogIn, ShoppingCart, MessageSquare } from "lucide-react"
 import {
     ResponsiveContainer,
     AreaChart,
@@ -10,7 +10,6 @@ import {
     YAxis,
     Tooltip,
     CartesianGrid,
-    Legend,
 } from "recharts"
 import { CARDLECT_COLORS } from "@/lib/cardlect-colors"
 import { useRouter } from "next/navigation"
@@ -60,13 +59,26 @@ function CustomTooltip({ active, payload, label, color, unit }: any) {
 export default function AdminOverview() {
     const router = useRouter()
     const [data, setData] = useState<any>(null)
+    const [walletBalance, setWalletBalance] = useState<number | null>(null)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         const fetchOverview = async () => {
             try {
-                const response = await api.get('/analytics/overview')
-                setData(response.data.data)
+                const [overviewRes, walletRes] = await Promise.allSettled([
+                    api.get('/analytics/overview'),
+                    api.get('/wallets/analytics'),
+                ])
+
+                if (overviewRes.status === 'fulfilled') {
+                    setData(overviewRes.value.data.data)
+                }
+                if (walletRes.status === 'fulfilled') {
+                    const total = Number(walletRes.value.data?.data?.total_value || 0)
+                    setWalletBalance(Number.isFinite(total) ? total : 0)
+                } else {
+                    setWalletBalance(null)
+                }
             } catch (err) {
                 console.error('Failed to fetch admin overview:', err)
             } finally {
@@ -88,7 +100,6 @@ export default function AdminOverview() {
         )
     }
 
-    // Sample sparkline data Fallback
     const fallbackSeries = [
         { name: "Mon", value: 10 },
         { name: "Tue", value: 15 },
@@ -101,7 +112,7 @@ export default function AdminOverview() {
 
     const volumeData = data.finance.volume_trend_7d.length > 0
         ? data.finance.volume_trend_7d.map((d: any) => ({ name: d.date, value: parseFloat(d.daily_volume) }))
-        : fallbackSeries;
+        : fallbackSeries
 
     const metrics: Metric[] = [
         {
@@ -115,6 +126,15 @@ export default function AdminOverview() {
         },
         {
             icon: Clock,
+            label: "Inside School",
+            value: Number(data.attendance.present_today || 0).toLocaleString(),
+            change: "Present Today",
+            colorClass: "from-lime-400 to-lime-600",
+            colorHex: CARDLECT_COLORS.success.main,
+            data: fallbackSeries,
+        },
+        {
+            icon: Clock,
             label: "Attendance Rate",
             value: data.attendance.attendance_rate,
             change: `${data.attendance.present_today} Present`,
@@ -124,8 +144,17 @@ export default function AdminOverview() {
         },
         {
             icon: Wallet,
+            label: "School Wallet Balance",
+            value: walletBalance !== null ? `N${walletBalance.toLocaleString()}` : "N/A",
+            change: "Current Total",
+            colorClass: "from-blue-400 to-blue-600",
+            colorHex: CARDLECT_COLORS.primary.darker,
+            data: volumeData,
+        },
+        {
+            icon: Wallet,
             label: "Today Volume",
-            value: `₦${data.finance.today_transaction_volume.toLocaleString()}`,
+            value: `N${data.finance.today_transaction_volume.toLocaleString()}`,
             change: `${data.finance.today_transaction_count} Txns`,
             colorClass: "from-blue-400 to-blue-600",
             colorHex: CARDLECT_COLORS.primary.darker,
@@ -153,7 +182,6 @@ export default function AdminOverview() {
 
     return (
         <div className="space-y-8">
-            {/* Metrics Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 {metrics.map((metric, idx) => {
                     const Icon = metric.icon
@@ -196,7 +224,7 @@ export default function AdminOverview() {
                                         <Tooltip
                                             wrapperStyle={{ outline: "none" }}
                                             cursor={false}
-                                            content={<CustomTooltip color={metric.colorHex} unit={metric.label === "Today Volume" ? "₦" : ""} />}
+                                            content={<CustomTooltip color={metric.colorHex} unit={metric.label.includes("Volume") || metric.label.includes("Wallet") ? "N" : ""} />}
                                         />
 
                                         <Area
@@ -220,7 +248,6 @@ export default function AdminOverview() {
                 })}
             </div>
 
-            {/* Overview Chart + Quick Actions */}
             <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 bg-card p-6 rounded-xl border border-border shadow-sm">
                     <div className="flex items-center justify-between mb-4">
@@ -250,9 +277,9 @@ export default function AdminOverview() {
                                     tick={{ fill: "var(--muted-foreground)", fontSize: 12 }}
                                     axisLine={false}
                                     tickLine={false}
-                                    tickFormatter={(v) => `₦${numberFormatter(v as number)}`}
+                                    tickFormatter={(v) => `N${numberFormatter(v as number)}`}
                                 />
-                                <Tooltip content={<CustomTooltip color={CARDLECT_COLORS.primary.darker} unit="₦" />} />
+                                <Tooltip content={<CustomTooltip color={CARDLECT_COLORS.primary.darker} unit="N" />} />
 
                                 <Area
                                     type="monotone"
@@ -270,7 +297,6 @@ export default function AdminOverview() {
                     </div>
                 </div>
 
-                {/* Quick Actions */}
                 <div className="bg-card p-6 rounded-xl border border-border shadow-sm overflow-hidden">
                     <h3 className="text-lg font-bold text-foreground mb-2">Recent Partners</h3>
                     <p className="text-sm text-muted-foreground mb-4">Transactions today</p>

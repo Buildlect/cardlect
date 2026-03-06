@@ -27,6 +27,7 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [isCompactDesktop, setIsCompactDesktop] = useState(false)
   const [checkingBackend, setCheckingBackend] = useState(true)
   const [backendError, setBackendError] = useState<string | null>(null)
   const router = useRouter()
@@ -36,8 +37,11 @@ export default function DashboardLayout({
 
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-      if (window.innerWidth >= 768) {
+      const mobile = window.innerWidth < 768
+      const compactDesktop = window.innerWidth < 1280
+      setIsMobile(mobile)
+      setIsCompactDesktop(compactDesktop)
+      if (!compactDesktop) {
         setMobileMenuOpen(false)
       }
     }
@@ -179,23 +183,15 @@ export default function DashboardLayout({
   }
 
   const handleNavigation = (href: string) => {
-    if (isMobile) {
+    if (isMobile || isCompactDesktop) {
       setMobileMenuOpen(false)
     }
     router.push(href)
   }
 
-  const mobileOverlay = mobileMenuOpen && isMobile && (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-      onClick={() => setMobileMenuOpen(false)}
-      aria-hidden="true"
-    />
-  )
-
   return (
     <div className="flex h-screen bg-background">
-      <div className="hidden md:flex h-screen">
+      <div className="hidden xl:flex h-screen">
         <Sidebar
           open={sidebarOpen}
           onToggle={() => setSidebarOpen(!sidebarOpen)}
@@ -206,9 +202,8 @@ export default function DashboardLayout({
         />
       </div>
 
-      {isMobile && mobileMenuOpen && (
+      {isCompactDesktop && mobileMenuOpen && (
         <>
-          {mobileOverlay}
           <Sidebar
             open={true}
             onToggle={() => setMobileMenuOpen(false)}
@@ -222,7 +217,12 @@ export default function DashboardLayout({
       )}
 
       <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
-        <Header sidebarOpen={sidebarOpen} onMenuClick={handleMobileMenuToggle} role={effectiveRole} />
+        <Header
+          sidebarOpen={sidebarOpen}
+          onMenuClick={handleMobileMenuToggle}
+          role={effectiveRole}
+          showMenuButton={isCompactDesktop}
+        />
 
         <main className="flex-1 overflow-auto">
           <div className="max-w-7xl mx-auto min-w-0 px-4 sm:px-6 lg:px-8 py-8">
