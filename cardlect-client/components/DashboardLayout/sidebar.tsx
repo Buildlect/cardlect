@@ -244,7 +244,7 @@ export function Sidebar({
                 aria-label={label}
                 aria-current={isActive ? "page" : undefined}
                 className={`
-                  group relative flex items-center gap-3 px-4 py-3 rounded-lg
+                  group relative flex items-center ${open ? "justify-start gap-3 px-4" : "justify-center px-2"} py-3 rounded-lg
                   transition-all
                   ${isActive
                     ? "bg-primary/15 text-primary"
@@ -281,7 +281,7 @@ export function Sidebar({
           <button
             onClick={handleLogout}
             aria-label="Logout"
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sidebar-foreground hover:bg-primary/10 transition-all"
+            className={`w-full flex items-center ${open ? "justify-start gap-3 px-4" : "justify-center px-2"} py-3 rounded-lg text-sidebar-foreground hover:bg-primary/10 transition-all`}
           >
             <LogOut className="h-5 w-5 flex-shrink-0" />
             {open && <span className="text-sm font-medium">Logout</span>}

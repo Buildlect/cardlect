@@ -19,18 +19,37 @@ interface AcademicClass {
   section?: string
 }
 
+interface AcademicClassRow {
+  id: string
+  name: string
+  grade_level?: string
+}
+
 export default function ClassesPage() {
   const [classes, setClasses] = useState<AcademicClass[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [showForm, setShowForm] = useState(false)
+  const [editingClassId, setEditingClassId] = useState<string | null>(null)
+  const [notice, setNotice] = useState<{ type: "success" | "error"; text: string } | null>(null)
   const [formData, setFormData] = useState({ name: "", teacher_name: "", capacity: 40, level: "", section: "" })
 
   const fetchClasses = async () => {
     setLoading(true)
     try {
-      const response = await api.get('/academic/classes')
-      setClasses(response.data.data)
+      const response = await api.get('/academics/classes')
+      const rows: AcademicClassRow[] = Array.isArray(response.data?.data) ? response.data.data : []
+      setClasses(
+        rows.map((row) => ({
+          id: row.id,
+          name: row.name,
+          teacher_name: undefined,
+          student_count: 0,
+          capacity: 40,
+          level: row.grade_level || "Standardized",
+          section: "",
+        })),
+      )
     } catch (err) {
       console.error('Failed to fetch classes:', err)
     } finally {
@@ -45,24 +64,77 @@ export default function ClassesPage() {
   const filteredClasses = classes.filter((c) => c.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
   const handleAddClass = async () => {
+    setNotice(null)
     if (!formData.name) {
-      alert("Class name is required")
+      setNotice({ type: "error", text: "Class name is required." })
       return
     }
     try {
-      await api.post('/academic/classes', formData)
-      alert('Class created successfully!')
+      await api.post('/academics/classes', {
+        name: formData.name,
+        gradeLevel: formData.level || "Standardized",
+        staffId: null,
+      })
+      setNotice({ type: "success", text: "Class created successfully." })
       setShowForm(false)
-      fetchClasses()
+      setEditingClassId(null)
       setFormData({ name: "", teacher_name: "", capacity: 40, level: "", section: "" })
+      fetchClasses()
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Creation failed')
+      setNotice({ type: "error", text: err.response?.data?.message || "Creation failed." })
+    }
+  }
+
+  const handleUpdateClass = async () => {
+    if (!editingClassId) return
+    setNotice(null)
+    if (!formData.name) {
+      setNotice({ type: "error", text: "Class name is required." })
+      return
+    }
+    try {
+      await api.put(`/academics/classes/${editingClassId}`, {
+        name: formData.name,
+        gradeLevel: formData.level || "Standardized",
+        staffId: null,
+      })
+      setNotice({ type: "success", text: "Class updated successfully." })
+      setShowForm(false)
+      setEditingClassId(null)
+      setFormData({ name: "", teacher_name: "", capacity: 40, level: "", section: "" })
+      fetchClasses()
+    } catch (err: any) {
+      setNotice({ type: "error", text: err.response?.data?.message || "Update failed." })
     }
   }
 
   const handleDeleteClass = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this class?')) return
-    alert('Delete functionality pending backend implementation.')
+    setNotice(null)
+    if (!confirm('Delete this class? This will also remove linked assignments.')) return
+    try {
+      await api.delete(`/academics/classes/${id}`)
+      setNotice({ type: "success", text: "Class deleted successfully." })
+      if (editingClassId === id) {
+        setEditingClassId(null)
+        setShowForm(false)
+      }
+      fetchClasses()
+    } catch (err: any) {
+      setNotice({ type: "error", text: err.response?.data?.message || "Delete failed." })
+    }
+  }
+
+  const beginEdit = (cls: AcademicClass) => {
+    setEditingClassId(cls.id)
+    setFormData({
+      name: cls.name || "",
+      teacher_name: cls.teacher_name || "",
+      capacity: cls.capacity || 40,
+      level: cls.level || "",
+      section: cls.section || "",
+    })
+    setShowForm(true)
+    window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   return (
@@ -73,15 +145,28 @@ export default function ClassesPage() {
             <h2 className="text-3xl font-extrabold text-foreground">Classroom Management</h2>
             <p className="text-muted-foreground mt-1 tracking-tight">Organize student rosters, teacher assignments, and classroom capacity.</p>
           </div>
-          <Button onClick={() => setShowForm(!showForm)} className="bg-primary hover:bg-primary-darker text-white rounded-xl py-6 px-8 flex items-center gap-2">
+          <Button
+            onClick={() => {
+              setEditingClassId(null)
+              setShowForm(!showForm)
+              if (!showForm) setFormData({ name: "", teacher_name: "", capacity: 40, level: "", section: "" })
+            }}
+            className="bg-primary hover:bg-primary-darker text-white rounded-xl py-6 px-8 flex items-center gap-2"
+          >
             <Plus size={20} /> New Academic Group
           </Button>
         </div>
 
+        {notice && (
+          <div className={`rounded-xl px-4 py-3 text-sm font-medium ${notice.type === "success" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+            {notice.text}
+          </div>
+        )}
+
         {showForm && (
           <Card className="border-primary/20 shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-4">
             <CardHeader className="bg-primary/5 border-b border-primary/10">
-              <CardTitle>Define New Class Structure</CardTitle>
+              <CardTitle>{editingClassId ? "Edit Class Structure" : "Define New Class Structure"}</CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -109,16 +194,24 @@ export default function ClassesPage() {
                     type="number"
                     placeholder="Enrollment Limit"
                     value={formData.capacity}
-                    onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) })}
+                    onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) || 40 })}
                     className="rounded-xl h-12"
                   />
                 </div>
               </div>
               <div className="flex gap-3 mt-8">
-                <Button onClick={handleAddClass} className="bg-primary hover:bg-primary-darker text-white rounded-xl px-10 h-12 font-bold shadow-lg shadow-primary/20">
-                  Save Configuration
+                <Button onClick={editingClassId ? handleUpdateClass : handleAddClass} className="bg-primary hover:bg-primary-darker text-white rounded-xl px-10 h-12 font-bold shadow-lg shadow-primary/20">
+                  {editingClassId ? "Update Configuration" : "Save Configuration"}
                 </Button>
-                <Button onClick={() => setShowForm(false)} variant="ghost" className="rounded-xl px-10 h-12 font-bold">
+                <Button
+                  onClick={() => {
+                    setShowForm(false)
+                    setEditingClassId(null)
+                    setFormData({ name: "", teacher_name: "", capacity: 40, level: "", section: "" })
+                  }}
+                  variant="ghost"
+                  className="rounded-xl px-10 h-12 font-bold"
+                >
                   Discard
                 </Button>
               </div>
@@ -126,7 +219,6 @@ export default function ClassesPage() {
           </Card>
         )}
 
-        {/* Search & Meta */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <div className="md:col-span-3 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -143,7 +235,6 @@ export default function ClassesPage() {
           </div>
         </div>
 
-        {/* Classes Grid */}
         {loading ? (
           <div className="flex items-center justify-center p-20">
             <Loader2 className="w-10 h-10 animate-spin text-primary" />
@@ -151,7 +242,9 @@ export default function ClassesPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredClasses.map((cls) => {
-              const fillPercent = (cls.student_count / (cls.capacity || 1)) * 100;
+              const students = Number(cls.student_count || 0)
+              const capacity = Number(cls.capacity || 40)
+              const fillPercent = (students / (capacity || 1)) * 100
               return (
                 <Card key={cls.id} className="border-border hover:border-primary/50 transition-all hover:shadow-xl group overflow-hidden">
                   <CardHeader className="bg-muted/30 border-b border-border/50 group-hover:bg-primary/5 transition-colors">
@@ -165,7 +258,7 @@ export default function ClassesPage() {
                       <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-widest">
                         <span className="text-muted-foreground">Enrollment Density</span>
                         <span className={fillPercent > 90 ? 'text-red-500' : 'text-primary'}>
-                          {cls.student_count} / {cls.capacity || '∞'}
+                          {students} / {capacity}
                         </span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">
@@ -173,7 +266,7 @@ export default function ClassesPage() {
                           className="h-full rounded-full transition-all duration-1000"
                           style={{
                             width: `${fillPercent}%`,
-                            backgroundColor: fillPercent > 90 ? '#ef4444' : CARDLECT_COLORS.primary.main
+                            backgroundColor: fillPercent > 90 ? '#ef4444' : CARDLECT_COLORS.primary.main,
                           }}
                         />
                       </div>
@@ -182,15 +275,11 @@ export default function ClassesPage() {
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
                         <UserCheck size={14} className="text-primary" />
-                        <span className="text-xs font-semibold text-foreground truncate">
-                          {cls.teacher_name || 'No lead teacher assigned'}
-                        </span>
+                        <span className="text-xs font-semibold text-foreground truncate">{cls.teacher_name || 'No lead teacher assigned'}</span>
                       </div>
                       <div className="flex items-center gap-2 px-3 py-2 bg-muted/50 rounded-lg">
                         <GraduationCap size={14} className="text-primary" />
-                        <span className="text-xs font-semibold text-foreground">
-                          Academic Level: {cls.level || 'Standardized'}
-                        </span>
+                        <span className="text-xs font-semibold text-foreground">Academic Level: {cls.level || 'Standardized'}</span>
                       </div>
                     </div>
 
@@ -198,15 +287,10 @@ export default function ClassesPage() {
                       <Button variant="outline" size="sm" className="flex-1 rounded-lg font-bold border-2 hover:bg-primary hover:text-white transition-all">
                         Roster
                       </Button>
-                      <Button variant="ghost" size="icon" className="rounded-lg h-9 w-9 text-muted-foreground hover:text-primary">
+                      <Button variant="ghost" size="icon" className="rounded-lg h-9 w-9 text-muted-foreground hover:text-primary" onClick={() => beginEdit(cls)}>
                         <Edit size={16} />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="rounded-lg h-9 w-9 text-muted-foreground hover:text-red-500"
-                        onClick={() => handleDeleteClass(cls.id)}
-                      >
+                      <Button variant="ghost" size="icon" className="rounded-lg h-9 w-9 text-muted-foreground hover:text-red-500" onClick={() => handleDeleteClass(cls.id)}>
                         <Trash2 size={16} />
                       </Button>
                     </div>
