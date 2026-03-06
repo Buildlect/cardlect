@@ -1,7 +1,7 @@
 "use client"
 
 import { Bell, Search, Menu, X, LogOut, Settings, User } from "lucide-react"
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -22,6 +22,22 @@ export function Header({ sidebarOpen, onMenuClick, role = "school_admin" }: Head
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+
+  const notifRef = useRef<HTMLDivElement>(null)
+  const profileRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setNotificationsOpen(false)
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setProfileOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   // Role display names
   const roleDisplayNames: Record<UserRole, string> = {
@@ -109,7 +125,7 @@ export function Header({ sidebarOpen, onMenuClick, role = "school_admin" }: Head
           <div className="md:hidden"><ThemeToggleMobile /></div>
 
           {/* Notifications Dropdown */}
-          <div className="relative">
+          <div className="relative" ref={notifRef}>
             <button
               onClick={() => {
                 setNotificationsOpen(!notificationsOpen)
@@ -124,7 +140,7 @@ export function Header({ sidebarOpen, onMenuClick, role = "school_admin" }: Head
             </button>
 
             {notificationsOpen && (
-              <div className="absolute top-full right-0 mt-2 w-96 bg-card border-2 rounded-lg shadow-xl z-50" style={{ borderColor: CARDLECT_COLORS.primary.darker }}>
+              <div className="absolute top-full right-0 mt-2 w-96 bg-card border-2 rounded-lg shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right" style={{ borderColor: CARDLECT_COLORS.primary.darker }}>
                 <div className="p-4 border-b" style={{ borderColor: CARDLECT_COLORS.primary.darker, backgroundColor: CARDLECT_COLORS.primary.darker + '10' }}>
                   <div className="flex items-center justify-between">
                     <p className="font-bold text-foreground text-sm">Notifications</p>
@@ -175,7 +191,7 @@ export function Header({ sidebarOpen, onMenuClick, role = "school_admin" }: Head
           </div>
 
           {/* Profile Dropdown */}
-          <div className="relative">
+          <div className="relative" ref={profileRef}>
             <button
               onClick={() => {
                 setProfileOpen(!profileOpen)
@@ -189,7 +205,7 @@ export function Header({ sidebarOpen, onMenuClick, role = "school_admin" }: Head
             </button>
 
             {profileOpen && (
-              <div className="absolute top-full right-0 mt-2 w-64 bg-card border border-border rounded-lg shadow-xl z-50">
+              <div className="absolute top-full right-0 mt-2 w-64 bg-card border border-border rounded-lg shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                 <div className="p-4 border-b border-border">
                   <div className="flex items-center gap-3">
                     <div style={{ backgroundColor: CARDLECT_COLORS.primary.main }} className="w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg">

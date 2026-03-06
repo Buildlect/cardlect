@@ -1,230 +1,208 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
-import { Search, TrendingUp, Award, AlertCircle } from 'lucide-react'
-
-interface Grade {
-  subject: string
-  score: number
-  grade: string
-  status: 'excellent' | 'good' | 'satisfactory' | 'needs-improvement'
-  teacher: string
-}
-
-const mockGrades: Grade[] = [
-  { subject: 'Mathematics', score: 85, grade: 'A', status: 'excellent', teacher: 'Mr. Johnson' },
-  { subject: 'English Language', score: 78, grade: 'B+', status: 'good', teacher: 'Ms. Williams' },
-  { subject: 'Physics', score: 92, grade: 'A', status: 'excellent', teacher: 'Dr. Davis' },
-  { subject: 'Chemistry', score: 88, grade: 'A', status: 'excellent', teacher: 'Mr. Brown' },
-  { subject: 'Biology', score: 81, grade: 'B', status: 'good', teacher: 'Ms. Martinez' },
-  { subject: 'History', score: 75, grade: 'B', status: 'satisfactory', teacher: 'Mr. Wilson' },
-]
-
-const chartData = [
-  { term: 'Term 1', average: 82, english: 78, maths: 85, science: 88 },
-  { term: 'Term 2', average: 84, english: 80, maths: 87, science: 90 },
-  { term: 'Term 3', average: 86, english: 83, maths: 90, science: 92 },
-]
-
-const gradeDistribution = [
-  { name: 'A (90-100)', value: 3, color: CARDLECT_COLORS.success.main },
-  { name: 'B (80-89)', value: 2, color: CARDLECT_COLORS.primary.darker },
-  { name: 'C (70-79)', value: 1, color: CARDLECT_COLORS.warning.main },
-]
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'excellent': return CARDLECT_COLORS.success.main
-    case 'good': return CARDLECT_COLORS.primary.darker
-    case 'satisfactory': return CARDLECT_COLORS.warning.main
-    default: return CARDLECT_COLORS.danger.main
-  }
-}
+import { Search, TrendingUp, Award, BookOpen, Loader2 } from 'lucide-react'
+import api from '@/lib/api-client'
 
 export default function StudentGradesPage() {
+  const [results, setResults] = useState<any[]>([])
+  const [exams, setExams] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
-  const [expandedSubject, setExpandedSubject] = useState<string | null>(null)
+  const [expandedExam, setExpandedExam] = useState<string | null>(null)
 
-  const filteredGrades = mockGrades.filter(g =>
-    g.subject.toLowerCase().includes(searchQuery.toLowerCase())
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const examsRes = await api.get('/exams?limit=20')
+        const examList: any[] = examsRes.data.data?.exams || []
+        setExams(examList)
+
+        // Fetch results for each completed exam
+        const allResults: any[] = []
+        await Promise.all(
+          examList
+            .filter((e: any) => new Date(e.start_date) <= new Date())
+            .slice(0, 5)
+            .map(async (e: any) => {
+              try {
+                const res = await api.get(`/exams/${e.id}/results`)
+                const data: any[] = res.data.data || []
+                allResults.push(...(Array.isArray(data) ? data : []).map((r: any) => ({ ...r, exam_title: e.title })))
+              } catch (_) { }
+            })
+        )
+        setResults(allResults)
+      } catch (err) {
+        console.error('Failed to fetch grades:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  const filteredExams = exams.filter(e =>
+    e.title?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const averageScore = Math.round(
-    mockGrades.reduce((sum, g) => sum + g.score, 0) / mockGrades.length
-  )
+  const avgScore = results.length > 0
+    ? Math.round(results.reduce((s, r) => s + parseFloat(String(r.score || '0')), 0) / results.length)
+    : 0
+
+  const getGrade = (score: number, max: number = 100) => {
+    const pct = (score / max) * 100
+    if (pct >= 90) return { grade: 'A', color: CARDLECT_COLORS.success.main }
+    if (pct >= 80) return { grade: 'B', color: CARDLECT_COLORS.primary.darker }
+    if (pct >= 70) return { grade: 'C', color: CARDLECT_COLORS.warning.main }
+    if (pct >= 60) return { grade: 'D', color: '#f97316' }
+    return { grade: 'F', color: CARDLECT_COLORS.danger.main }
+  }
+
+  const distribution = [
+    { name: 'A (90-100)', value: results.filter(r => (parseFloat(r.score) / parseFloat(r.max_score || '100')) * 100 >= 90).length, color: CARDLECT_COLORS.success.main },
+    { name: 'B (80-89)', value: results.filter(r => { const pct = (parseFloat(r.score) / parseFloat(r.max_score || '100')) * 100; return pct >= 80 && pct < 90 }).length, color: CARDLECT_COLORS.primary.darker },
+    { name: 'C (70-79)', value: results.filter(r => { const pct = (parseFloat(r.score) / parseFloat(r.max_score || '100')) * 100; return pct >= 70 && pct < 80 }).length, color: CARDLECT_COLORS.warning.main },
+    { name: 'F (<70)', value: results.filter(r => (parseFloat(r.score) / parseFloat(r.max_score || '100')) * 100 < 70).length, color: CARDLECT_COLORS.danger.main },
+  ].filter(d => d.value > 0)
 
   return (
     <DashboardLayout currentPage="grades" role="student">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Academic Grades</h1>
-        <p className="text-muted-foreground">Track your subject grades and academic performance</p>
-      </div>
+      <div className="space-y-6">
+        <div className="mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Academic Grades</h1>
+          <p className="text-muted-foreground">Track your exam results and academic performance.</p>
+        </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Average Score</p>
-                <p className="text-3xl font-bold text-foreground">{averageScore}%</p>
-              </div>
-              <TrendingUp size={24} style={{ color: CARDLECT_COLORS.primary.darker }} />
+        {loading ? (
+          <div className="flex items-center justify-center p-20">
+            <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          </div>
+        ) : (
+          <>
+            {/* Stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {[
+                { label: 'Average Score', value: `${avgScore}%`, icon: TrendingUp, color: CARDLECT_COLORS.primary.darker },
+                { label: 'Exams Taken', value: exams.filter(e => new Date(e.start_date) <= new Date()).length, icon: Award, color: CARDLECT_COLORS.success.main },
+                { label: 'Upcoming Exams', value: exams.filter(e => new Date(e.start_date) > new Date()).length, icon: BookOpen, color: CARDLECT_COLORS.warning.main },
+              ].map((s, i) => {
+                const Icon = s.icon
+                return (
+                  <div key={i} className="bg-card border border-border rounded-2xl p-5 hover:shadow-lg transition-all">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">{s.label}</p>
+                        <p className="text-3xl font-bold text-foreground">{s.value}</p>
+                      </div>
+                      <Icon size={24} color={s.color} />
+                    </div>
+                  </div>
+                )
+              })}
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Subjects</p>
-                <p className="text-3xl font-bold text-foreground">{mockGrades.length}</p>
+
+            {/* Charts */}
+            {distribution.length > 0 && (
+              <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
+                <h3 className="text-lg font-semibold mb-5 text-foreground">Grade Distribution</h3>
+                <div className="h-56">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={distribution} cx="50%" cy="50%" outerRadius={85} dataKey="value" label={({ name, value }) => `${name}: ${value}`} labelLine={false}>
+                        {distribution.map((entry, idx) => (
+                          <Cell key={idx} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
-              <Award size={24} style={{ color: CARDLECT_COLORS.success.main }} />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Grade A Count</p>
-                <p className="text-3xl font-bold text-foreground">3</p>
-              </div>
-              <AlertCircle size={24} style={{ color: CARDLECT_COLORS.primary.darker }} />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            )}
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Performance Trend</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="term" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
-                <Tooltip contentStyle={{ backgroundColor: '#1f2937', border: `1px solid ${CARDLECT_COLORS.primary.darker}` }} />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="average"
-                  stroke={CARDLECT_COLORS.primary.darker}
-                  strokeWidth={2}
-                  dot={{ fill: CARDLECT_COLORS.primary.darker, r: 5 }}
-                  name="Average"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Grade Distribution</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={gradeDistribution}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, value }) => `${name}: ${value}`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {gradeDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Subject Grades */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Subject Grades</CardTitle>
-            <div className="relative w-64">
-              <Search className="absolute left-3 top-3 text-muted-foreground" size={18} />
-              <Input
-                placeholder="Search subjects..."
+            {/* Search + Exam List */}
+            <div className="relative max-w-sm">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search exams..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="w-full pl-9 pr-4 py-2 text-sm bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
               />
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {filteredGrades.map((grade) => (
-              <div
-                key={grade.subject}
-                onClick={() => setExpandedSubject(expandedSubject === grade.subject ? null : grade.subject)}
-                className="border border-border rounded-lg p-4 cursor-pointer hover:bg-secondary/50 transition-colors"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">{grade.subject}</h3>
-                    <p className="text-sm text-muted-foreground">{grade.teacher}</p>
-                  </div>
-                  <div className="text-right">
-                    <div
-                      className="text-2xl font-bold text-white px-4 py-2 rounded-lg"
-                      style={{ backgroundColor: getStatusColor(grade.status) }}
-                    >
-                      {grade.grade}
-                    </div>
-                  </div>
-                </div>
 
-                {expandedSubject === grade.subject && (
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Score</p>
-                        <p className="text-lg font-semibold text-foreground">{grade.score}%</p>
+            <div className="bg-card border border-border rounded-3xl shadow-sm overflow-hidden">
+              {filteredExams.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-20 text-center">
+                  <BookOpen size={40} className="opacity-20 mb-3" />
+                  <p className="text-muted-foreground font-medium">No exams found.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-border">
+                  {filteredExams.map((exam) => {
+                    const myResult = results.find(r => r.exam_id === exam.id || r.exam_title === exam.title)
+                    const score = myResult ? parseFloat(myResult.score) : null
+                    const g = score !== null ? getGrade(score, parseFloat(exam.max_score || '100')) : null
+                    const isPast = new Date(exam.start_date) <= new Date()
+
+                    return (
+                      <div
+                        key={exam.id}
+                        onClick={() => setExpandedExam(expandedExam === exam.id ? null : exam.id)}
+                        className="p-6 cursor-pointer hover:bg-muted/30 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-foreground">{exam.title}</h3>
+                            <p className="text-sm text-muted-foreground mt-0.5">{exam.term} · {exam.session} · {exam.duration_minutes}m</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            {!isPast && (
+                              <span className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-500/10 text-blue-500">Upcoming</span>
+                            )}
+                            {g && (
+                              <div className="text-2xl font-black px-4 py-2 rounded-xl text-white" style={{ backgroundColor: g.color }}>
+                                {g.grade}
+                              </div>
+                            )}
+                            {isPast && !g && (
+                              <span className="text-xs text-muted-foreground">No result</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {expandedExam === exam.id && myResult && (
+                          <div className="mt-4 pt-4 border-t border-border grid grid-cols-3 gap-4">
+                            <div>
+                              <p className="text-xs text-muted-foreground">Score</p>
+                              <p className="text-lg font-bold text-foreground">{myResult.score}/{exam.max_score}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Percentage</p>
+                              <p className="text-lg font-bold" style={{ color: g?.color }}>
+                                {((parseFloat(myResult.score) / parseFloat(exam.max_score || '100')) * 100).toFixed(1)}%
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Date</p>
+                              <p className="text-lg font-bold text-foreground">{new Date(exam.start_date).toLocaleDateString('en-NG')}</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Status</p>
-                        <p className="text-lg font-semibold capitalize" style={{ color: getStatusColor(grade.status) }}>
-                          {grade.status.replace('-', ' ')}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Teacher</p>
-                        <p className="text-lg font-semibold text-foreground">{grade.teacher.split(' ')[0]}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Class Average</p>
-                        <p className="text-lg font-semibold text-foreground">82%</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </DashboardLayout>
   )
 }
