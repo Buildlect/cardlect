@@ -1,177 +1,198 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Download, FileText, BarChart3 } from 'lucide-react'
-import { ROLE_COLORS, CARDLECT_COLORS } from '@/lib/cardlect-colors'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from 'recharts'
-
-interface Report {
-  id: string
-  title: string
-  period: string
-  child: string
-  type: 'academic' | 'attendance' | 'wallet'
-  date: string
-}
-
-const mockReports: Report[] = [
-  { id: '1', title: 'Academic Performance Report', period: 'January 2024', child: 'Sarah', type: 'academic', date: '2024-01-15' },
-  { id: '2', title: 'Attendance Summary', period: 'January 2024', child: 'Sarah', type: 'attendance', date: '2024-01-15' },
-  { id: '3', title: 'Wallet Activity Report', period: 'January 2024', child: 'Sarah', type: 'wallet', date: '2024-01-15' },
-  { id: '4', title: 'Academic Performance Report', period: 'January 2024', child: 'Michael', type: 'academic', date: '2024-01-15' },
-]
-
-const academicData = [
-  { subject: 'Mathematics', score: 85 },
-  { subject: 'English', score: 88 },
-  { subject: 'Science', score: 82 },
-  { subject: 'History', score: 80 },
-  { subject: 'PE', score: 90 },
-]
-
-const attendanceData = [
-  { week: 'Week 1', rate: 92 },
-  { week: 'Week 2', rate: 88 },
-  { week: 'Week 3', rate: 95 },
-  { week: 'Week 4', rate: 90 },
-]
+import { Download, FileText, Loader2, Users, BarChart3, BookOpen, Activity } from 'lucide-react'
+import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend } from 'recharts'
+import api from '@/lib/api-client'
 
 export default function ReportsPage() {
-  const [selectedChild, setSelectedChild] = useState('Sarah')
-  const [selectedReportType, setSelectedReportType] = useState('academic')
+  const [children, setChildren] = useState<any[]>([])
+  const [selectedChild, setSelectedChild] = useState<string>('')
+  const [childData, setChildData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [dataLoading, setDataLoading] = useState(false)
 
-  const filteredReports = mockReports.filter(r =>
-    r.child === selectedChild && r.type === selectedReportType
-  )
+  // Fetch children linked to parent
+  useEffect(() => {
+    const fetchChildren = async () => {
+      try {
+        const res = await api.get('/users/children')
+        const kids: any[] = res.data.data || []
+        setChildren(kids)
+        if (kids.length > 0) setSelectedChild(kids[0].id)
+      } catch (err) {
+        console.error('Failed to fetch children:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchChildren()
+  }, [])
+
+  // Fetch child-specific data when child selection changes
+  useEffect(() => {
+    if (!selectedChild) return
+    const fetchChildData = async () => {
+      setDataLoading(true)
+      try {
+        const [attendanceRes, examsRes, walletRes] = await Promise.all([
+          api.get(`/analytics/attendance/student/${selectedChild}`),
+          api.get('/exams?limit=10'),
+          api.get('/wallets/transactions?limit=10'),
+        ])
+        setChildData({
+          attendance: attendanceRes.data.data,
+          exams: examsRes.data.data?.exams || [],
+          transactions: walletRes.data.data || [],
+        })
+      } catch (err) {
+        console.error('Failed to fetch child data:', err)
+        setChildData(null)
+      } finally {
+        setDataLoading(false)
+      }
+    }
+    fetchChildData()
+  }, [selectedChild])
+
+  const att = childData?.attendance
+  const attSummary = att?.summary
+  const recentAttendance = att?.recent_logs || []
+  const exams = childData?.exams || []
+
+  // Attendance chart from recent logs
+  const attendanceChart = recentAttendance.slice(0, 7).reverse().map((log: any) => ({
+    date: new Date(log.date).toLocaleDateString('en-NG', { weekday: 'short', month: 'short', day: 'numeric' }),
+    status: log.status === 'present' ? 1 : 0,
+  }))
 
   return (
     <DashboardLayout currentPage="reports" role="parent">
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Reports</h1>
-            <p className="text-muted-foreground">View and download children's academic and activity reports</p>
+            <p className="text-muted-foreground mt-1">View and download children's academic and activity reports.</p>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex gap-4 flex-wrap">
-          <select 
-            value={selectedChild} 
-            onChange={(e) => setSelectedChild(e.target.value)}
-            className="px-3 py-2 border border-border rounded-md text-sm bg-background"
-          >
-            <option value="Sarah">Sarah Johnson</option>
-            <option value="Michael">Michael Johnson</option>
-            <option value="Emma">Emma Johnson</option>
-          </select>
-          <select 
-            value={selectedReportType} 
-            onChange={(e) => setSelectedReportType(e.target.value)}
-            className="px-3 py-2 border border-border rounded-md text-sm bg-background"
-          >
-            <option value="academic">Academic</option>
-            <option value="attendance">Attendance</option>
-            <option value="wallet">Wallet Activity</option>
-          </select>
-        </div>
+        {loading ? (
+          <div className="flex items-center justify-center p-20">
+            <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          </div>
+        ) : (
+          <>
+            {/* Child selector */}
+            {children.length > 1 && (
+              <div className="flex gap-2 flex-wrap">
+                {children.map((child: any) => (
+                  <button
+                    key={child.id}
+                    onClick={() => setSelectedChild(child.id)}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all border ${selectedChild === child.id
+                        ? 'text-white border-transparent'
+                        : 'border-border hover:bg-muted'
+                      }`}
+                    style={selectedChild === child.id ? { backgroundColor: CARDLECT_COLORS.primary.darker } : undefined}
+                  >
+                    {child.full_name}
+                  </button>
+                ))}
+              </div>
+            )}
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-sm text-muted-foreground">Academic Average</div>
-              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.info.main }}>85%</div>
-              <div className="text-xs text-muted-foreground mt-2">Current term</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-sm text-muted-foreground">Attendance Rate</div>
-              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.success.main }}>91%</div>
-              <div className="text-xs text-muted-foreground mt-2">This month</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-sm text-muted-foreground">Reports Generated</div>
-              <div className="text-2xl font-bold" style={{ color: ROLE_COLORS.parents.main }}>12</div>
-              <div className="text-xs text-muted-foreground mt-2">This year</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Charts */}
-        {selectedReportType === 'academic' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Subject Performance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={academicData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="subject" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip />
-                  <Bar dataKey="score" fill={CARDLECT_COLORS.info.main} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        )}
-
-        {selectedReportType === 'attendance' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Attendance Trend</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={attendanceData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="week" />
-                  <YAxis domain={[0, 100]} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="rate" stroke={CARDLECT_COLORS.success.main} strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Reports List */}
-        <div>
-          <h2 className="text-xl font-semibold mb-4">Available Reports</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredReports.map((report) => (
-              <Card key={report.id} className="hover:border-primary/50 transition-colors">
-                <CardContent className="pt-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex gap-3 flex-1">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-lg" style={{ backgroundColor: ROLE_COLORS.parents.main + '20' }}>
-                        <FileText style={{ color: ROLE_COLORS.parents.main }} size={20} />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold">{report.title}</h3>
-                        <p className="text-sm text-muted-foreground mt-1">{report.period}</p>
-                        <p className="text-xs text-muted-foreground mt-2">Generated {new Date(report.date).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      <Download size={16} />
-                    </Button>
+            {children.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center bg-card border border-border rounded-3xl">
+                <Users size={40} className="opacity-20 mb-3" />
+                <p className="text-muted-foreground font-medium">No children linked to your account yet.</p>
+                <p className="text-sm text-muted-foreground mt-1">Contact the school to link your children.</p>
+              </div>
+            ) : dataLoading ? (
+              <div className="flex items-center justify-center p-20">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              </div>
+            ) : (
+              <>
+                {/* Summary Stats */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="bg-card border border-border rounded-2xl p-5 hover:shadow-lg transition-all">
+                    <p className="text-xs text-muted-foreground font-medium mb-1">Attendance Rate</p>
+                    <p className="text-3xl font-bold" style={{ color: CARDLECT_COLORS.success.main }}>
+                      {attSummary?.percentage ?? '—'}%
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{attSummary?.attended_days ?? 0} of {attSummary?.total_days ?? 0} days present</p>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
+                  <div className="bg-card border border-border rounded-2xl p-5 hover:shadow-lg transition-all">
+                    <p className="text-xs text-muted-foreground font-medium mb-1">Exams</p>
+                    <p className="text-3xl font-bold" style={{ color: CARDLECT_COLORS.primary.darker }}>{exams.length}</p>
+                    <p className="text-xs text-muted-foreground mt-1">This term</p>
+                  </div>
+                  <div className="bg-card border border-border rounded-2xl p-5 hover:shadow-lg transition-all">
+                    <p className="text-xs text-muted-foreground font-medium mb-1">Recent Transactions</p>
+                    <p className="text-3xl font-bold" style={{ color: CARDLECT_COLORS.warning.main }}>{childData?.transactions?.length ?? 0}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Wallet activity</p>
+                  </div>
+                </div>
+
+                {/* Attendance chart */}
+                {attendanceChart.length > 0 && (
+                  <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
+                    <h3 className="text-lg font-semibold mb-5 text-foreground">Recent Attendance</h3>
+                    <div className="h-48">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={attendanceChart} barSize={24}>
+                          <XAxis dataKey="date" tick={{ fill: 'var(--muted-foreground)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                          <YAxis hide domain={[0, 1]} />
+                          <Tooltip
+                            contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }}
+                            formatter={(v: any) => [v === 1 ? 'Present' : 'Absent', '']}
+                          />
+                          <Bar dataKey="status" fill={CARDLECT_COLORS.primary.darker} radius={[4, 4, 0, 0]} name="Attendance" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                )}
+
+                {/* Report cards */}
+                <h2 className="text-xl font-semibold text-foreground">Available Reports</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    { title: 'Attendance Summary', type: 'attendance', icon: Activity, color: CARDLECT_COLORS.success.main },
+                    { title: 'Academic Performance', type: 'academic', icon: BookOpen, color: CARDLECT_COLORS.primary.darker },
+                    { title: 'Wallet Activity Report', type: 'wallet', icon: BarChart3, color: CARDLECT_COLORS.warning.main },
+                  ].map((report, i) => {
+                    const Icon = report.icon
+                    return (
+                      <div key={i} className="bg-card border border-border rounded-2xl p-5 hover:shadow-lg hover:border-primary/30 transition-all">
+                        <div className="flex items-start justify-between">
+                          <div className="flex gap-4 flex-1">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-xl shrink-0" style={{ backgroundColor: report.color + '20' }}>
+                              <Icon size={20} color={report.color} />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold text-foreground">{report.title}</h3>
+                              <p className="text-sm text-muted-foreground mt-0.5">
+                                {children.find(c => c.id === selectedChild)?.full_name || 'Selected Child'}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1">Generated on demand</p>
+                            </div>
+                          </div>
+                          <button className="flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-lg border border-border hover:bg-muted transition-colors text-muted-foreground">
+                            <Download size={14} />
+                            Download
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </>
+            )}
+          </>
+        )}
       </div>
     </DashboardLayout>
   )

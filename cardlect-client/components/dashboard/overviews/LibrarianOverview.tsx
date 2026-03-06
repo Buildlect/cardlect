@@ -1,193 +1,237 @@
 "use client"
 
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { useState, useEffect } from 'react'
+import { BookOpen, Users, CheckCircle, AlertCircle, Plus, Search, BarChart3, Loader2 } from 'lucide-react'
+import {
+    LineChart,
+    Line,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    Legend,
+    ResponsiveContainer,
+} from 'recharts'
 import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
-import { BookOpen, Users, CheckCircle, AlertCircle, Plus, Search } from 'lucide-react'
-
-interface Book {
-    id: string
-    title: string
-    author: string
-    isbn: string
-    copies: number
-    available: number
-    category: string
-    status: 'available' | 'low-stock' | 'out-of-stock'
-}
-
-const mockBooks: Book[] = [
-    { id: '1', title: 'Advanced Mathematics', author: 'Dr. James Wilson', isbn: '978-1-23456-789-0', copies: 15, available: 8, category: 'Mathematics', status: 'available' },
-    { id: '2', title: 'English Literature Essentials', author: 'Prof. Sarah Anderson', isbn: '978-1-23456-789-1', copies: 20, available: 5, category: 'English', status: 'low-stock' },
-    { id: '3', title: 'Physics Principles', author: 'Dr. Robert Brown', isbn: '978-1-23456-789-2', copies: 12, available: 0, category: 'Physics', status: 'out-of-stock' },
-    { id: '4', title: 'Chemistry Experiments', author: 'Prof. Emma Davis', isbn: '978-1-23456-789-3', copies: 18, available: 14, category: 'Chemistry', status: 'available' },
-    { id: '5', title: 'Biology Fundamentals', author: 'Dr. Michael Green', isbn: '978-1-23456-789-4', copies: 22, available: 19, category: 'Biology', status: 'available' },
-]
-
-const borrowalData = [
-    { month: 'Jan', borrowed: 145, returned: 140, overdue: 5 },
-    { month: 'Feb', borrowed: 168, returned: 162, overdue: 6 },
-    { month: 'Mar', borrowed: 192, returned: 185, overdue: 7 },
-    { month: 'Apr', borrowed: 210, returned: 205, overdue: 5 },
-    { month: 'May', borrowed: 198, returned: 192, overdue: 6 },
-    { month: 'Jun', borrowed: 225, returned: 218, overdue: 7 },
-]
+import api from '@/lib/api-client'
 
 export default function LibrarianOverview() {
-    const [books, setBooks] = useState(mockBooks)
+    const [books, setBooks] = useState<any[]>([])
+    const [summary, setSummary] = useState<any>(null)
+    const [topBooks, setTopBooks] = useState<any[]>([])
+    const [trends, setTrends] = useState<any[]>([])
     const [searchTerm, setSearchTerm] = useState('')
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [booksRes, summaryRes, topBooksRes, trendsRes] = await Promise.all([
+                    api.get('/library/books?limit=50'),
+                    api.get('/analytics/library/summary'),
+                    api.get('/analytics/library/top-books'),
+                    api.get('/analytics/library/trends'),
+                ])
+                setBooks(booksRes.data.data || [])
+                setSummary(summaryRes.data.data)
+                setTopBooks(topBooksRes.data.data || [])
+                setTrends(trendsRes.data.data || [])
+            } catch (err) {
+                console.error('Failed to fetch library data:', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchData()
+    }, [])
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center p-20">
+                <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            </div>
+        )
+    }
 
     const filteredBooks = books.filter(b =>
-        b.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        b.author.toLowerCase().includes(searchTerm.toLowerCase())
+        b.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        b.author?.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
-    const stats = {
-        totalBooks: books.length,
-        totalCopies: books.reduce((sum, b) => sum + b.copies, 0),
-        available: books.reduce((sum, b) => sum + b.available, 0),
-        outOfStock: books.filter(b => b.status === 'out-of-stock').length,
-        avgUtilization: Math.round(((books.reduce((sum, b) => sum + b.copies - b.available, 0)) / books.reduce((sum, b) => sum + b.copies, 0)) * 100),
+    const getStatusColor = (available: number, copies: number) => {
+        if (available === 0) return 'text-red-500 bg-red-500/10'
+        if (available <= copies * 0.25) return 'text-amber-500 bg-amber-500/10'
+        return 'text-green-500 bg-green-500/10'
     }
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'available': return 'text-green-600 bg-green-50'
-            case 'low-stock': return 'text-yellow-600 bg-yellow-50'
-            case 'out-of-stock': return 'text-red-600 bg-red-50'
-            default: return 'text-gray-600 bg-gray-50'
-        }
+    const getStatusLabel = (available: number, copies: number) => {
+        if (available === 0) return 'Out'
+        if (available <= copies * 0.25) return 'Low'
+        return 'OK'
     }
+
+    // Format trends for chart
+    const chartData = trends.map((t: any) => ({
+        month: new Date(t.week || t.date || Date.now()).toLocaleDateString('en-NG', { month: 'short', day: 'numeric' }),
+        borrowed: parseInt(t.borrow_count || t.borrowed || '0'),
+        returned: parseInt(t.return_count || t.returned || '0'),
+    }))
+
+    const statCards = [
+        { label: 'Total Books', value: summary?.total_books ?? books.length, color: CARDLECT_COLORS.warning.main, sub: 'Titles in catalog' },
+        { label: 'Total Copies', value: summary?.total_copies ?? 0, color: CARDLECT_COLORS.primary.darker, sub: 'Physical copies' },
+        { label: 'Currently Borrowed', value: summary?.currently_borrowed ?? 0, color: CARDLECT_COLORS.info?.main ?? '#3b82f6', sub: 'In circulation' },
+        { label: 'Overdue', value: summary?.overdue_count ?? 0, color: CARDLECT_COLORS.danger.main, sub: 'Need follow-up' },
+        { label: 'Available Now', value: summary?.available_copies ?? 0, color: CARDLECT_COLORS.success.main, sub: 'Ready to borrow' },
+    ]
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-foreground">Library Management</h1>
-                    <p className="text-muted-foreground">Manage library inventory, track borrowals, and student reading history</p>
+                    <p className="text-muted-foreground mt-1">Manage library inventory, track borrowals, and student reading history.</p>
                 </div>
-                <Button style={{ backgroundColor: CARDLECT_COLORS.primary.darker }} className="text-white hover:opacity-90 transition-opacity">
+                <button
+                    style={{ backgroundColor: CARDLECT_COLORS.primary.darker }}
+                    className="flex items-center gap-2 text-white font-semibold px-4 py-2.5 rounded-xl hover:opacity-90 transition-all whitespace-nowrap"
+                >
                     <Plus size={18} /> Add Book
-                </Button>
+                </button>
             </div>
 
             {/* Key Metrics */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <Card>
-                    <CardContent className="pt-6">
-                        <div className="text-sm text-muted-foreground">Total Books</div>
-                        <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.warning.main }}>{stats.totalBooks}</div>
-                        <div className="text-xs text-muted-foreground mt-2">Titles in catalog</div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent className="pt-6">
-                        <div className="text-sm text-muted-foreground">Total Copies</div>
-                        <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.primary.darker }}>{stats.totalCopies}</div>
-                        <div className="text-xs text-muted-foreground mt-2">Physical copies</div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent className="pt-6">
-                        <div className="text-sm text-muted-foreground">Available Now</div>
-                        <div className="text-2xl font-bold text-green-600">{stats.available}</div>
-                        <div className="text-xs text-muted-foreground mt-2">Ready to borrow</div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent className="pt-6">
-                        <div className="text-sm text-muted-foreground">Out of Stock</div>
-                        <div className="text-2xl font-bold text-red-600">{stats.outOfStock}</div>
-                        <div className="text-xs text-muted-foreground mt-2">Need restocking</div>
-                    </CardContent>
-                </Card>
-
-                <Card>
-                    <CardContent className="pt-6">
-                        <div className="text-sm text-muted-foreground">Utilization Rate</div>
-                        <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.primary.darker }}>{stats.avgUtilization}%</div>
-                        <div className="text-xs text-muted-foreground mt-2">Books in use</div>
-                    </CardContent>
-                </Card>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+                {statCards.map((s, i) => (
+                    <div key={i} className="bg-card border border-border rounded-2xl p-5 hover:shadow-lg transition-all">
+                        <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">{s.label}</p>
+                        <p className="text-3xl font-bold" style={{ color: s.color }}>{s.value.toLocaleString()}</p>
+                        <p className="text-xs text-muted-foreground mt-1">{s.sub}</p>
+                    </div>
+                ))}
             </div>
 
-            {/* Charts */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Monthly Borrowal Activity</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <LineChart data={borrowalData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="month" />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            <Line type="monotone" dataKey="borrowed" stroke={CARDLECT_COLORS.primary.darker} strokeWidth={2} />
-                            <Line type="monotone" dataKey="returned" stroke={CARDLECT_COLORS.success.main} strokeWidth={2} />
-                            <Line type="monotone" dataKey="overdue" stroke={CARDLECT_COLORS.danger.main} strokeWidth={2} />
-                        </LineChart>
-                    </ResponsiveContainer>
-                </CardContent>
-            </Card>
+            {/* Charts Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Borrowal Trend */}
+                <div className="lg:col-span-2 bg-card border border-border rounded-3xl p-6 shadow-sm">
+                    <h3 className="text-lg font-semibold mb-5 text-foreground">Borrowal Activity</h3>
+                    <div className="h-60">
+                        <ResponsiveContainer width="100%" height="100%">
+                            {chartData.length > 0 ? (
+                                <LineChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                                    <XAxis dataKey="month" tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                                    <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                                    <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }} />
+                                    <Legend />
+                                    <Line type="monotone" dataKey="borrowed" stroke={CARDLECT_COLORS.primary.darker} strokeWidth={2} dot={false} name="Borrowed" />
+                                    <Line type="monotone" dataKey="returned" stroke={CARDLECT_COLORS.success.main} strokeWidth={2} dot={false} name="Returned" />
+                                </LineChart>
+                            ) : (
+                                <div className="flex items-center justify-center h-full text-muted-foreground text-sm">No borrowal data</div>
+                            )}
+                        </ResponsiveContainer>
+                    </div>
+                </div>
 
-            {/* Book Inventory */}
-            <Card>
-                <CardHeader>
-                    <div className="flex justify-between items-center">
-                        <CardTitle>Book Inventory</CardTitle>
-                        <Input
+                {/* Top Books */}
+                <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
+                    <h3 className="text-lg font-semibold mb-4 text-foreground">Most Borrowed</h3>
+                    {topBooks.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-40 text-muted-foreground text-sm text-center">
+                            <BarChart3 size={32} className="opacity-20 mb-2" />
+                            No borrowal records yet
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {topBooks.slice(0, 5).map((book: any, i: number) => (
+                                <div key={i} className="flex items-center justify-between gap-3 p-3 rounded-xl bg-muted/30 hover:bg-muted/60 transition-colors">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <span className="text-xs font-black text-muted-foreground w-4 shrink-0">{i + 1}</span>
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-semibold text-foreground truncate">{book.title}</p>
+                                            <p className="text-xs text-muted-foreground truncate">{book.author}</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-xs font-bold text-primary shrink-0">{book.borrow_count}x</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Book Inventory Table */}
+            <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <h3 className="text-lg font-semibold text-foreground">Book Inventory</h3>
+                    <div className="relative max-w-xs w-full">
+                        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <input
+                            type="text"
                             placeholder="Search books..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="max-w-xs"
+                            className="w-full pl-9 pr-4 py-2 text-sm bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
                         />
                     </div>
-                </CardHeader>
-                <CardContent>
+                </div>
+
+                {filteredBooks.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 text-center">
+                        <BookOpen size={40} className="opacity-20 mb-3" />
+                        <p className="text-muted-foreground font-medium">
+                            {searchTerm ? 'No books match your search.' : 'No books in the library catalog yet.'}
+                        </p>
+                    </div>
+                ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full">
+                        <table className="w-full text-sm">
                             <thead>
-                                <tr className="border-b">
-                                    <th className="text-left py-3 px-4 text-sm font-semibold">Title</th>
-                                    <th className="text-left py-3 px-4 text-sm font-semibold">Author</th>
-                                    <th className="text-center py-3 px-4 text-sm font-semibold">Total</th>
-                                    <th className="text-center py-3 px-4 text-sm font-semibold">Available</th>
-                                    <th className="text-center py-3 px-4 text-sm font-semibold">Borrowed</th>
-                                    <th className="text-center py-3 px-4 text-sm font-semibold">Status</th>
-                                    <th className="text-center py-3 px-4 text-sm font-semibold">Actions</th>
+                                <tr className="border-b border-border">
+                                    <th className="text-left py-3 px-4 font-semibold text-muted-foreground">Title</th>
+                                    <th className="text-left py-3 px-4 font-semibold text-muted-foreground">Author</th>
+                                    <th className="text-center py-3 px-4 font-semibold text-muted-foreground">Total</th>
+                                    <th className="text-center py-3 px-4 font-semibold text-muted-foreground">Available</th>
+                                    <th className="text-center py-3 px-4 font-semibold text-muted-foreground">Borrowed</th>
+                                    <th className="text-center py-3 px-4 font-semibold text-muted-foreground">Status</th>
+                                    <th className="text-center py-3 px-4 font-semibold text-muted-foreground">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredBooks.map((book) => (
-                                    <tr key={book.id} className="border-b hover:bg-muted/50">
-                                        <td className="py-3 px-4 font-medium">{book.title}</td>
-                                        <td className="py-3 px-4 text-sm">{book.author}</td>
-                                        <td className="py-3 px-4 text-center font-semibold">{book.copies}</td>
-                                        <td className="py-3 px-4 text-center text-green-600 font-semibold">{book.available}</td>
-                                        <td className="py-3 px-4 text-center text-blue-600 font-semibold">{book.copies - book.available}</td>
-                                        <td className="py-3 px-4 text-center">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(book.status)}`}>
-                                                {book.status === 'out-of-stock' ? 'Out' : book.status === 'low-stock' ? 'Low' : 'Ok'}
-                                            </span>
-                                        </td>
-                                        <td className="py-3 px-4 text-center">
-                                            <Button variant="outline" size="sm">Edit</Button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {filteredBooks.map((book: any) => {
+                                    const total = parseInt(book.total_copies || book.copies || '0')
+                                    const avail = parseInt(book.available_copies || book.available || '0')
+                                    const borrowed = total - avail
+                                    return (
+                                        <tr key={book.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                                            <td className="py-3 px-4 font-medium text-foreground">{book.title}</td>
+                                            <td className="py-3 px-4 text-muted-foreground">{book.author}</td>
+                                            <td className="py-3 px-4 text-center font-semibold">{total}</td>
+                                            <td className="py-3 px-4 text-center text-green-500 font-semibold">{avail}</td>
+                                            <td className="py-3 px-4 text-center text-blue-500 font-semibold">{borrowed}</td>
+                                            <td className="py-3 px-4 text-center">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(avail, total)}`}>
+                                                    {getStatusLabel(avail, total)}
+                                                </span>
+                                            </td>
+                                            <td className="py-3 px-4 text-center">
+                                                <button className="text-xs font-semibold px-3 py-1 rounded-lg border border-border hover:bg-muted transition-colors">
+                                                    Edit
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
                             </tbody>
                         </table>
                     </div>
-                </CardContent>
-            </Card>
+                )}
+            </div>
         </div>
     )
 }

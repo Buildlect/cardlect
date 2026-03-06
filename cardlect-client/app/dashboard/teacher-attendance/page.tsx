@@ -1,182 +1,176 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Download, CheckCircle2 } from 'lucide-react'
+import { Download, CheckCircle2, Loader2, Search, Users } from 'lucide-react'
 import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-
-interface AttendanceRecord {
-  id: string
-  studentName: string
-  studentId: string
-  present: number
-  absent: number
-  percentage: number
-}
-
-const mockAttendance: AttendanceRecord[] = [
-  { id: '1', studentName: 'Chioma Okonkwo', studentId: 'S001', present: 18, absent: 2, percentage: 90 },
-  { id: '2', studentName: 'Tunde Adebayo', studentId: 'S002', present: 19, absent: 1, percentage: 95 },
-  { id: '3', studentName: 'Sarah Johnson', studentId: 'S003', present: 17, absent: 3, percentage: 85 },
-  { id: '4', studentName: 'Michael Chen', studentId: 'S004', present: 20, absent: 0, percentage: 100 },
-]
-
-const monthlyAttendance = [
-  { week: 'Week 1', attendance: 92, target: 95 },
-  { week: 'Week 2', attendance: 88, target: 95 },
-  { week: 'Week 3', attendance: 91, target: 95 },
-  { week: 'Week 4', attendance: 94, target: 95 },
-]
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts'
+import api from '@/lib/api-client'
 
 export default function AttendancePage() {
-  const [attendance, setAttendance] = useState(mockAttendance)
-  const [selectedClass, setSelectedClass] = useState('10A')
+  const [students, setStudents] = useState<any[]>([])
+  const [aggregate, setAggregate] = useState<any>(null)
+  const [trends, setTrends] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [loading, setLoading] = useState(true)
 
-  const filteredAttendance = attendance.filter(a =>
-    a.studentName.toLowerCase().includes(searchTerm.toLowerCase()) || a.studentId.includes(searchTerm)
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [studentsRes, aggregateRes, trendsRes] = await Promise.all([
+          api.get('/users?role=student&limit=50'),
+          api.get('/analytics/attendance/aggregate'),
+          api.get('/analytics/attendance/trends'),
+        ])
+        setStudents(studentsRes.data.data || [])
+        setAggregate(aggregateRes.data.data)
+        setTrends(trendsRes.data.data || [])
+      } catch (err) {
+        console.error('Failed to fetch attendance data:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  const filtered = students.filter(s =>
+    s.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    s.admission_number?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const stats = {
-    classAverage: (filteredAttendance.reduce((sum, a) => sum + a.percentage, 0) / filteredAttendance.length || 0).toFixed(1),
-    present: filteredAttendance.reduce((sum, a) => sum + a.present, 0),
-    absent: filteredAttendance.reduce((sum, a) => sum + a.absent, 0),
-    perfect: filteredAttendance.filter(a => a.percentage === 100).length,
+  const totalStudents = parseInt(aggregate?.total_students || students.length.toString())
+  const present = parseInt(aggregate?.present || '0')
+  const absent = parseInt(aggregate?.absent || '0')
+  const late = parseInt(aggregate?.late || '0')
+  const attendanceRate = totalStudents > 0 ? ((present / totalStudents) * 100).toFixed(1) : '0'
+
+  const chartData = trends.map((t: any) => ({
+    day: new Date(t.date).toLocaleDateString('en-NG', { weekday: 'short', month: 'short', day: 'numeric' }),
+    present: parseInt(t.present_count || '0'),
+  }))
+
+  const getAttendanceClass = (pct: number) => {
+    if (pct >= 95) return 'text-green-500 bg-green-500/10'
+    if (pct >= 80) return 'text-blue-500 bg-blue-500/10'
+    if (pct >= 60) return 'text-amber-500 bg-amber-500/10'
+    return 'text-red-500 bg-red-500/10'
   }
 
-  const getAttendanceColor = (percentage: number) => {
-    if (percentage >= 95) return { color: CARDLECT_COLORS.success.main, backgroundColor: `${CARDLECT_COLORS.success.main}20` }
-    if (percentage >= 85) return { color: CARDLECT_COLORS.primary.darker, backgroundColor: `${CARDLECT_COLORS.primary.darker}20` }
-    if (percentage >= 75) return { color: CARDLECT_COLORS.warning.main, backgroundColor: `${CARDLECT_COLORS.warning.main}20` }
-    return { color: CARDLECT_COLORS.danger.main, backgroundColor: `${CARDLECT_COLORS.danger.main}20` }
-  }
+  const statCards = [
+    { label: 'Attendance Rate', value: `${attendanceRate}%`, color: CARDLECT_COLORS.info?.main ?? '#3b82f6', sub: 'Today' },
+    { label: 'Present Today', value: present, color: CARDLECT_COLORS.success.main, sub: 'Students' },
+    { label: 'Absent Today', value: absent, color: CARDLECT_COLORS.warning.main, sub: 'Need follow-up' },
+    { label: 'Late', value: late, color: CARDLECT_COLORS.danger.main, sub: 'Marked late' },
+  ]
 
   return (
     <DashboardLayout currentPage="attendance" role="staff" customRole="teacher">
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Attendance</h1>
-            <p className="text-muted-foreground">Track student attendance and engagement</p>
+            <p className="text-muted-foreground mt-1">Track student attendance across your classes.</p>
           </div>
-          <Button variant="outline">
-            <Download size={18} /> Export
-          </Button>
+          <button className="flex items-center gap-2 text-sm font-semibold px-4 py-2.5 rounded-xl border border-border hover:bg-muted transition-all">
+            <Download size={16} /> Export
+          </button>
         </div>
 
-        {/* Class Selector */}
-        <div className="flex gap-2 flex-wrap">
-          {['10A', '10B', '11'].map((cls) => (
-            <Button
-              key={cls}
-              variant={selectedClass === cls ? 'default' : 'outline'}
-              onClick={() => setSelectedClass(cls)}
-            >
-              Class {cls}
-            </Button>
+        {/* Stat Cards */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {statCards.map((s, i) => (
+            <div key={i} className="bg-card border border-border rounded-2xl p-5 hover:shadow-lg transition-all">
+              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">{s.label}</p>
+              <p className="text-2xl font-bold" style={{ color: s.color }}>{typeof s.value === 'number' ? s.value.toLocaleString() : s.value}</p>
+              <p className="text-xs text-muted-foreground mt-1">{s.sub}</p>
+            </div>
           ))}
         </div>
 
-        {/* Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-sm text-muted-foreground">Class Average</div>
-              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.info.main }}>{stats.classAverage}%</div>
-              <div className="text-xs text-muted-foreground mt-2">Current month</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-sm text-muted-foreground">Perfect Attendance</div>
-              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.success.main }}>{stats.perfect}</div>
-              <div className="text-xs text-muted-foreground mt-2">100% present</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-sm text-muted-foreground">Total Present</div>
-              <div className="text-2xl font-bold">{stats.present}</div>
-              <div className="text-xs text-muted-foreground mt-2">This period</div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-sm text-muted-foreground">Total Absent</div>
-              <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.warning.main }}>{stats.absent}</div>
-              <div className="text-xs text-muted-foreground mt-2">This period</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Attendance Trend */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Weekly Attendance Trend</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={monthlyAttendance}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="week" />
-                <YAxis domain={[70, 100]} />
-                <Tooltip />
+        {/* 7-Day Trend Chart */}
+        <div className="bg-card border border-border rounded-3xl p-6 shadow-sm">
+          <h3 className="text-lg font-semibold mb-5 text-foreground">7-Day Attendance Trend</h3>
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData.length > 0 ? chartData : [{ day: 'No data', present: 0 }]}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.08} />
+                <XAxis dataKey="day" tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <Tooltip
+                  contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px' }}
+                  labelStyle={{ color: 'var(--muted-foreground)', fontSize: 11 }}
+                />
                 <Legend />
-                <Line type="monotone" dataKey="attendance" stroke={CARDLECT_COLORS.info.main} strokeWidth={2} />
-                <Line type="monotone" dataKey="target" stroke="#999" strokeDasharray="5 5" />
+                <Line type="monotone" dataKey="present" stroke={CARDLECT_COLORS.primary.darker} strokeWidth={2.5} dot={false} name="Present" />
               </LineChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
         {/* Search */}
-        <Input
-          placeholder="Search student..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-xs"
-        />
+        <div className="relative max-w-sm">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search student by name or ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 text-sm bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+          />
+        </div>
 
-        {/* Attendance Table */}
-        <Card>
-          <CardContent className="pt-6">
+        {/* Student Table */}
+        <div className="bg-card border border-border rounded-3xl shadow-sm overflow-hidden">
+          {loading ? (
+            <div className="flex items-center justify-center p-20">
+              <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <Users size={40} className="opacity-20 mb-3" />
+              <p className="text-muted-foreground font-medium">No students found.</p>
+            </div>
+          ) : (
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4 text-sm font-semibold">Student Name</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold">ID</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold">Present</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold">Absent</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold">Percentage</th>
+                  <tr className="border-b border-border bg-muted/30">
+                    <th className="text-left py-4 px-6 font-semibold text-muted-foreground text-xs uppercase">Student Name</th>
+                    <th className="text-center py-4 px-6 font-semibold text-muted-foreground text-xs uppercase">Admission ID</th>
+                    <th className="text-center py-4 px-6 font-semibold text-muted-foreground text-xs uppercase">Status</th>
+                    <th className="text-center py-4 px-6 font-semibold text-muted-foreground text-xs uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAttendance.map((record) => (
-                    <tr key={record.id} className="border-b hover:bg-muted/50">
-                      <td className="py-3 px-4 font-medium">{record.studentName}</td>
-                      <td className="py-3 px-4 text-center text-sm text-muted-foreground">{record.studentId}</td>
-                      <td className="py-3 px-4 text-center font-semibold" style={{ color: CARDLECT_COLORS.success.main }}>{record.present}</td>
-                      <td className="py-3 px-4 text-center font-semibold" style={{ color: CARDLECT_COLORS.warning.main }}>{record.absent}</td>
-                      <td className="py-3 px-4 text-center">
-                        <span style={{ ...getAttendanceColor(record.percentage), padding: '0.75rem 1rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: '600' }}>
-                          {record.percentage}%
+                  {filtered.map((student: any) => (
+                    <tr key={student.id} className="border-b border-border/50 hover:bg-muted/30 transition-colors group">
+                      <td className="py-4 px-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
+                            {student.full_name?.charAt(0)}
+                          </div>
+                          <span className="font-medium text-foreground">{student.full_name}</span>
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-center text-muted-foreground font-mono text-xs">{student.admission_number || '—'}</td>
+                      <td className="py-4 px-6 text-center">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold capitalize ${student.status === 'active' ? 'text-green-500 bg-green-500/10' : 'text-muted-foreground bg-muted/30'}`}>
+                          {student.status}
                         </span>
+                      </td>
+                      <td className="py-4 px-6 text-center">
+                        <button className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-border hover:bg-muted transition-colors opacity-0 group-hover:opacity-100">
+                          Mark
+                        </button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
       </div>
     </DashboardLayout>
   )
