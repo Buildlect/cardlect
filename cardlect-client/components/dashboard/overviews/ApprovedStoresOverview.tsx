@@ -71,7 +71,7 @@ export default function ApprovedStoresOverview() {
           id: row.id,
           schoolName: row.school_name || 'Unknown School',
           status: row.status || 'pending',
-          requestedAt: row.requested_at,
+          requestedAt: row.requested_at || '',
           respondedAt: row.responded_at || undefined,
         })))
       } catch (err: unknown) {

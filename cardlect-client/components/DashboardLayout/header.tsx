@@ -1,7 +1,7 @@
 "use client"
 
 import { Bell, Search, Menu, X, LogOut, Settings, User } from "lucide-react"
-import { useState, useRef, useEffect, CSSProperties } from "react"
+import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ThemeToggleMobile } from "@/components/theme-toggle-mobile"
@@ -31,9 +31,6 @@ interface HeaderNotification {
   time: string
   priority: 'high' | 'normal' | 'low'
 }
-
-const ringColorVar = "--tw-ring-color" as const
-const ringStyle: CSSProperties = { [ringColorVar]: CARDLECT_COLORS.primary.main }
 
 const priorityStyles: Record<HeaderNotification['priority'], { marker: string; border: string }> = {
   high: { marker: CARDLECT_COLORS.danger.main, border: 'border-l-red-500' },
@@ -168,8 +165,7 @@ export function Header({ onMenuClick, role = "school_admin" }: HeaderProps) {
               placeholder={searchPlaceholders[role]}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition-all"
-              style={ringStyle}
+              className="w-full pl-10 pr-4 py-2 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
             />
           </div>
         </div>
@@ -308,8 +304,7 @@ export function Header({ onMenuClick, role = "school_admin" }: HeaderProps) {
               placeholder={searchPlaceholders[role]}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition-all"
-              style={ringStyle}
+              className="w-full pl-10 pr-4 py-2 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
               autoFocus
             />
           </div>
