@@ -97,11 +97,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const logout = () => {
-        setUser(null)
-        setToken(null)
         localStorage.removeItem('cardlect_token')
         localStorage.removeItem('cardlect_user')
         localStorage.removeItem('cardlect_dev_mock')
+        if (typeof window !== 'undefined') {
+            window.location.href = '/auth/logout'
+            return
+        }
+        setUser(null)
+        setToken(null)
         router.push('/auth/logout')
     }
 

@@ -28,6 +28,11 @@ api.interceptors.response.use(
     (error) => {
         if (error.response?.status === 401) {
             if (typeof window !== 'undefined') {
+                const requestUrl = String(error?.config?.url || '');
+                const isAuthAttempt = requestUrl.includes('/auth/login') || requestUrl.includes('/auth/refresh');
+                if (isAuthAttempt) {
+                    return Promise.reject(error);
+                }
                 const isDevMock = localStorage.getItem('cardlect_dev_mock') === '1';
                 if (isDevMock) {
                     return Promise.reject(error);
