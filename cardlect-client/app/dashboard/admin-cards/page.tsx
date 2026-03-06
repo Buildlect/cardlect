@@ -24,6 +24,7 @@ export default function CardsPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCard, setSelectedCard] = useState<null | NFC>(null)
+  const [notice, setNotice] = useState<{ type: "success" | "error"; text: string } | null>(null)
 
   const fetchCards = async () => {
     setLoading(true)
@@ -48,24 +49,32 @@ export default function CardsPage() {
   )
 
   const toggleCardStatus = async (cardId: string, currentStatus: string) => {
-    const newStatus = currentStatus === "active" ? "blocked" : "active"
+    setNotice(null)
+    const newStatus = currentStatus === "active" ? "suspended" : "active"
+    if (!confirm(`Are you sure you want to mark this card as ${newStatus}?`)) return
     try {
       await api.put(`/cards/${cardId}/lock`, { status: newStatus })
-      alert(`Card successfully ${newStatus}`)
+      setNotice({ type: "success", text: `Card successfully ${newStatus}.` })
       fetchCards()
       if (selectedCard?.id === cardId) {
         setSelectedCard(prev => prev ? { ...prev, status: newStatus } : null)
       }
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Update failed')
+      setNotice({ type: "error", text: err.response?.data?.message || "Update failed." })
     }
   }
 
   const handleDeleteCard = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this card mapping?')) return
-    // Assuming a delete endpoint exists or using lock for now
-    alert('Delete functionality pending backend implementation. Card has been blocked instead.')
-    toggleCardStatus(id, "active") // fallback to blocking
+    setNotice(null)
+    if (!confirm('Delete this card mapping permanently? This action cannot be undone.')) return
+    try {
+      await api.delete(`/cards/${id}`)
+      setNotice({ type: "success", text: "Card deleted successfully." })
+      if (selectedCard?.id === id) setSelectedCard(null)
+      fetchCards()
+    } catch (err: any) {
+      setNotice({ type: "error", text: err.response?.data?.message || "Delete failed." })
+    }
   }
 
   const openCard = (card: NFC) => setSelectedCard(card)
@@ -104,6 +113,12 @@ export default function CardsPage() {
             </div>
           </div>
         </div>
+
+        {notice && (
+          <div className={`rounded-xl px-4 py-3 text-sm font-medium ${notice.type === "success" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}`}>
+            {notice.text}
+          </div>
+        )}
 
         {/* Search */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">

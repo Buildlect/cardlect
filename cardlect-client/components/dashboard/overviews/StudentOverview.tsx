@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { BookOpen, Clock, Award, TrendingUp, Bell, CheckCircle, Wallet, Loader2 } from 'lucide-react'
 import {
     LineChart,
@@ -24,17 +24,53 @@ interface WalletTransaction {
     created_at?: string
 }
 
+interface AssignmentRow {
+    id: string
+    due_date?: string
+}
+
+interface StudentExam {
+    id: string
+    student_score: number | null
+    student_grade?: string | null
+}
+
+interface AnnouncementRow {
+    id: string
+    title?: string
+}
+
+interface AttendanceRow {
+    id: string
+    check_in_time?: string | null
+}
+
 export default function StudentOverview() {
     const [wallet, setWallet] = useState<WalletData | null>(null)
     const [transactions, setTransactions] = useState<WalletTransaction[]>([])
+    const [assignments, setAssignments] = useState<AssignmentRow[]>([])
+    const [exams, setExams] = useState<StudentExam[]>([])
+    const [announcements, setAnnouncements] = useState<AnnouncementRow[]>([])
+    const [attendance, setAttendance] = useState<AttendanceRow[]>([])
     const [loading, setLoading] = useState(true)
     const [walletAccessDenied, setWalletAccessDenied] = useState(false)
 
     useEffect(() => {
         const fetchData = async () => {
-            const [walletResult, transResult] = await Promise.allSettled([
+            const [
+                walletResult,
+                transResult,
+                assignmentsResult,
+                examsResult,
+                announcementsResult,
+                attendanceResult,
+            ] = await Promise.allSettled([
                 api.get('/wallets/me'),
-                api.get('/wallets/transactions?limit=5'),
+                api.get('/wallets/transactions?limit=14'),
+                api.get('/academics/assignments?limit=20'),
+                api.get('/exams'),
+                api.get('/announcements?limit=5'),
+                api.get('/attendance/me?limit=30'),
             ])
 
             if (walletResult.status === 'fulfilled') {
@@ -43,27 +79,76 @@ export default function StudentOverview() {
                 const status = walletResult.reason?.response?.status
                 if (status === 403) {
                     setWalletAccessDenied(true)
-                } else {
-                    console.error('Failed to fetch wallet:', walletResult.reason)
                 }
                 setWallet(null)
             }
 
-            if (transResult.status === 'fulfilled') {
-                const txRows = Array.isArray(transResult.value?.data?.data) ? transResult.value.data.data : []
-                setTransactions(txRows)
-            } else {
-                const status = transResult.reason?.response?.status
-                if (status !== 403) {
-                    console.error('Failed to fetch transactions:', transResult.reason)
-                }
-                setTransactions([])
-            }
+            setTransactions(
+                transResult.status === 'fulfilled' && Array.isArray(transResult.value?.data?.data)
+                    ? transResult.value.data.data
+                    : [],
+            )
+
+            setAssignments(
+                assignmentsResult.status === 'fulfilled' && Array.isArray(assignmentsResult.value?.data?.data)
+                    ? assignmentsResult.value.data.data
+                    : [],
+            )
+
+            setExams(
+                examsResult.status === 'fulfilled' && Array.isArray(examsResult.value?.data?.data)
+                    ? examsResult.value.data.data
+                    : [],
+            )
+
+            setAnnouncements(
+                announcementsResult.status === 'fulfilled' && Array.isArray(announcementsResult.value?.data?.data)
+                    ? announcementsResult.value.data.data
+                    : [],
+            )
+
+            setAttendance(
+                attendanceResult.status === 'fulfilled' && Array.isArray(attendanceResult.value?.data?.data)
+                    ? attendanceResult.value.data.data
+                    : [],
+            )
 
             setLoading(false)
         }
+
         fetchData()
     }, [])
+
+    const txTrend = useMemo(() => {
+        const map = new Map<string, number>()
+        transactions.forEach((tx) => {
+            const key = (tx.created_at || '').slice(0, 10)
+            if (!key) return
+            const signed = (tx.type === 'deposit' ? 1 : -1) * Number(tx.amount || 0)
+            map.set(key, (map.get(key) || 0) + signed)
+        })
+        return Array.from(map.entries())
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .slice(-7)
+            .map(([date, value]) => ({ x: date.slice(5), y: value }))
+    }, [transactions])
+
+    const attendancePct = useMemo(() => {
+        if (attendance.length === 0) return 0
+        const present = attendance.filter((r) => !!r.check_in_time).length
+        return Math.round((present / attendance.length) * 100)
+    }, [attendance])
+
+    const upcomingAssignments = useMemo(() => {
+        const now = Date.now()
+        return assignments.filter((a) => a.due_date && new Date(a.due_date).getTime() >= now).length
+    }, [assignments])
+
+    const latestExamGrade = useMemo(() => {
+        const graded = exams.filter((e) => e.student_score !== null)
+        if (graded.length === 0) return 'N/A'
+        return graded[0].student_grade || 'N/A'
+    }, [exams])
 
     if (loading) {
         return (
@@ -73,14 +158,6 @@ export default function StudentOverview() {
         )
     }
 
-    const sampleData = [
-        { name: 'Mon', value: 95 },
-        { name: 'Tue', value: 88 },
-        { name: 'Wed', value: 92 },
-        { name: 'Thu', value: 85 },
-        { name: 'Fri', value: 98 },
-    ]
-
     const metrics = [
         {
             label: 'Wallet Balance',
@@ -88,35 +165,31 @@ export default function StudentOverview() {
             change: walletAccessDenied ? 'Module not enabled' : 'Live balance',
             icon: Wallet,
             color: CARDLECT_COLORS.success.main,
-            data: sampleData,
-            tooltip: 'Your current spending money',
+            data: txTrend.length > 0 ? txTrend : [{ x: 'N/A', y: 0 }],
         },
         {
             label: 'Attendance',
-            value: '98%',
-            change: 'Active student',
+            value: attendance.length > 0 ? `${attendancePct}%` : 'N/A',
+            change: attendance.length > 0 ? `${attendance.length} records` : 'No access',
             icon: Clock,
             color: SEMANTIC_COLORS.status.online,
-            data: sampleData,
-            tooltip: 'Attendance rate this term',
+            data: txTrend.length > 0 ? txTrend : [{ x: 'N/A', y: 0 }],
         },
         {
             label: 'Assignments',
-            value: 0,
-            change: 'No pending',
+            value: upcomingAssignments,
+            change: `${assignments.length} total`,
             icon: BookOpen,
             color: CARDLECT_COLORS.info.main,
-            data: sampleData,
-            tooltip: 'Tasks requiring your attention',
+            data: txTrend.length > 0 ? txTrend : [{ x: 'N/A', y: 0 }],
         },
         {
             label: 'CBT Results',
-            value: 'B+',
-            change: 'Math Grade',
+            value: latestExamGrade,
+            change: `${exams.filter((e) => e.student_score !== null).length} graded`,
             icon: Award,
             color: CARDLECT_COLORS.primary.darker,
-            data: sampleData,
-            tooltip: 'Last exam performance',
+            data: txTrend.length > 0 ? txTrend : [{ x: 'N/A', y: 0 }],
         },
     ]
 
@@ -130,8 +203,6 @@ export default function StudentOverview() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {metrics.map((metric, i) => {
                     const Icon = metric.icon
-                    const chartData = metric.data.map((d, idx) => ({ x: idx, y: d.value }))
-
                     return (
                         <div
                             key={i}
@@ -156,7 +227,7 @@ export default function StudentOverview() {
 
                             <div className="mt-5 relative z-10 h-10">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={chartData}>
+                                    <LineChart data={metric.data}>
                                         <XAxis dataKey="x" hide />
                                         <YAxis hide domain={['dataMin', 'dataMax']} />
                                         <Line type="monotone" dataKey="y" stroke={metric.color} strokeWidth={2} dot={false} isAnimationActive={true} />
@@ -176,7 +247,7 @@ export default function StudentOverview() {
                         {transactions.length === 0 ? (
                             <p className="text-sm text-muted-foreground italic">No recent transactions recorded.</p>
                         ) : (
-                            transactions.map((tx) => (
+                            transactions.slice(0, 8).map((tx) => (
                                 <div key={tx.id} className="flex items-center justify-between p-4 rounded-2xl bg-border/5">
                                     <div className="flex items-center gap-4">
                                         <div className={`p-2 rounded-lg ${tx.type === 'deposit' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
@@ -199,18 +270,20 @@ export default function StudentOverview() {
                 <div className="bg-card border border-border rounded-3xl p-6 shadow-sm hover:shadow-lg transition-all">
                     <h3 className="text-lg font-semibold mb-4 text-foreground tracking-tight">School Activity</h3>
                     <div className="space-y-4">
-                        <div className="flex items-center gap-4 p-4 rounded-2xl border border-border/40 bg-background/30 transition-all hover:shadow-lg cursor-pointer">
-                            <div className="p-3 bg-card rounded-xl flex items-center justify-center shadow-md relative">
-                                <Bell size={20} className="text-orange-500" />
-                                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-orange-500 rounded-full" />
+                        {(announcements.length > 0 ? announcements : [{ id: 'fallback', title: 'No new announcements' }]).slice(0, 2).map((item) => (
+                            <div key={item.id} className="flex items-center gap-4 p-4 rounded-2xl border border-border/40 bg-background/30 transition-all hover:shadow-lg cursor-pointer">
+                                <div className="p-3 bg-card rounded-xl flex items-center justify-center shadow-md relative">
+                                    <Bell size={20} className="text-orange-500" />
+                                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-orange-500 rounded-full" />
+                                </div>
+                                <span className="text-sm text-foreground font-medium">{item.title || 'Announcement'}</span>
                             </div>
-                            <span className="text-sm text-foreground font-medium">Smart Card ID Active</span>
-                        </div>
+                        ))}
                         <div className="flex items-center gap-4 p-4 rounded-2xl border border-border/40 bg-background/30 transition-all hover:shadow-lg cursor-pointer">
                             <div className="p-3 bg-card rounded-xl flex items-center justify-center shadow-md relative">
                                 <CheckCircle size={20} className="text-green-500" />
                             </div>
-                            <span className="text-sm text-foreground font-medium">In School</span>
+                            <span className="text-sm text-foreground font-medium">{attendance.length > 0 ? 'Attendance records available' : 'No attendance records'}</span>
                         </div>
                     </div>
                 </div>
