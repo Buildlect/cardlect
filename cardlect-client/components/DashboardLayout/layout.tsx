@@ -5,7 +5,8 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Sidebar, defaultMenuItems, type MenuItem, staffSpecificMenuItems } from "@/components/DashboardLayout/sidebar"
 import { Header } from "@/components/DashboardLayout/header"
-import { useProtectedRoute, getAuthUser, type UserRole } from "@/contexts/auth-context"
+import { useProtectedRoute, type UserRole } from "@/contexts/auth-context"
+import api from "@/lib/api-client"
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -26,6 +27,8 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const [checkingBackend, setCheckingBackend] = useState(true)
+  const [backendError, setBackendError] = useState<string | null>(null)
   const router = useRouter()
 
   // Determine effective role: use authenticated user's role if available, otherwise use prop
@@ -44,6 +47,33 @@ export default function DashboardLayout({
     return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
+  useEffect(() => {
+    if (isLoading || !isAuthorized) return
+
+    const verifyBackendSession = async () => {
+      const isDevMock = typeof window !== 'undefined' && localStorage.getItem('cardlect_dev_mock') === '1'
+      if (isDevMock) {
+        setCheckingBackend(false)
+        setBackendError(null)
+        return
+      }
+      setCheckingBackend(true)
+      setBackendError(null)
+      try {
+        await api.get('/users/me')
+      } catch (error: unknown) {
+        const apiError = error as { response?: { status?: number; data?: { error?: string } }; message?: string }
+        const status = apiError?.response?.status
+        const msg = apiError?.response?.data?.error || apiError?.message || 'Backend connection failed'
+        setBackendError(`API verification failed${status ? ` (${status})` : ''}: ${msg}`)
+      } finally {
+        setCheckingBackend(false)
+      }
+    }
+
+    verifyBackendSession()
+  }, [isLoading, isAuthorized])
+
   if (isLoading) {
     return (
       <div className="w-screen h-screen flex items-center justify-center bg-background">
@@ -57,6 +87,46 @@ export default function DashboardLayout({
 
   if (!isAuthorized) {
     return null
+  }
+
+  if (checkingBackend) {
+    return (
+      <div className="w-screen h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-full border-4 border-border border-t-primary animate-spin" />
+          <p className="text-muted-foreground text-sm">Verifying backend session...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (backendError) {
+    return (
+      <div className="w-screen h-screen flex items-center justify-center bg-background px-4">
+        <div className="max-w-xl w-full border border-red-200 bg-red-50 rounded-2xl p-6">
+          <h2 className="text-lg font-bold text-red-700 mb-2">Backend Error</h2>
+          <p className="text-sm text-red-700 mb-4">{backendError}</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors"
+            >
+              Retry
+            </button>
+            <button
+              onClick={() => {
+                localStorage.removeItem('cardlect_token')
+                localStorage.removeItem('cardlect_user')
+                router.push('/')
+              }}
+              className="px-4 py-2 rounded-lg border border-red-300 text-red-700 hover:bg-red-100 transition-colors"
+            >
+              Back to Login
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // Build a flat list of all available menu items (flatten nested dashboard hrefs)
@@ -98,8 +168,9 @@ export default function DashboardLayout({
   }
 
   // Handle allowedPages filter if exists
-  if (user && (user as any).allowedPages) {
-    const allowed = (user as any).allowedPages
+  const userWithAllowedPages = user as (typeof user & { allowedPages?: string[] })
+  if (userWithAllowedPages?.allowedPages) {
+    const allowed = userWithAllowedPages.allowedPages
     finalMenuItems = allItems.filter((it) => allowed.includes(it.href))
   }
 

@@ -5,14 +5,17 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, Copy, CheckCircle2 } from 'lucide-react'
 import { MOCK_USERS } from '@/contexts/mock-users'
-import { setAuthUser } from '@/contexts/auth-context'
+import { type AuthUser, setAuthUser, useAuth } from '@/contexts/auth-context'
 import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 
 export default function PreLaunchPage() {
   const router = useRouter()
+  const { login } = useAuth()
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [showPassword, setShowPassword] = useState<{ [key: string]: boolean }>({})
+  const [isLoggingIn, setIsLoggingIn] = useState(false)
+  const [loginError, setLoginError] = useState<string | null>(null)
 
   const handleCopyCredentials = async (user: typeof MOCK_USERS[0]) => {
     const text = `Email: ${user.email}\nPassword: ${user.password}`
@@ -21,22 +24,39 @@ export default function PreLaunchPage() {
     setTimeout(() => setCopiedId(null), 2000)
   }
 
-  const handleLoginAs = (user: typeof MOCK_USERS[0]) => {
-    setAuthUser({
-      id: user.id,
-      fullName: user.name,
-      email: user.email,
-      role: user.role as any,
-      customRole: user.customRole,
-      schoolId: user.schoolId,
-      permissions: [], // Default empty for mock
-    })
-
-    // Redirect to appropriate dashboard
+  const handleLoginAs = async (user: typeof MOCK_USERS[0]) => {
     if (user.role === 'visitor') {
       router.push('/')
-    } else {
-      router.push('/dashboard/overview')
+      return
+    }
+
+    setLoginError(null)
+    setIsLoggingIn(true)
+    try {
+      await login(user.email, user.password)
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Login failed'
+      const enableDevFallback = process.env.NODE_ENV !== 'production'
+      if (enableDevFallback) {
+        const mockSessionUser: AuthUser = {
+          id: user.id,
+          fullName: user.name,
+          email: user.email,
+          role: user.role as AuthUser['role'],
+          customRole: user.customRole || null,
+          schoolId: user.schoolId,
+          permissions: [],
+        }
+        localStorage.setItem('cardlect_dev_mock', '1')
+        localStorage.setItem('cardlect_token', `dev_mock_${user.id}`)
+        localStorage.setItem('cardlect_user', JSON.stringify(mockSessionUser))
+        setAuthUser(mockSessionUser)
+        router.push('/dashboard/overview')
+        return
+      }
+      setLoginError(`Unable to authenticate ${user.email}: ${message}`)
+    } finally {
+      setIsLoggingIn(false)
     }
   }
 
@@ -82,6 +102,11 @@ export default function PreLaunchPage() {
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-foreground mb-2">Demo User Accounts</h2>
             <p className="text-foreground/70">Click any user below to instantly login and test their dashboard. All credentials are also displayed for manual testing.</p>
+            {loginError && (
+              <div className="mt-4 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {loginError}
+              </div>
+            )}
           </div>
 
           <div className="grid gap-4">
@@ -124,11 +149,12 @@ export default function PreLaunchPage() {
                           {isExpanded ? 'Hide' : 'View'} Details
                         </button>
                         <button
-                          onClick={() => handleLoginAs(user)}
+                          onClick={() => void handleLoginAs(user)}
+                          disabled={isLoggingIn}
                           className="px-4 py-2 text-sm rounded-lg font-medium transition-colors whitespace-nowrap text-white hover:opacity-90"
                           style={{ backgroundColor: mainColor }}
                         >
-                          Login as {getRoleLabel(user.role)}
+                          {isLoggingIn ? 'Signing in...' : `Login as ${getRoleLabel(user.role)}`}
                         </button>
                       </div>
                     </div>
@@ -206,7 +232,7 @@ export default function PreLaunchPage() {
                         <div className="mt-4 pt-4 border-t border-border">
                           <p className="text-xs text-muted-foreground mb-2">How to use this account:</p>
                           <ol className="text-sm text-foreground/80 space-y-1 list-decimal list-inside">
-                            <li>Click the "Login" button above to instantly access this user's dashboard</li>
+                            <li>Click the &quot;Login&quot; button above to instantly access this user&apos;s dashboard</li>
                             <li>Or manually copy the email and password and enter them on the login page</li>
                             <li>Test all features available for this user role</li>
                             <li>Logout when done to return to the login page</li>
@@ -227,7 +253,7 @@ export default function PreLaunchPage() {
               This pre-launch page is designed for testing and demonstration purposes. It displays all available mock user accounts used during development.
             </p>
             <ul className="text-sm text-foreground/70 space-y-1 list-disc list-inside">
-              <li>Quick login: Click "Login as [Role]" to instantly become that user</li>
+              <li>Quick login: Click &quot;Login as [Role]&quot; to instantly become that user</li>
               <li>Manual testing: Copy credentials to test the login form</li>
               <li>Dashboard testing: Each user has access to their role-specific dashboard</li>
               <li>Data is not persisted between sessions in the demo environment</li>

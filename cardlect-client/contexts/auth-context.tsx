@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import api from '@/lib/api-client'
 
 export type UserRole =
@@ -48,8 +48,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [token, setToken] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const router = useRouter()
-    setAuthUser = setUser
-    getAuthUser = () => user
+
+    useEffect(() => {
+        setAuthUser = setUser
+        getAuthUser = () => user
+    }, [user])
 
     useEffect(() => {
         const initializeAuth = async () => {
@@ -84,10 +87,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             localStorage.setItem('cardlect_token', accessToken)
             localStorage.setItem('cardlect_user', JSON.stringify(userData))
+            localStorage.removeItem('cardlect_dev_mock')
 
             router.push('/dashboard/overview')
-        } catch (error: any) {
-            throw new Error(error.response?.data?.message || 'Login failed')
+        } catch (error: unknown) {
+            const err = error as { response?: { data?: { message?: string } } }
+            throw new Error(err.response?.data?.message || 'Login failed')
         }
     }
 
@@ -96,6 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(null)
         localStorage.removeItem('cardlect_token')
         localStorage.removeItem('cardlect_user')
+        localStorage.removeItem('cardlect_dev_mock')
         router.push('/auth/logout')
     }
 
@@ -117,7 +123,6 @@ export function useAuth() {
 export function useProtectedRoute(allowedRoles?: UserRole | UserRole[], requiredCustomRole?: string) {
     const { user, isLoading, isAuthenticated } = useAuth()
     const router = useRouter()
-    const pathname = usePathname()
 
     useEffect(() => {
         if (!isLoading) {

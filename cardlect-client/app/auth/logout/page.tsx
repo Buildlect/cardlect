@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { LogOut, CheckCircle2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CARDLECT_COLORS } from "@/lib/cardlect-colors";
@@ -14,6 +13,9 @@ export default function LogoutPage() {
   useEffect(() => {
     // Simulate logout process
     const logoutTimer = setTimeout(() => {
+      localStorage.removeItem("cardlect_token");
+      localStorage.removeItem("cardlect_user");
+      localStorage.removeItem("cardlect_dev_mock");
       console.log("User logged out successfully");
       setIsLoggingOut(false);
       // logout logic here (clear tokens, cookies, etc.)
@@ -65,7 +67,7 @@ export default function LogoutPage() {
           </div>
 
           <h1 className="text-3xl font-bold text-balance">
-            You've Been Signed Out
+            You&apos;ve Been Signed Out
           </h1>
           <p className="text-muted-foreground mt-2 leading-relaxed">
             Your session has ended successfully. Thank you for choosing Cardlect!
