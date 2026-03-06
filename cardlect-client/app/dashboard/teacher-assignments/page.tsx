@@ -65,9 +65,9 @@ export default function AssignmentsPage() {
         return {
           id: row.id,
           title: row.title || 'Untitled Assignment',
-          classId: row.class_id,
-          className: classMap.get(row.class_id) || row.class_id || 'N/A',
-          dueDate: due,
+          classId: row.class_id || '',
+          className: classMap.get(row.class_id || '') || row.class_id || 'N/A',
+          dueDate: due || '',
           status,
         }
       }))
@@ -205,7 +205,7 @@ export default function AssignmentsPage() {
                       </div>
                       <div className="grid grid-cols-3 gap-4 text-sm mt-3">
                         <div><span className="text-muted-foreground">Class: </span><span className="font-medium">{assignment.className}</span></div>
-                        <div><span className="text-muted-foreground">Due: </span><span className="font-medium">{new Date(assignment.dueDate).toLocaleDateString()}</span></div>
+                        <div><span className="text-muted-foreground">Due: </span><span className="font-medium">{assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString() : 'N/A'}</span></div>
                         <div><span className="text-muted-foreground">Status: </span><span className="font-medium capitalize">{assignment.status}</span></div>
                       </div>
                     </div>
