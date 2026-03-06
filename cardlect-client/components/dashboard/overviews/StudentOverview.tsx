@@ -1,39 +1,66 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { BookOpen, Clock, Award, Users, TrendingUp, Bell, Zap, Calendar, FileText, CheckCircle, AlertCircle, Wallet, Loader2 } from 'lucide-react'
+import { BookOpen, Clock, Award, TrendingUp, Bell, CheckCircle, Wallet, Loader2 } from 'lucide-react'
 import {
     LineChart,
     Line,
-    AreaChart,
-    Area,
     XAxis,
     YAxis,
-    Tooltip,
     ResponsiveContainer,
 } from 'recharts'
 import { CARDLECT_COLORS, SEMANTIC_COLORS } from '@/lib/cardlect-colors'
 import api from '@/lib/api-client'
 
+interface WalletData {
+    balance: number | string
+}
+
+interface WalletTransaction {
+    id: string
+    type?: string
+    category?: string
+    amount?: number | string
+    created_at?: string
+}
+
 export default function StudentOverview() {
-    const [wallet, setWallet] = useState<any>(null)
-    const [transactions, setTransactions] = useState<any[]>([])
+    const [wallet, setWallet] = useState<WalletData | null>(null)
+    const [transactions, setTransactions] = useState<WalletTransaction[]>([])
     const [loading, setLoading] = useState(true)
+    const [walletAccessDenied, setWalletAccessDenied] = useState(false)
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                const [walletRes, transRes] = await Promise.all([
-                    api.get('/wallets/me'),
-                    api.get('/wallets/transactions?limit=5')
-                ])
-                setWallet(walletRes.data.data)
-                setTransactions(transRes.data.data.transactions || [])
-            } catch (err) {
-                console.error('Failed to fetch student data:', err)
-            } finally {
-                setLoading(false)
+            const [walletResult, transResult] = await Promise.allSettled([
+                api.get('/wallets/me'),
+                api.get('/wallets/transactions?limit=5'),
+            ])
+
+            if (walletResult.status === 'fulfilled') {
+                setWallet(walletResult.value?.data?.data || null)
+            } else {
+                const status = walletResult.reason?.response?.status
+                if (status === 403) {
+                    setWalletAccessDenied(true)
+                } else {
+                    console.error('Failed to fetch wallet:', walletResult.reason)
+                }
+                setWallet(null)
             }
+
+            if (transResult.status === 'fulfilled') {
+                const txRows = Array.isArray(transResult.value?.data?.data) ? transResult.value.data.data : []
+                setTransactions(txRows)
+            } else {
+                const status = transResult.reason?.response?.status
+                if (status !== 403) {
+                    console.error('Failed to fetch transactions:', transResult.reason)
+                }
+                setTransactions([])
+            }
+
+            setLoading(false)
         }
         fetchData()
     }, [])
@@ -57,8 +84,8 @@ export default function StudentOverview() {
     const metrics = [
         {
             label: 'Wallet Balance',
-            value: wallet ? `₦${wallet.balance.toLocaleString()}` : '₦0.00',
-            change: 'Live balance',
+            value: wallet ? `N${Number(wallet.balance || 0).toLocaleString()}` : 'N0.00',
+            change: walletAccessDenied ? 'Module not enabled' : 'Live balance',
             icon: Wallet,
             color: CARDLECT_COLORS.success.main,
             data: sampleData,
@@ -122,7 +149,7 @@ export default function StudentOverview() {
                                         </span>
                                     </div>
                                 </div>
-                                <div className={`bg-card/50 flex items-center justify-center w-14 h-14 rounded-xl shadow-sm`}>
+                                <div className="bg-card/50 flex items-center justify-center w-14 h-14 rounded-xl shadow-sm">
                                     <Icon size={24} color={metric.color} />
                                 </div>
                             </div>
@@ -149,19 +176,19 @@ export default function StudentOverview() {
                         {transactions.length === 0 ? (
                             <p className="text-sm text-muted-foreground italic">No recent transactions recorded.</p>
                         ) : (
-                            transactions.map((tx: any, i: number) => (
-                                <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-border/5">
+                            transactions.map((tx) => (
+                                <div key={tx.id} className="flex items-center justify-between p-4 rounded-2xl bg-border/5">
                                     <div className="flex items-center gap-4">
                                         <div className={`p-2 rounded-lg ${tx.type === 'deposit' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
                                             <TrendingUp size={18} className={tx.type === 'deposit' ? '' : 'rotate-180'} />
                                         </div>
                                         <div>
                                             <p className="text-sm font-bold text-foreground capitalize">{tx.category || tx.type}</p>
-                                            <p className="text-xs text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</p>
+                                            <p className="text-xs text-muted-foreground">{tx.created_at ? new Date(tx.created_at).toLocaleDateString() : 'N/A'}</p>
                                         </div>
                                     </div>
                                     <p className={`text-sm font-bold ${tx.type === 'deposit' ? 'text-green-500' : 'text-foreground'}`}>
-                                        {tx.type === 'deposit' ? '+' : '-'} ₦{parseFloat(tx.amount).toLocaleString()}
+                                        {tx.type === 'deposit' ? '+' : '-'} N{Number(tx.amount || 0).toLocaleString()}
                                     </p>
                                 </div>
                             ))
