@@ -1,36 +1,61 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Search, Users, Star } from 'lucide-react'
 import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
+import api from '@/lib/api-client'
 
 interface Partner {
   id: string
-  name: string
-  type: string
-  status: 'active' | 'inactive'
-  rating: number
-  sales: number
+  schoolName: string
+  status: string
+  requestedAt: string
+  respondedAt?: string
 }
 
-const mockPartners: Partner[] = [
-  { id: '1', name: 'Northern Supplies Ltd', type: 'Distributor', status: 'active', rating: 4.8, sales: 450000 },
-  { id: '2', name: 'Quality Books Inc', type: 'Publisher', status: 'active', rating: 4.5, sales: 320000 },
-  { id: '3', name: 'Uniform Makers Co', type: 'Manufacturer', status: 'active', rating: 4.7, sales: 280000 },
-  { id: '4', name: 'Stationery World', type: 'Retailer', status: 'inactive', rating: 4.2, sales: 150000 },
-]
+interface PartnershipRow {
+  id: string
+  school_name?: string
+  status?: string
+  requested_at?: string
+  responded_at?: string
+}
 
 export default function PartnersPage() {
+  const [partners, setPartners] = useState<Partner[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [loading, setLoading] = useState(true)
 
-  const filteredPartners = mockPartners.filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  useEffect(() => {
+    const fetchPartners = async () => {
+      try {
+        const res = await api.get('/partners')
+        const rows: PartnershipRow[] = Array.isArray(res.data?.data) ? res.data.data : []
+        setPartners(rows.map((row) => ({
+          id: row.id,
+          schoolName: row.school_name || 'Unknown School',
+          status: row.status || 'pending',
+          requestedAt: row.requested_at,
+          respondedAt: row.responded_at || undefined,
+        })))
+      } catch (error) {
+        console.error('Failed to load partnerships:', error)
+        setPartners([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPartners()
+  }, [])
+
+  const filteredPartners = partners.filter(p =>
+    p.schoolName.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const activePartners = mockPartners.filter(p => p.status === 'active').length
+  const approvedPartners = partners.filter(p => p.status === 'approved').length
 
   return (
     <DashboardLayout currentPage="partners" role="partner">
@@ -39,14 +64,13 @@ export default function PartnersPage() {
         <p className="text-muted-foreground">Manage your supply chain partners</p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Active Partners</p>
-                <p className="text-3xl font-bold text-foreground">{activePartners}</p>
+                <p className="text-xs text-muted-foreground mb-1">Approved Partnerships</p>
+                <p className="text-3xl font-bold text-foreground">{approvedPartners}</p>
               </div>
               <Users size={24} style={{ color: CARDLECT_COLORS.primary.darker }} />
             </div>
@@ -57,7 +81,7 @@ export default function PartnersPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Total Partners</p>
-                <p className="text-3xl font-bold text-foreground">{mockPartners.length}</p>
+                <p className="text-3xl font-bold text-foreground">{partners.length}</p>
               </div>
               <Star size={24} style={{ color: CARDLECT_COLORS.warning.main }} />
             </div>
@@ -65,7 +89,6 @@ export default function PartnersPage() {
         </Card>
       </div>
 
-      {/* Partners List */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -82,42 +105,49 @@ export default function PartnersPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {filteredPartners.map((partner) => (
-              <div key={partner.id} className="border border-border rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">{partner.name}</h3>
-                    <p className="text-sm text-muted-foreground">{partner.type}</p>
-                  </div>
-                  <span
-                    className="px-3 py-1 rounded-full text-sm font-medium text-white"
-                    style={{ backgroundColor: partner.status === 'active' ? CARDLECT_COLORS.success.main : CARDLECT_COLORS.danger.main }}
-                  >
-                    {partner.status}
-                  </span>
-                </div>
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Rating</p>
-                    <p className="font-semibold text-foreground">{partner.rating} ⭐</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Sales</p>
-                    <p className="font-semibold text-foreground">₦{(partner.sales / 1000).toFixed(0)}k</p>
-                  </div>
-                  <div>
-                    <button
-                      className="px-3 py-1 text-sm font-medium text-white rounded"
-                      style={{ backgroundColor: CARDLECT_COLORS.primary.darker }}
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Loading partnerships...</p>
+          ) : (
+            <div className="space-y-3">
+              {filteredPartners.map((partner) => (
+                <div key={partner.id} className="border border-border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-foreground">{partner.schoolName}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Requested {partner.requestedAt ? new Date(partner.requestedAt).toLocaleDateString() : 'N/A'}
+                      </p>
+                    </div>
+                    <span
+                      className="px-3 py-1 rounded-full text-sm font-medium text-white"
+                      style={{
+                        backgroundColor:
+                          partner.status === 'approved'
+                            ? CARDLECT_COLORS.success.main
+                            : partner.status === 'rejected'
+                              ? CARDLECT_COLORS.danger.main
+                              : CARDLECT_COLORS.warning.main,
+                      }}
                     >
-                      View
-                    </button>
+                      {partner.status}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Response Date</p>
+                      <p className="font-semibold text-foreground">
+                        {partner.respondedAt ? new Date(partner.respondedAt).toLocaleDateString() : 'Pending'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Partnership ID</p>
+                      <p className="font-semibold text-foreground">{partner.id}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </DashboardLayout>
