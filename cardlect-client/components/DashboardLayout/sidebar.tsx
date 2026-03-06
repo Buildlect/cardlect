@@ -32,7 +32,7 @@ import {
   BookMarked,
 } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import type { LucideIcon } from "lucide-react"
 import { useAuth, UserRole } from "@/contexts/auth-context"
 
@@ -187,6 +187,7 @@ export function Sidebar({
   role = "school_admin",
 }: SidebarProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const { logout: authLogout } = useAuth()
 
   const handleLogout = () => {
@@ -208,9 +209,9 @@ export function Sidebar({
         className={`
           ${isMobile ? "fixed inset-y-0 left-0 z-50 transform transition-transform duration-300" : "h-screen"}
           ${isMobile ? (open ? "translate-x-0 w-64" : "-translate-x-full w-64") : open ? "w-64" : "w-20"}
-          bg-white text-gray-700 border-r border-gray-200
+          bg-background text-foreground border-r border-border
           flex flex-col overflow-hidden min-h-0
-          dark:bg-[#151517] dark:text-gray-200 dark:border-[#111827]
+          shadow-sm
         `}
         aria-hidden={isMobile ? !open : false}
       >
@@ -224,7 +225,7 @@ export function Sidebar({
 
           <button
             onClick={onToggle}
-            className="group relative p-1 hover:bg-orange-50 rounded-lg dark:hover:bg-[#111827]"
+            className="group relative p-1 hover:bg-orange-50 rounded-lg dark:hover:bg-white/5"
             aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
           >
             {open ? (
@@ -241,6 +242,7 @@ export function Sidebar({
         {/* Navigation */}
         <nav className="flex-1 px-3 py-3 space-y-2 overflow-y-auto overflow-x-hidden min-h-0">
           {menuItems.map(({ icon: Icon, label, href, id }) => {
+            const isActive = pathname === href || pathname.startsWith(`${href}/`)
             return (
               <Link
                 key={id}
@@ -251,17 +253,30 @@ export function Sidebar({
                   if (isMobile) onToggle()
                 }}
                 aria-label={label}
+                aria-current={isActive ? "page" : undefined}
                 className={`
                   group relative flex items-center gap-3 px-4 py-3 rounded-lg
-                  transition-all text-gray-700 hover:bg-orange-50
-                  dark:text-gray-200 dark:hover:bg-[rgba(234,88,12,0.06)]
+                  transition-all
+                  ${isActive
+                    ? "bg-orange-50 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300"
+                    : "text-gray-700 hover:bg-orange-50 dark:text-gray-200 dark:hover:bg-orange-500/10"}
                 `}
               >
-                <Icon className="h-5 w-5 flex-shrink-0 transition-colors text-gray-500 group-hover:text-orange-600 dark:text-gray-200 dark:group-hover:text-orange-400" />
+                <Icon
+                  className={`h-5 w-5 flex-shrink-0 transition-colors ${
+                    isActive
+                      ? "text-orange-600 dark:text-orange-300"
+                      : "text-gray-500 group-hover:text-orange-600 dark:text-gray-300 dark:group-hover:text-orange-400"
+                  }`}
+                />
 
                 {/* Text only when expanded */}
                 {open && (
-                  <span className="text-sm font-medium group-hover:text-orange-600 dark:group-hover:text-orange-400">
+                  <span
+                    className={`text-sm font-medium ${
+                      isActive ? "text-orange-700 dark:text-orange-300" : "group-hover:text-orange-600 dark:group-hover:text-orange-400"
+                    }`}
+                  >
                     {label}
                   </span>
                 )}
@@ -273,11 +288,11 @@ export function Sidebar({
           })}
         </nav>
 
-        <div className="mt-auto p-3 border-t border-gray-200 dark:border-[#111827]">
+        <div className="mt-auto p-3 border-t border-border">
           <button
             onClick={handleLogout}
             aria-label="Logout"
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-orange-50 transition-all dark:text-gray-200 dark:hover:bg-[rgba(234,88,12,0.06)]"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-orange-50 transition-all dark:text-gray-200 dark:hover:bg-orange-500/10"
           >
             <LogOut className="h-5 w-5 flex-shrink-0" />
             {open && <span className="text-sm font-medium">Logout</span>}

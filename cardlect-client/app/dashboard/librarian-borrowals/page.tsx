@@ -112,7 +112,7 @@ export default function LibrarianBorrowalsPage() {
                     </Button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     <Card className="bg-blue-50/30 border-blue-100">
                         <CardContent className="pt-6">
                             <div className="flex items-center gap-4">

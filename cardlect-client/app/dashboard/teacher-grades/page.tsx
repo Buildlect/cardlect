@@ -198,7 +198,7 @@ export default function GradesPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Class Average</div>

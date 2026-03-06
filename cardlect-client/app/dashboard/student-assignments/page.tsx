@@ -53,7 +53,7 @@ export default function Page() {
         <p className="text-muted-foreground">Track your assignments and due dates.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
         <Card><CardContent className="pt-6"><p className="text-xs text-muted-foreground mb-1">Total</p><p className="text-3xl font-bold text-foreground">{stats.total}</p></CardContent></Card>
         <Card><CardContent className="pt-6"><p className="text-xs text-muted-foreground mb-1">Open</p><p className="text-3xl font-bold" style={{ color: CARDLECT_COLORS.success.main }}>{stats.open}</p></CardContent></Card>
         <Card><CardContent className="pt-6"><p className="text-xs text-muted-foreground mb-1">Closed</p><p className="text-3xl font-bold" style={{ color: CARDLECT_COLORS.warning.main }}>{stats.closed}</p></CardContent></Card>

@@ -103,7 +103,7 @@ export default function SchoolsPage() {
         </div>
 
         {/* Global Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           {[
             { label: 'Active Nodes', val: schools.filter(s => s.status === 'active').length, icon: Globe, sub: `${schools.length} Total` },
             { label: 'Total Enrollment', val: (schools.reduce((s, c) => s + (c.student_count || 0), 0)).toLocaleString(), icon: Users, sub: 'Across Ecosystem' },

@@ -61,7 +61,7 @@ export default function Page() {
         <p className="text-muted-foreground">Manage and monitor store sales performance.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
         <Card><CardContent className="pt-6"><p className="text-xs text-muted-foreground mb-1">Total Sales</p><p className="text-3xl font-bold text-foreground">N{(totalSales / 1000).toFixed(0)}k</p></CardContent></Card>
         <Card><CardContent className="pt-6"><p className="text-xs text-muted-foreground mb-1">Total Orders</p><p className="text-3xl font-bold text-foreground">{orders.length}</p></CardContent></Card>
         <Card><CardContent className="pt-6"><p className="text-xs text-muted-foreground mb-1">Completed Orders</p><p className="text-3xl font-bold" style={{ color: CARDLECT_COLORS.success.main }}>{completedOrders}</p></CardContent></Card>

@@ -80,7 +80,7 @@ export default function InventoryPage() {
       ) : (
         <>
           {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
             <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
               <div className="flex items-center justify-between">
                 <div>

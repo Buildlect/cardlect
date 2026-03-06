@@ -93,7 +93,7 @@ export default function CardsPage() {
         </div>
 
         {/* Global Statistics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           {[
             { label: 'Active Credentials', val: cards.filter(c => c.status === 'active').length, icon: BadgeCheck, sub: 'Hardware Verified', color: SEMANTIC_COLORS.status.online },
             { label: 'Blocked Tokens', val: cards.filter(c => c.status === 'blocked').length, icon: UserX, sub: 'Security Locked', color: SEMANTIC_COLORS.status.offline },

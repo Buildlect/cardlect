@@ -197,7 +197,7 @@ export function Header({ onMenuClick, role = "school_admin" }: HeaderProps) {
             </button>
 
             {notificationsOpen && (
-              <div className="absolute top-full right-0 mt-2 w-96 bg-card border border-border rounded-xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+              <div className="absolute top-full right-0 mt-2 w-[min(24rem,calc(100vw-2rem))] bg-card border border-border rounded-xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                 <div className="p-4 border-b border-border">
                   <div className="flex items-center justify-between">
                     <p className="font-semibold text-foreground text-sm">Notifications</p>

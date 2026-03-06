@@ -74,7 +74,7 @@ export default function ChildrenPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {[
             { label: 'Total Children', val: children.length, color: CARDLECT_COLORS.primary.darker, sub: 'Registered profiles' },
             { label: 'Active Credentials', val: children.filter(c => c.status === 'active').length, color: CARDLECT_COLORS.success.main, sub: 'With verified cards' },
