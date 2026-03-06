@@ -1,55 +1,138 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import DashboardLayout from "@/components/DashboardLayout/layout"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Download, Plus } from 'lucide-react'
+import { Download } from 'lucide-react'
 import { CARDLECT_COLORS } from '@/lib/cardlect-colors'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import api from '@/lib/api-client'
 
-interface Grade {
-  studentId: string
+interface ClassOption {
+  id: string
   name: string
-  class: string
-  quiz1: number
-  quiz2: number
-  midterm: number
-  final: number
-  average: number
 }
 
-const mockGrades: Grade[] = [
-  { studentId: 'S001', name: 'Chioma Okonkwo', class: '10A', quiz1: 85, quiz2: 88, midterm: 82, final: 0, average: 85 },
-  { studentId: 'S002', name: 'Tunde Adebayo', class: '10A', quiz1: 92, quiz2: 95, midterm: 90, final: 0, average: 92 },
-  { studentId: 'S003', name: 'Sarah Johnson', class: '10B', quiz1: 78, quiz2: 81, midterm: 80, final: 0, average: 80 },
-  { studentId: 'S004', name: 'Michael Chen', class: '10B', quiz1: 88, quiz2: 90, midterm: 87, final: 0, average: 88 },
-]
+interface GradeRow {
+  id: string
+  student_id: string
+  student_name?: string
+  admission_number?: string
+  assignment_id: string
+  assignment_title?: string
+  class_id?: string
+  class_name?: string
+  score?: number | string
+  remarks?: string
+  graded_at?: string
+}
 
-const gradeDistribution = [
-  { range: 'A (90-100)', count: 1 },
-  { range: 'B (80-89)', count: 2 },
-  { range: 'C (70-79)', count: 1 },
-]
+interface Grade {
+  id: string
+  studentId: string
+  name: string
+  admissionNo: string
+  classId: string
+  className: string
+  assignmentId: string
+  assignmentTitle: string
+  score: number
+  remarks: string
+  gradedAt: string
+}
 
 export default function GradesPage() {
-  const [grades, setGrades] = useState(mockGrades)
-  const [selectedClass, setSelectedClass] = useState('10A')
+  const [classes, setClasses] = useState<ClassOption[]>([])
+  const [grades, setGrades] = useState<Grade[]>([])
+  const [selectedClass, setSelectedClass] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const [editingGrade, setEditingGrade] = useState<{ studentId: string; type: 'quiz1' | 'quiz2' | 'midterm' | 'final' } | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [editingGrade, setEditingGrade] = useState<{ id: string; studentId: string; assignmentId: string; remarks: string } | null>(null)
   const [editValue, setEditValue] = useState('')
 
-  const filteredGrades = grades.filter(g =>
-    g.class === selectedClass &&
-    (g.name.toLowerCase().includes(searchTerm.toLowerCase()) || g.studentId.includes(searchTerm))
-  )
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true)
+      setErrorMessage(null)
+      try {
+        const [classRes, gradeRes] = await Promise.all([
+          api.get('/academics/classes'),
+          api.get('/academics/grades'),
+        ])
 
-  const stats = {
-    classAverage: (filteredGrades.reduce((sum, g) => sum + g.average, 0) / filteredGrades.length || 0).toFixed(1),
-    highest: Math.max(...filteredGrades.map(g => g.average), 0),
-    lowest: Math.min(...filteredGrades.map(g => g.average), 100),
-  }
+        const classRows: Array<{ id: string; name?: string }> = Array.isArray(classRes.data?.data) ? classRes.data.data : []
+        setClasses(classRows.map((c) => ({ id: c.id, name: c.name || c.id })))
+
+        const gradeRows: GradeRow[] = Array.isArray(gradeRes.data?.data) ? gradeRes.data.data : []
+        setGrades(
+          gradeRows.map((row) => ({
+            id: row.id,
+            studentId: row.student_id,
+            name: row.student_name || 'Unknown Student',
+            admissionNo: row.admission_number || 'N/A',
+            classId: row.class_id || 'unknown',
+            className: row.class_name || 'Unknown Class',
+            assignmentId: row.assignment_id,
+            assignmentTitle: row.assignment_title || 'Untitled Assignment',
+            score: Number(row.score || 0),
+            remarks: row.remarks || '',
+            gradedAt: row.graded_at ? new Date(row.graded_at).toLocaleDateString() : 'N/A',
+          })),
+        )
+      } catch (error: unknown) {
+        const apiError = error as { response?: { data?: { error?: string } }; message?: string }
+        setErrorMessage(apiError?.response?.data?.error || apiError?.message || 'Failed to load grades')
+        setClasses([])
+        setGrades([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [])
+
+  const filteredGrades = useMemo(() => {
+    return grades.filter((g) => {
+      const classMatch = selectedClass === 'all' || g.classId === selectedClass
+      const searchMatch = g.name.toLowerCase().includes(searchTerm.toLowerCase()) || g.admissionNo.includes(searchTerm)
+      return classMatch && searchMatch
+    })
+  }, [grades, searchTerm, selectedClass])
+
+  const stats = useMemo(() => {
+    if (filteredGrades.length === 0) {
+      return { classAverage: '0.0', highest: 0, lowest: 0 }
+    }
+    const scores = filteredGrades.map((g) => g.score)
+    const avg = scores.reduce((sum, s) => sum + s, 0) / scores.length
+    return {
+      classAverage: avg.toFixed(1),
+      highest: Math.max(...scores),
+      lowest: Math.min(...scores),
+    }
+  }, [filteredGrades])
+
+  const gradeDistribution = useMemo(() => {
+    const buckets = { A: 0, B: 0, C: 0, D: 0, F: 0 }
+    filteredGrades.forEach((g) => {
+      if (g.score >= 90) buckets.A += 1
+      else if (g.score >= 80) buckets.B += 1
+      else if (g.score >= 70) buckets.C += 1
+      else if (g.score >= 60) buckets.D += 1
+      else buckets.F += 1
+    })
+    return [
+      { range: 'A (90-100)', count: buckets.A },
+      { range: 'B (80-89)', count: buckets.B },
+      { range: 'C (70-79)', count: buckets.C },
+      { range: 'D (60-69)', count: buckets.D },
+      { range: 'F (<60)', count: buckets.F },
+    ]
+  }, [filteredGrades])
 
   const getGradeColor = (score: number) => {
     if (score >= 90) return { color: CARDLECT_COLORS.success.main, backgroundColor: `${CARDLECT_COLORS.success.main}20` }
@@ -58,31 +141,33 @@ export default function GradesPage() {
     return { color: CARDLECT_COLORS.danger.main, backgroundColor: `${CARDLECT_COLORS.danger.main}20` }
   }
 
-  const handleGradeEdit = (studentId: string, type: 'quiz1' | 'quiz2' | 'midterm' | 'final', currentValue: number) => {
-    setEditingGrade({ studentId, type })
-    setEditValue(currentValue.toString())
+  const handleGradeEdit = (grade: Grade) => {
+    setEditingGrade({ id: grade.id, studentId: grade.studentId, assignmentId: grade.assignmentId, remarks: grade.remarks })
+    setEditValue(grade.score.toString())
   }
 
-  const handleGradeSave = () => {
+  const handleGradeSave = async () => {
     if (!editingGrade) return
-    const value = parseInt(editValue)
-    if (isNaN(value) || value < 0 || value > 100) {
+    const value = parseFloat(editValue)
+    if (Number.isNaN(value) || value < 0 || value > 100) {
       alert('Grade must be between 0 and 100')
       return
     }
 
-    setGrades(grades.map(g => {
-      if (g.studentId === editingGrade.studentId) {
-        const updated = { ...g, [editingGrade.type]: value }
-        // Recalculate average
-        const graded = [updated.quiz1, updated.quiz2, updated.midterm, updated.final].filter(v => v > 0)
-        updated.average = graded.length > 0 ? Math.round(graded.reduce((a, b) => a + b, 0) / graded.length) : updated.average
-        return updated
-      }
-      return g
-    }))
-    setEditingGrade(null)
-    alert('Grade updated successfully!')
+    try {
+      await api.post('/academics/record-grade', {
+        studentId: editingGrade.studentId,
+        assignmentId: editingGrade.assignmentId,
+        score: value,
+        remarks: editingGrade.remarks,
+      })
+
+      setGrades((prev) => prev.map((g) => (g.id === editingGrade.id ? { ...g, score: value } : g)))
+      setEditingGrade(null)
+    } catch (error: unknown) {
+      const apiError = error as { response?: { data?: { error?: string } }; message?: string }
+      alert(apiError?.response?.data?.error || apiError?.message || 'Failed to save grade')
+    }
   }
 
   return (
@@ -93,31 +178,32 @@ export default function GradesPage() {
             <h1 className="text-3xl font-bold text-foreground">Grades</h1>
             <p className="text-muted-foreground">Manage student grades and performance</p>
           </div>
-          <Button style={{ backgroundColor: CARDLECT_COLORS.info.main }} className="text-white">
+          <Button style={{ backgroundColor: CARDLECT_COLORS.info.main }} className="text-white" disabled>
             <Download size={18} /> Export
           </Button>
         </div>
 
-        {/* Class Selector */}
         <div className="flex gap-2 flex-wrap">
-          {['10A', '10B', '11'].map((cls) => (
+          <Button variant={selectedClass === 'all' ? 'default' : 'outline'} onClick={() => setSelectedClass('all')}>
+            All Classes
+          </Button>
+          {classes.map((cls) => (
             <Button
-              key={cls}
-              variant={selectedClass === cls ? 'default' : 'outline'}
-              onClick={() => setSelectedClass(cls)}
+              key={cls.id}
+              variant={selectedClass === cls.id ? 'default' : 'outline'}
+              onClick={() => setSelectedClass(cls.id)}
             >
-              Class {cls}
+              {cls.name}
             </Button>
           ))}
         </div>
 
-        {/* Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardContent className="pt-6">
               <div className="text-sm text-muted-foreground">Class Average</div>
               <div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.info.main }}>{stats.classAverage}%</div>
-              <div className="text-xs text-muted-foreground mt-2">{filteredGrades.length} students graded</div>
+              <div className="text-xs text-muted-foreground mt-2">{filteredGrades.length} grades</div>
             </CardContent>
           </Card>
 
@@ -138,7 +224,6 @@ export default function GradesPage() {
           </Card>
         </div>
 
-        {/* Chart */}
         <Card>
           <CardHeader>
             <CardTitle>Grade Distribution</CardTitle>
@@ -156,7 +241,6 @@ export default function GradesPage() {
           </CardContent>
         </Card>
 
-        {/* Search */}
         <Input
           placeholder="Search student..."
           value={searchTerm}
@@ -164,43 +248,56 @@ export default function GradesPage() {
           className="max-w-xs"
         />
 
-        {/* Grades Table */}
         <Card>
           <CardContent className="pt-6">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4 text-sm font-semibold">Student Name</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold">Quiz 1</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold">Quiz 2</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold">Midterm</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold">Final</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold">Average</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredGrades.map((grade) => (
-                    <tr key={grade.studentId} className="border-b hover:bg-muted/50">
-                      <td className="py-3 px-4 font-medium">{grade.name}</td>
-                      <td className="py-3 px-4 text-center cursor-pointer hover:bg-secondary" onClick={() => handleGradeEdit(grade.studentId, 'quiz1', grade.quiz1)} title="Click to edit">{grade.quiz1}%</td>
-                      <td className="py-3 px-4 text-center cursor-pointer hover:bg-secondary" onClick={() => handleGradeEdit(grade.studentId, 'quiz2', grade.quiz2)} title="Click to edit">{grade.quiz2}%</td>
-                      <td className="py-3 px-4 text-center cursor-pointer hover:bg-secondary" onClick={() => handleGradeEdit(grade.studentId, 'midterm', grade.midterm)} title="Click to edit">{grade.midterm}%</td>
-                      <td className="py-3 px-4 text-center cursor-pointer hover:bg-secondary" onClick={() => handleGradeEdit(grade.studentId, 'final', grade.final === 0 ? 0 : grade.final)} title="Click to enter final grade">{grade.final === 0 ? '-' : `${grade.final}%`}</td>
-                      <td className="py-3 px-4 text-center">
-                        <span style={{ ...getGradeColor(grade.average), padding: '0.75rem 1rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: '600' }}>
-                          {grade.average}%
-                        </span>
-                      </td>
+            {loading ? (
+              <p className="text-sm text-muted-foreground">Loading grades...</p>
+            ) : errorMessage ? (
+              <p className="text-sm text-red-600">{errorMessage}</p>
+            ) : filteredGrades.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No grade records found.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left py-3 px-4 text-sm font-semibold">Student</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold">Class</th>
+                      <th className="text-left py-3 px-4 text-sm font-semibold">Assignment</th>
+                      <th className="text-center py-3 px-4 text-sm font-semibold">Score</th>
+                      <th className="text-center py-3 px-4 text-sm font-semibold">Graded On</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {filteredGrades.map((grade) => (
+                      <tr key={grade.id} className="border-b hover:bg-muted/50">
+                        <td className="py-3 px-4 font-medium">
+                          <div>{grade.name}</div>
+                          <div className="text-xs text-muted-foreground">{grade.admissionNo}</div>
+                        </td>
+                        <td className="py-3 px-4">{grade.className}</td>
+                        <td className="py-3 px-4">{grade.assignmentTitle}</td>
+                        <td
+                          className="py-3 px-4 text-center cursor-pointer hover:bg-secondary"
+                          onClick={() => handleGradeEdit(grade)}
+                          title="Click to edit"
+                        >
+                          <span
+                            style={{ ...getGradeColor(grade.score), padding: '0.75rem 1rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: '600' }}
+                          >
+                            {grade.score}%
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center">{grade.gradedAt}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Grade Edit Modal */}
         {editingGrade && (
           <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center" onClick={() => setEditingGrade(null)}>
             <div className="bg-white dark:bg-card rounded-lg p-6 max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}>

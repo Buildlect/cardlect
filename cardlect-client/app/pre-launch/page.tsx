@@ -36,7 +36,7 @@ export default function PreLaunchPage() {
       await login(user.email, user.password)
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Login failed'
-      const enableDevFallback = process.env.NODE_ENV !== 'production'
+      const enableDevFallback = process.env.NEXT_PUBLIC_ENABLE_PRELAUNCH_MOCK_FALLBACK === 'true'
       if (enableDevFallback) {
         const mockSessionUser: AuthUser = {
           id: user.id,

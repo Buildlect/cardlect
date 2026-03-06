@@ -1,13 +1,14 @@
 "use client"
 
 import { Bell, Search, Menu, X, LogOut, Settings, User } from "lucide-react"
-import { useState, useRef, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useRef, useEffect, CSSProperties } from "react"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ThemeToggleMobile } from "@/components/theme-toggle-mobile"
 import { CARDLECT_COLORS } from "@/lib/cardlect-colors"
 import { useAuth, UserRole } from "@/contexts/auth-context"
+import api from "@/lib/api-client"
+import { Button } from "@/components/ui/button"
 
 interface HeaderProps {
   sidebarOpen: boolean
@@ -15,13 +16,39 @@ interface HeaderProps {
   role?: UserRole
 }
 
-export function Header({ sidebarOpen, onMenuClick, role = "school_admin" }: HeaderProps) {
-  const router = useRouter()
-  const { logout } = useAuth()
+interface AnnouncementRow {
+  id: string
+  title?: string
+  content?: string
+  priority?: string
+  created_at?: string
+}
+
+interface HeaderNotification {
+  id: string
+  title: string
+  message: string
+  time: string
+  priority: 'high' | 'normal' | 'low'
+}
+
+const ringColorVar = "--tw-ring-color" as const
+const ringStyle: CSSProperties = { [ringColorVar]: CARDLECT_COLORS.primary.main }
+
+const priorityStyles: Record<HeaderNotification['priority'], { marker: string; border: string }> = {
+  high: { marker: CARDLECT_COLORS.danger.main, border: 'border-l-red-500' },
+  normal: { marker: CARDLECT_COLORS.warning.main, border: 'border-l-amber-500' },
+  low: { marker: CARDLECT_COLORS.info.main, border: 'border-l-blue-500' },
+}
+
+export function Header({ onMenuClick, role = "school_admin" }: HeaderProps) {
+  const { logout, user } = useAuth()
   const [searchQuery, setSearchQuery] = useState("")
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const [notifications, setNotifications] = useState<HeaderNotification[]>([])
+  const [notifLoading, setNotifLoading] = useState(false)
 
   const notifRef = useRef<HTMLDivElement>(null)
   const profileRef = useRef<HTMLDivElement>(null)
@@ -39,40 +66,75 @@ export function Header({ sidebarOpen, onMenuClick, role = "school_admin" }: Head
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  // Role display names
+  useEffect(() => {
+    const loadNotifications = async () => {
+      if (!notificationsOpen || notifLoading) return
+      setNotifLoading(true)
+      try {
+        const res = await api.get('/announcements?limit=5')
+        const rows: AnnouncementRow[] = Array.isArray(res.data?.data) ? res.data.data : []
+        setNotifications(
+          rows.slice(0, 5).map((row) => {
+            const priority = (row.priority || 'normal').toLowerCase()
+            return {
+              id: row.id,
+              title: row.title || 'Notification',
+              message: row.content || '',
+              time: row.created_at ? new Date(row.created_at).toLocaleString() : 'N/A',
+              priority: priority === 'high' ? 'high' : priority === 'low' ? 'low' : 'normal',
+            }
+          }),
+        )
+      } catch {
+        setNotifications([])
+      } finally {
+        setNotifLoading(false)
+      }
+    }
+
+    loadNotifications()
+  }, [notificationsOpen, notifLoading])
+
   const roleDisplayNames: Record<UserRole, string> = {
-    "super_admin": "Super Admin",
-    "school_admin": "School Admin",
-    "staff": "Staff Member",
-    "parent": "Parent",
-    "student": "Student",
-    "partner": "Partner",
-    "visitor": "Visitor",
+    super_admin: "Super Admin",
+    school_admin: "School Admin",
+    staff: "Staff Member",
+    parent: "Parent",
+    student: "Student",
+    partner: "Partner",
+    visitor: "Visitor",
   }
 
-  // Role avatar initials
   const roleInitials: Record<UserRole, string> = {
-    "super_admin": "SA",
-    "school_admin": "AD",
-    "staff": "ST",
-    "parent": "PA",
-    "student": "SD",
-    "partner": "PR",
-    "visitor": "VI",
+    super_admin: "SA",
+    school_admin: "AD",
+    staff: "ST",
+    parent: "PA",
+    student: "SD",
+    partner: "PR",
+    visitor: "VI",
   }
 
-  // Settings routes for each role
   const settingsRoutes: Record<UserRole, string> = {
-    "super_admin": "/dashboard/settings",
-    "school_admin": "/dashboard/settings",
-    "staff": "/dashboard/settings",
-    "parent": "/dashboard/settings",
-    "student": "/dashboard/settings",
-    "partner": "/dashboard/settings",
-    "visitor": "/",
+    super_admin: "/dashboard/settings",
+    school_admin: "/dashboard/settings",
+    staff: "/dashboard/settings",
+    parent: "/dashboard/settings",
+    student: "/dashboard/settings",
+    partner: "/dashboard/settings",
+    visitor: "/",
   }
 
-  // Different placeholders based on role
+  const notificationRoutes: Record<UserRole, string> = {
+    super_admin: "/dashboard/notifications",
+    school_admin: "/dashboard/notifications",
+    staff: "/dashboard/notifications",
+    parent: "/dashboard/notifications",
+    student: "/dashboard/notifications",
+    partner: "/dashboard/notifications",
+    visitor: "/dashboard/notifications",
+  }
+
   const searchPlaceholders: Record<UserRole, string> = {
     school_admin: "Search students, staff...",
     super_admin: "Search schools, users...",
@@ -107,7 +169,7 @@ export function Header({ sidebarOpen, onMenuClick, role = "school_admin" }: Head
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition-all"
-              style={{ "--tw-ring-color": CARDLECT_COLORS.primary.main } as any}
+              style={ringStyle}
             />
           </div>
         </div>
@@ -124,14 +186,13 @@ export function Header({ sidebarOpen, onMenuClick, role = "school_admin" }: Head
           <div className="hidden md:flex"><ThemeToggle /></div>
           <div className="md:hidden"><ThemeToggleMobile /></div>
 
-          {/* Notifications Dropdown */}
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => {
                 setNotificationsOpen(!notificationsOpen)
                 setProfileOpen(false)
               }}
-              className="relative p-2 hover:bg-secondary rounded-lg transition-all group"
+              className="relative p-2 hover:bg-secondary rounded-lg transition-all"
               aria-label="Notifications"
               title="Notifications"
             >
@@ -140,57 +201,47 @@ export function Header({ sidebarOpen, onMenuClick, role = "school_admin" }: Head
             </button>
 
             {notificationsOpen && (
-              <div className="absolute top-full right-0 mt-2 w-96 bg-card border-2 rounded-lg shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right" style={{ borderColor: CARDLECT_COLORS.primary.darker }}>
-                <div className="p-4 border-b" style={{ borderColor: CARDLECT_COLORS.primary.darker, backgroundColor: CARDLECT_COLORS.primary.darker + '10' }}>
+              <div className="absolute top-full right-0 mt-2 w-96 bg-card border border-border rounded-xl shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                <div className="p-4 border-b border-border">
                   <div className="flex items-center justify-between">
-                    <p className="font-bold text-foreground text-sm">Notifications</p>
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: CARDLECT_COLORS.primary.darker, color: '#fafafa' }}>3 New</span>
+                    <p className="font-semibold text-foreground text-sm">Notifications</p>
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary">{notifications.length}</span>
                   </div>
                 </div>
-                <div className="max-h-96 overflow-y-auto">
-                  <div className="p-4 space-y-2">
-                    <div className="p-3 bg-muted/40 rounded-lg hover:bg-muted transition-all cursor-pointer border-l-4 border-l-blue-500">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-foreground">Welcome to Cardlect</p>
-                          <p className="text-xs text-muted-foreground mt-1">Get started with your dashboard and explore features</p>
+
+                <div className="max-h-96 overflow-y-auto p-3 space-y-2">
+                  {notifLoading ? (
+                    <div className="text-sm text-muted-foreground p-2">Loading notifications...</div>
+                  ) : notifications.length === 0 ? (
+                    <div className="text-sm text-muted-foreground p-2">No notifications available.</div>
+                  ) : (
+                    notifications.map((item) => {
+                      const style = priorityStyles[item.priority]
+                      return (
+                        <div key={item.id} className={`p-3 bg-muted/30 rounded-lg hover:bg-muted/60 transition-all border-l-4 ${style.border}`}>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.message}</p>
+                            </div>
+                            <span className="text-xs" style={{ color: style.marker }}>*</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">{item.time}</p>
                         </div>
-                        <span className="text-xs font-medium" style={{ color: CARDLECT_COLORS.info.main }}>●</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">2 hours ago</p>
-                    </div>
-                    <div className="p-3 bg-muted/40 rounded-lg hover:bg-muted transition-all cursor-pointer border-l-4 border-l-yellow-500">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-foreground">System Update Available</p>
-                          <p className="text-xs text-muted-foreground mt-1">Updates available for your account and system</p>
-                        </div>
-                        <span className="text-xs font-medium" style={{ color: CARDLECT_COLORS.warning.main }}>●</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">4 hours ago</p>
-                    </div>
-                    <div className="p-3 bg-muted/40 rounded-lg hover:bg-muted transition-all cursor-pointer border-l-4 border-l-green-500">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-foreground">New Message</p>
-                          <p className="text-xs text-muted-foreground mt-1">You have a new message from your administrator</p>
-                        </div>
-                        <span className="text-xs font-medium" style={{ color: CARDLECT_COLORS.success.main }}>●</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-2">Just now</p>
-                    </div>
-                  </div>
+                      )
+                    })
+                  )}
                 </div>
-                <div className="p-3 border-t" style={{ borderColor: CARDLECT_COLORS.primary.darker }}>
-                  <button className="text-xs font-semibold w-full py-2 rounded transition-all" style={{ color: CARDLECT_COLORS.primary.darker, backgroundColor: CARDLECT_COLORS.primary.darker + '15' }}>
-                    View all notifications →
-                  </button>
+
+                <div className="p-3 border-t border-border">
+                  <Link href={notificationRoutes[role]} onClick={() => setNotificationsOpen(false)}>
+                    <Button variant="outline" className="w-full justify-center">View all notifications</Button>
+                  </Link>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Profile Dropdown */}
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => {
@@ -213,7 +264,7 @@ export function Header({ sidebarOpen, onMenuClick, role = "school_admin" }: Head
                     </div>
                     <div>
                       <p className="font-semibold text-foreground text-sm" style={{ color: CARDLECT_COLORS.primary.main }}>{roleDisplayNames[role as keyof typeof roleDisplayNames]}</p>
-                      <p className="text-xs text-muted-foreground">user@cardlect.io</p>
+                      <p className="text-xs text-muted-foreground">{user?.email || 'user@cardlect.io'}</p>
                     </div>
                   </div>
                 </div>
@@ -258,7 +309,7 @@ export function Header({ sidebarOpen, onMenuClick, role = "school_admin" }: Head
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-input border border-border rounded-lg text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 transition-all"
-              style={{ "--tw-ring-color": CARDLECT_COLORS.primary.main } as any}
+              style={ringStyle}
               autoFocus
             />
           </div>
