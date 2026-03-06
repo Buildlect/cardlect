@@ -54,7 +54,9 @@ export default function WalletPage() {
 
   const filteredWallets = wallets.filter((w) =>
     w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (w.admission_number && w.admission_number.toLowerCase().includes(searchTerm.toLowerCase()))
+    (w.admission_number && w.admission_number.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (w.employee_id && w.employee_id.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    w.role.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const handleTopup = async () => {
@@ -90,7 +92,7 @@ export default function WalletPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h2 className="text-3xl font-extrabold text-foreground">Smart Wallet Management</h2>
-            <p className="text-muted-foreground mt-1">Operational oversight of student and staff smart card balances.</p>
+            <p className="text-muted-foreground mt-1">Operational oversight of student, parent, and staff smart card balances.</p>
           </div>
           <Button onClick={() => setShowTopup(!showTopup)} className="bg-primary hover:bg-primary-darker text-white rounded-xl py-6 px-8 flex items-center gap-2">
             <Plus size={20} /> New Top-up
@@ -141,10 +143,10 @@ export default function WalletPage() {
                       value={topupData.userId}
                       onChange={(e) => setTopupData({ ...topupData, userId: e.target.value })}
                     >
-                      <option value="">Select Student/Staff</option>
+                      <option value="">Select Student/Parent/Staff</option>
                       {wallets.map(w => (
                         <option key={w.user_id} value={w.user_id}>
-                          {w.name} ({w.role}) - {w.admission_number || w.employee_id}
+                          {w.name} ({w.role}) - {w.admission_number || w.employee_id || w.user_id}
                         </option>
                       ))}
                     </select>
@@ -179,7 +181,7 @@ export default function WalletPage() {
                 <div className="relative w-full md:w-80">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
                   <input
-                    placeholder="Search by name or ID..."
+                    placeholder="Search by name, role, or ID..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full bg-muted/30 border border-border rounded-xl py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"

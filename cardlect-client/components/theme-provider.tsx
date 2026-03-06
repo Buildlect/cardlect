@@ -42,10 +42,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const updateTheme = (newTheme: Theme) => {
     setThemeState(newTheme)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('theme', newTheme)
-      applyTheme(newTheme)
-    }
+    if (typeof window === 'undefined') return
+    localStorage.setItem('theme', newTheme)
+    // Apply outside the click handler critical path to reduce INP spikes.
+    window.requestAnimationFrame(() => applyTheme(newTheme))
   }
 
   // Prevent rendering children until mounted to avoid hydration mismatch
