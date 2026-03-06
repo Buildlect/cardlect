@@ -104,7 +104,7 @@ export default function WalletPage() {
         ) : (
           <>
             {/* Analytics Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               <div className="bg-card p-6 rounded-2xl border border-border shadow-sm">
                 <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider mb-2">Total System Liquidity</p>
                 <div className="flex items-center justify-between">
@@ -135,7 +135,7 @@ export default function WalletPage() {
                   <CardTitle>Execute Administrative Deposit</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     <select
                       className="bg-muted/30 border border-border rounded-xl px-4 py-2 text-sm"
                       value={topupData.userId}

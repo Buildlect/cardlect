@@ -140,7 +140,7 @@ export default function TeacherExamsDashboard() {
         </div>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center justify-between">
               <div>

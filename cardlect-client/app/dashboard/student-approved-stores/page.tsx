@@ -146,7 +146,7 @@ export default function StudentApprovedStoresPage() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         <div className="bg-card border border-border rounded-2xl p-5">
           <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wide mb-1">Available Stores</p>
           <p className="text-3xl font-bold text-foreground">{stats.totalStores}</p>
@@ -231,7 +231,7 @@ export default function StudentApprovedStoresPage() {
       {/* Approved Stores Grid */}
       <div className="mb-8">
         <h2 className="text-lg font-bold text-foreground mb-4">Available at Your School</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {approvedStores.map((store) => (
             <div key={store.id} className="bg-card border border-border rounded-2xl p-5 hover:shadow-lg hover:scale-[1.02] transition-all">
               <div className="flex items-start justify-between mb-3">

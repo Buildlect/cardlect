@@ -151,7 +151,7 @@ export default function AssignmentsPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <Card><CardContent className="pt-6"><div className="text-sm text-muted-foreground">Total Assignments</div><div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.info.main }}>{stats.total}</div></CardContent></Card>
           <Card><CardContent className="pt-6"><div className="text-sm text-muted-foreground">Open</div><div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.primary.darker }}>{stats.open}</div></CardContent></Card>
           <Card><CardContent className="pt-6"><div className="text-sm text-muted-foreground">Closing Soon</div><div className="text-2xl font-bold" style={{ color: CARDLECT_COLORS.warning.main }}>{stats.closing}</div></CardContent></Card>

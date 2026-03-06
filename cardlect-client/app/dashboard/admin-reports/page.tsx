@@ -93,7 +93,7 @@ export default function ReportsPage() {
         </div>
 
         {/* Global KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           <Card className="border-border shadow-sm group hover:border-primary/50 transition-all">
             <CardHeader className="pb-2">
               <CardTitle className="text-[10px] font-black uppercase text-muted-foreground tracking-widest flex items-center justify-between">

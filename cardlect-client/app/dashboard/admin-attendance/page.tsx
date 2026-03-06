@@ -59,7 +59,7 @@ export default function AttendancePage() {
         </div>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
           <Card className="border-primary/10 shadow-sm overflow-hidden group">
             <CardHeader className="pb-2 bg-primary/5">
               <div className="flex items-center justify-between">
