@@ -2,6 +2,7 @@
   "name": "cardlect-client",
   "version": "0.1.0",
   "private": true,
+  "author": "Buildlect Technologies Ltd",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
