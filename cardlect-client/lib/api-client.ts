@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/latest',
+    baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://cardlect.buildlect.com/latest',
     headers: {
         'Content-Type': 'application/json',
     },
